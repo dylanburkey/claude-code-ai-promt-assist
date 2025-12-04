@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Semantic Prompt Workstation</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    
+    <!-- iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PromptEngine">
+    <link rel="apple-touch-icon" href="icon.svg">
+
+    <style>
+        :root {
+            /* Palette */
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-panel-hover: #334155;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --accent-danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --header-height: 60px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: var(--header-height);
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* --- Layout Grid --- */
+        .workspace {
+            display: grid;
+            grid-template-columns: 260px 1fr 1fr; 
+            height: calc(100vh - var(--header-height));
+            overflow: hidden;
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 768px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Hide sidebar by default on mobile, show via toggle */
+            #sidebar-panel {
+                display: none; 
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                width: 85%;
+                height: calc(100% - var(--header-height));
+                z-index: 50;
+                background: var(--bg-dark);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            }
+            #sidebar-panel.mobile-open { display: flex; }
+
+            /* Tab navigation for mobile views */
+            .mobile-tabs {
+                display: flex;
+                background: var(--bg-panel);
+                border-top: 1px solid var(--border-color);
+            }
+            .mobile-tab {
+                flex: 1;
+                text-align: center;
+                padding: 1rem;
+                color: var(--text-muted);
+                font-size: 0.9rem;
+            }
+            .mobile-tab.active {
+                color: var(--accent-primary);
+                border-top: 2px solid var(--accent-primary);
+            }
+            
+            /* View switching */
+            .panel { display: none; }
+            .panel.active-view { display: flex; }
+        }
+
+        /* --- Common Styles --- */
+        .panel {
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            background: var(--bg-dark);
+        }
+        
+        @media (min-width: 769px) {
+            .panel { display: flex !important; }
+            .mobile-tabs { display: none; }
+            .menu-toggle { display: none; }
+        }
+
+        .panel-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary { background: var(--accent-primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        
+        .btn-secondary { background: var(--bg-panel-hover); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--border-color); }
+
+        .btn-icon { padding: 0.5rem; }
+
+        input, textarea, select {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 6px;
+            width: 100%;
+            font-family: var(--font-sans);
+            font-size: 0.95rem; /* Larger for touch targets */
+            margin-top: 0.25rem;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* --- Left: Agent Sidebar --- */
+        .agent-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .agent-card {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .agent-card:hover { border-color: var(--accent-primary); }
+        .agent-card.active { background: rgba(59, 130, 246, 0.15); border-color: var(--accent-primary); }
+        
+        .agent-name { font-weight: 600; font-size: 0.95rem; display: block; }
+        .agent-role { font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+        /* --- Right: Output --- */
+        .output-area {
+            background: #151b2b;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            height: 100%;
+            border-radius: 6px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Install Banner --- */
+        #install-prompt {
+            display: none;
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.2s;
+            padding: 1rem;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--bg-panel);
+            padding: 1.5rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .hidden-input { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Install Banner -->
+    <div id="install-prompt" onclick="installPWA()">
+        📲 Install App on Device
+    </div>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button class="btn-secondary btn-icon menu-toggle" onclick="toggleSidebar()">
+                ☰
+            </button>
+            <h1>Semantic Workstation</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary btn-icon" onclick="document.getElementById('file-upload').click()" title="Import">📂</button>
+            <input type="file" id="file-upload" class="hidden-input" accept=".json" onchange="importAgents(this)">
+            <button class="btn-secondary btn-icon" onclick="exportAgents()" title="Export">💾</button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        
+        <!-- COLUMN 1: AGENTS -->
+        <aside class="panel" id="sidebar-panel">
+            <div class="panel-title">
+                <span>Agent Library</span>
+                <button class="btn-primary" style="padding: 0.25rem 0.6rem;" onclick="openAgentModal()">+</button>
+            </div>
+            <div id="agent-list" class="agent-list">
+                <!-- Agents injected here -->
+            </div>
+            <button class="btn-secondary menu-toggle" style="margin-top: auto;" onclick="toggleSidebar()">Close Menu</button>
+        </aside>
+
+        <!-- COLUMN 2: BUILDER -->
+        <section class="panel active-view" id="view-builder">
+            <div class="panel-title">Prompt Builder</div>
+            
+            <div class="input-group">
+                <div id="current-agent-display" style="padding: 0.75rem; background: var(--bg-panel); border: 1px solid var(--accent-primary); border-radius: 6px; color: var(--accent-primary); font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>No Agent Selected</span>
+                    <small style="font-weight: normal; opacity: 0.7;">Select from menu</small>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="task">The Task</label>
+                <textarea id="task" rows="5" placeholder="Write a python script to..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="context">Context & Constraints</label>
+                <textarea id="context" rows="3" placeholder="Audience is beginners, use Pandas..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="format">Output Format</label>
+                <input type="text" id="format" placeholder="Markdown, JSON...">
+            </div>
+
+            <button class="btn-primary" style="margin-top: auto;" onclick="generatePrompt()">
+                ⚡ Generate Prompt
+            </button>
+        </section>
+
+        <!-- COLUMN 3: OUTPUT -->
+        <section class="panel" id="view-output">
+            <div class="panel-title">
+                <span>Final Output</span>
+                <button class="btn-secondary" onclick="copyToClipboard()">Copy</button>
+            </div>
+            <div id="output-display" class="output-area">// Output appears here...</div>
+        </section>
+
+    </div>
+
+    <!-- Mobile Tabs -->
+    <div class="mobile-tabs">
+        <div class="mobile-tab active" onclick="switchView('builder')">Builder</div>
+        <div class="mobile-tab" onclick="switchView('output')">Output</div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="agent-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 id="modal-title" style="color:white;">Create Agent</h2>
+            <input type="hidden" id="agent-id">
+            
+            <div>
+                <label>Name</label>
+                <input type="text" id="agent-name" placeholder="e.g., Senior React Dev">
+            </div>
+            
+            <div>
+                <label>Persona / Role</label>
+                <textarea id="agent-role" rows="4" placeholder="You are an expert..."></textarea>
+            </div>
+
+            <div>
+                <label>Output Style</label>
+                <input type="text" id="agent-style" placeholder="Concise, Academic...">
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <button class="btn-danger" id="btn-delete" onclick="deleteAgent()" style="margin-right: auto; color: #ef4444; background: none; border: 1px solid #ef4444; display: none;">Delete</button>
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveAgent()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PWA LOGIC ---
+        let deferredPrompt;
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Fail', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-prompt').style.display = 'block';
+        });
+
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('install-prompt').style.display = 'none';
+            }
+        }
+
+        // --- APP LOGIC ---
+        let agents = [];
+        let selectedAgentId = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAgents();
+            // Handle mobile view state
+            if(window.innerWidth < 769) {
+                switchView('builder');
+            }
+        });
+
+        function loadAgents() {
+            const stored = localStorage.getItem('prompt_engine_agents');
+            if (stored) {
+                agents = JSON.parse(stored);
+            } else {
+                agents = [
+                    { id: '1', name: 'Senior Python Dev', role: 'You are a Principal Software Engineer specializing in Python.', style: 'Production-ready code, Type hints' },
+                    { id: '2', name: 'Tech Writer', role: 'You are an expert Technical Writer.', style: 'Clear, concise, active voice' }
+                ];
+                saveToStorage();
+            }
+            renderAgentList();
+            if(agents.length > 0) selectAgent(agents[0].id);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('prompt_engine_agents', JSON.stringify(agents));
+            renderAgentList();
+        }
+
+        function renderAgentList() {
+            const container = document.getElementById('agent-list');
+            container.innerHTML = '';
+            agents.forEach(agent => {
+                const div = document.createElement('div');
+                div.className = `agent-card ${agent.id === selectedAgentId ? 'active' : ''}`;
+                div.onclick = () => { selectAgent(agent.id); if(window.innerWidth < 769) toggleSidebar(); };
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="agent-name">${agent.name}</span>
+                        <button class="btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); editAgent('${agent.id}')">✎</button>
+                    </div>
+                    <span class="agent-role">${agent.role}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function selectAgent(id) {
+            selectedAgentId = id;
+            const agent = agents.find(a => a.id === id);
+            if(agent) {
+                document.getElementById('current-agent-display').innerHTML = `<span>${agent.name}</span> <span style="font-size:0.8em; opacity:0.8">Active</span>`;
+            }
+            renderAgentList();
+        }
+
+        function generatePrompt() {
+            const task = document.getElementById('task').value;
+            const context = document.getElementById('context').value;
+            const format = document.getElementById('format').value;
+            const agent = agents.find(a => a.id === selectedAgentId);
+
+            if (!agent) return alert("Please select an Agent.");
+            if (!task) return alert("Please enter a Task.");
+
+            const prompt = `${agent.role}\n\n<agent_style>\n${agent.style}\n</agent_style>\n\n<context>\n${context || "Standard context."}\n</context>\n\n<task_instruction>\n${task}\n</task_instruction>\n\n<output_requirements>\n${format || "Best fit."}\n</output_requirements>`;
+
+            document.getElementById('output-display').innerText = prompt;
+            
+            // On mobile, auto-switch to output view
+            if(window.innerWidth < 769) {
+                switchView('output');
+            }
+        }
+
+        // --- MOBILE & UTILS ---
+        function toggleSidebar() {
+            document.getElementById('sidebar-panel').classList.toggle('mobile-open');
+        }
+
+        function switchView(viewName) {
+            // Only for mobile
+            if(window.innerWidth >= 769) return;
+            
+            document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-view'));
+            document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active-view');
+            
+            // Update tab highlight
+            const tabIndex = viewName === 'builder' ? 0 : 1;
+            document.querySelectorAll('.mobile-tab')[tabIndex].classList.add('active');
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('output-display').innerText;
+            navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+        }
+
+        function exportAgents() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(agents, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "prompt_agents.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+        
+        function importAgents(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    agents = JSON.parse(e.target.result);
+                    saveToStorage();
+                    alert('Imported!');
+                } catch(err) { alert('Invalid JSON'); }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- MODAL UTILS ---
+        function openAgentModal() {
+            document.getElementById('modal-title').innerText = "Create Agent";
+            document.getElementById('agent-id').value = "";
+            document.getElementById('agent-name').value = "";
+            document.getElementById('agent-role').value = "";
+            document.getElementById('agent-style').value = "";
+            document.getElementById('btn-delete').style.display = 'none';
+            document.getElementById('agent-modal').classList.add('open');
+            if(window.innerWidth < 769) toggleSidebar(); 
+        }
+
+        function editAgent(id) {
+            const agent = agents.find(a => a.id === id);
+            if(!agent) return;
+            document.getElementById('modal-title').innerText = "Edit Agent";
+            document.getElementById('agent-id').value = agent.id;
+            document.getElementById('agent-name').value = agent.name;
+            document.getElementById('agent-role').value = agent.role;
+            document.getElementById('agent-style').value = agent.style;
+            document.getElementById('btn-delete').style.display = 'block';
+            document.getElementById('agent-modal').classList.add('open');
+            if(window.innerWidth < 769) toggleSidebar();
+        }
+
+        function closeModal() {
+            document.getElementById('agent-modal').classList.remove('open');
+        }
+
+        function saveAgent() {
+            const id = document.getElementById('agent-id').value;
+            const name = document.getElementById('agent-name').value;
+            const role = document.getElementById('agent-role').value;
+            const style = document.getElementById('agent-style').value;
+            if(!name) return alert("Name required");
+
+            if (id) {
+                const idx = agents.findIndex(a => a.id === id);
+                agents[idx] = { id, name, role, style };
+            } else {
+                agents.push({ id: Date.now().toString(), name, role, style });
+            }
+            saveToStorage();
+            closeModal();
+        }
+        
+        function deleteAgent() {
+            const id = document.getElementById('agent-id').value;
+            if(confirm("Delete?")) {
+                agents = agents.filter(a => a.id !== id);
+                if(selectedAgentId === id) selectedAgentId = null;
+                saveToStorage();
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
