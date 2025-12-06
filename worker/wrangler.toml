@@ -1,0 +1,14 @@
+name = "semantic-prompt-workstation"
+account_id = "59bda891c7a76a83bb024456598cccba"
+compatibility_date = "2024-12-01"
+main = "./src/index.js"
+
+[assets]
+directory = "./public"
+not_found_handling = "single-page-application"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "prompt-workstation-db"
+database_id = "01eb1fd2-3f0d-402b-9213-4bccedfb0b1f"
