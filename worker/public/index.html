@@ -8,20 +8,15 @@
         />
         <title>Semantic Prompt Workstation</title>
 
-        <!-- PWA Settings -->
         <link rel="manifest" href="manifest.json" />
         <meta name="theme-color" content="#0a0a0f" />
         <link rel="icon" type="image/svg+xml" href="icon.svg" />
-
-        <!-- Fonts: Space Grotesk (Modern Display) & IBM Plex Sans (Professional Body) -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
             href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
             rel="stylesheet"
         />
-
-        <!-- iOS Support -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
             name="apple-mobile-web-app-status-bar-style"
@@ -94,7 +89,6 @@
                 align-items: center;
                 gap: 0.75rem;
             }
-
             h1 {
                 font-family: var(--font-display);
                 font-size: 1.25rem;
@@ -102,7 +96,6 @@
                 color: var(--text-primary);
                 letter-spacing: -0.02em;
             }
-
             .version-badge {
                 font-size: 0.65rem;
                 font-weight: 600;
@@ -110,9 +103,7 @@
                 background: rgba(99, 102, 241, 0.15);
                 padding: 0.2rem 0.5rem;
                 border-radius: var(--radius-sm);
-                letter-spacing: 0.02em;
             }
-
             .header-actions {
                 display: flex;
                 gap: 0.5rem;
@@ -120,7 +111,7 @@
 
             .workspace {
                 display: grid;
-                grid-template-columns: 260px 1fr 1fr;
+                grid-template-columns: 280px 1fr 1fr;
                 height: calc(100vh - var(--header-height));
                 overflow: hidden;
             }
@@ -157,11 +148,10 @@
                     text-align: center;
                     padding: 0.875rem;
                     color: var(--text-muted);
-                    font-family: var(--font-body);
                     font-weight: 500;
                     font-size: 0.8rem;
-                    transition: var(--transition-fast);
                     cursor: pointer;
+                    transition: var(--transition-fast);
                 }
                 .mobile-tab.active {
                     color: var(--accent-primary);
@@ -191,45 +181,159 @@
                 border-right: 1px solid var(--border-subtle);
                 display: flex;
                 flex-direction: column;
-                gap: 1.25rem;
+                gap: 1rem;
                 background: var(--bg-base);
             }
-
             .panel:last-child {
                 border-right: none;
             }
 
-            .panel-header {
+            /* Collapsible Section */
+            .collapsible-section {
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                overflow: hidden;
+            }
+            .collapsible-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding-bottom: 0.75rem;
-                border-bottom: 1px solid var(--border-subtle);
+                padding: 0.75rem 1rem;
+                background: var(--bg-surface);
+                cursor: pointer;
+                user-select: none;
+                transition: var(--transition-fast);
             }
-
-            .panel-title {
+            .collapsible-header:hover {
+                background: var(--bg-elevated);
+            }
+            .collapsible-title {
                 font-family: var(--font-display);
                 font-size: 0.75rem;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.08em;
                 color: var(--text-muted);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .collapsible-title .count {
+                background: var(--accent-primary);
+                color: white;
+                font-size: 0.65rem;
+                padding: 0.1rem 0.4rem;
+                border-radius: 10px;
+            }
+            .collapsible-actions {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .chevron {
+                transition: transform var(--transition-fast);
+                color: var(--text-muted);
+            }
+            .collapsible-section.collapsed .chevron {
+                transform: rotate(-90deg);
+            }
+            .collapsible-content {
+                max-height: 400px;
+                overflow-y: auto;
+                transition: max-height 0.3s ease;
+            }
+            .collapsible-section.collapsed .collapsible-content {
+                max-height: 0;
+                overflow: hidden;
+            }
+            .collapsible-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+                padding: 0.5rem;
             }
 
+            /* Cards */
+            .item-card {
+                background: var(--bg-base);
+                padding: 0.75rem;
+                border-radius: var(--radius-sm);
+                border: 1px solid transparent;
+                cursor: pointer;
+                transition: var(--transition-fast);
+            }
+            .item-card:hover {
+                background: var(--bg-elevated);
+                border-color: var(--border-default);
+            }
+            .item-card.active {
+                background: rgba(99, 102, 241, 0.1);
+                border-color: var(--accent-primary);
+            }
+            .item-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.25rem;
+            }
+            .item-name {
+                font-family: var(--font-display);
+                font-weight: 600;
+                font-size: 0.85rem;
+                color: var(--text-primary);
+            }
+            .item-preview {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                line-height: 1.4;
+            }
+
+            /* Selection Tag */
+            .selection-tag {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                padding: 0.625rem 0.875rem;
+                border-radius: var(--radius-md);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.85rem;
+            }
+            .selection-tag.has-selection {
+                background: rgba(99, 102, 241, 0.08);
+                border-color: rgba(99, 102, 241, 0.3);
+            }
+            .selection-tag-name {
+                font-family: var(--font-display);
+                font-weight: 600;
+            }
+            .selection-tag-status {
+                font-size: 0.65rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            .selection-tag-actions {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            /* Form Elements */
             label {
-                font-family: var(--font-body);
                 font-size: 0.8rem;
                 font-weight: 500;
                 color: var(--text-secondary);
                 margin-bottom: 0.5rem;
                 display: block;
             }
-
             .input-group {
                 display: flex;
                 flex-direction: column;
             }
-
             input,
             textarea,
             select {
@@ -243,12 +347,10 @@
                 font-size: 0.875rem;
                 transition: var(--transition-fast);
             }
-
             input::placeholder,
             textarea::placeholder {
                 color: var(--text-muted);
             }
-
             input:focus,
             textarea:focus {
                 outline: none;
@@ -256,12 +358,12 @@
                 background: var(--bg-elevated);
                 box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
             }
-
             textarea {
                 resize: vertical;
                 min-height: 80px;
             }
 
+            /* Buttons */
             button {
                 cursor: pointer;
                 border: none;
@@ -276,122 +378,52 @@
                 justify-content: center;
                 gap: 0.5rem;
             }
-
             button:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
-
             .btn-primary {
                 background: var(--accent-primary);
                 color: white;
             }
-
             .btn-primary:hover:not(:disabled) {
                 background: var(--accent-primary-hover);
                 transform: translateY(-1px);
             }
-
             .btn-secondary {
                 background: transparent;
                 color: var(--text-secondary);
                 border: 1px solid var(--border-default);
             }
-
             .btn-secondary:hover:not(:disabled) {
                 border-color: var(--text-muted);
                 color: var(--text-primary);
                 background: var(--bg-hover);
             }
-
+            .btn-ghost {
+                background: transparent;
+                color: var(--text-muted);
+                padding: 0.25rem;
+            }
+            .btn-ghost:hover {
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
             .btn-icon {
                 padding: 0.5rem;
                 width: 36px;
                 height: 36px;
             }
-
             .btn-sm {
                 padding: 0.375rem 0.75rem;
                 font-size: 0.75rem;
             }
-
-            .agent-list {
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .agent-card {
-                background: var(--bg-surface);
-                padding: 0.875rem 1rem;
-                border-radius: var(--radius-md);
-                border: 1px solid transparent;
-                cursor: pointer;
-                transition: var(--transition-fast);
-            }
-
-            .agent-card:hover {
-                background: var(--bg-elevated);
-                border-color: var(--border-default);
-            }
-
-            .agent-card.active {
-                background: rgba(99, 102, 241, 0.1);
-                border-color: var(--accent-primary);
-            }
-
-            .agent-card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 0.375rem;
-            }
-
-            .agent-name {
-                font-family: var(--font-display);
-                font-weight: 600;
-                font-size: 0.9rem;
-                color: var(--text-primary);
-            }
-
-            .agent-role {
-                font-size: 0.8rem;
-                color: var(--text-muted);
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                line-height: 1.4;
-            }
-
-            .agent-tag {
-                background: var(--bg-surface);
-                border: 1px solid var(--border-subtle);
-                padding: 0.875rem 1rem;
-                border-radius: var(--radius-md);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .agent-tag.has-agent {
-                background: rgba(99, 102, 241, 0.08);
-                border-color: rgba(99, 102, 241, 0.3);
-            }
-
-            .agent-tag-name {
-                font-family: var(--font-display);
-                font-weight: 600;
-                font-size: 0.9rem;
-            }
-
-            .agent-tag-status {
+            .btn-xs {
+                padding: 0.2rem 0.4rem;
                 font-size: 0.7rem;
-                color: var(--text-muted);
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
             }
 
+            /* Output Area */
             .output-area {
                 background: var(--bg-surface);
                 padding: 1.25rem;
@@ -405,11 +437,11 @@
                 border-radius: var(--radius-md);
                 overflow-y: auto;
             }
-
             .output-placeholder {
                 color: var(--text-muted);
             }
 
+            /* Install Banner */
             #install-prompt {
                 display: none;
                 background: linear-gradient(
@@ -420,17 +452,15 @@
                 color: white;
                 padding: 0.75rem 1rem;
                 text-align: center;
-                font-family: var(--font-body);
                 font-weight: 500;
                 font-size: 0.85rem;
                 cursor: pointer;
-                transition: var(--transition-fast);
             }
-
             #install-prompt:hover {
                 filter: brightness(1.1);
             }
 
+            /* Modal */
             .modal-overlay {
                 position: fixed;
                 top: 0;
@@ -448,18 +478,16 @@
                 transition: opacity var(--transition-normal);
                 padding: 1rem;
             }
-
             .modal-overlay.open {
                 opacity: 1;
                 pointer-events: all;
             }
-
             .modal {
                 background: var(--bg-surface);
                 padding: 1.75rem;
                 border-radius: var(--radius-lg);
                 width: 100%;
-                max-width: 480px;
+                max-width: 500px;
                 border: 1px solid var(--border-default);
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
                 display: flex;
@@ -468,14 +496,12 @@
                 max-height: 90vh;
                 overflow-y: auto;
             }
-
             .modal h2 {
                 font-family: var(--font-display);
                 font-size: 1.1rem;
                 font-weight: 600;
                 color: var(--text-primary);
             }
-
             .modal-actions {
                 display: flex;
                 gap: 0.75rem;
@@ -487,20 +513,18 @@
                 display: none;
             }
 
+            /* Scrollbar */
             ::-webkit-scrollbar {
                 width: 6px;
                 height: 6px;
             }
-
             ::-webkit-scrollbar-track {
                 background: transparent;
             }
-
             ::-webkit-scrollbar-thumb {
                 background: var(--border-default);
                 border-radius: 3px;
             }
-
             ::-webkit-scrollbar-thumb:hover {
                 background: var(--text-muted);
             }
@@ -509,6 +533,7 @@
                 margin-top: auto;
             }
 
+            /* Loading & Toast */
             .loading-spinner {
                 display: inline-block;
                 width: 16px;
@@ -518,7 +543,6 @@
                 border-radius: 50%;
                 animation: spin 0.8s linear infinite;
             }
-
             @keyframes spin {
                 to {
                     transform: rotate(360deg);
@@ -539,17 +563,14 @@
                 opacity: 0;
                 transition: all 0.3s ease;
             }
-
             .toast.show {
                 transform: translateX(-50%) translateY(0);
                 opacity: 1;
             }
-
             .toast.success {
                 border-color: var(--accent-success);
                 color: var(--accent-success);
             }
-
             .toast.error {
                 border-color: var(--accent-error);
                 color: var(--accent-error);
@@ -557,8 +578,9 @@
 
             .empty-state {
                 text-align: center;
-                padding: 2rem;
+                padding: 1.5rem;
                 color: var(--text-muted);
+                font-size: 0.8rem;
             }
 
             .sync-indicator {
@@ -568,16 +590,13 @@
                 background: var(--accent-success);
                 margin-left: 0.5rem;
             }
-
             .sync-indicator.syncing {
                 background: var(--accent-warning);
                 animation: pulse 1s infinite;
             }
-
             .sync-indicator.error {
                 background: var(--accent-error);
             }
-
             @keyframes pulse {
                 0%,
                 100% {
@@ -586,6 +605,22 @@
                 50% {
                     opacity: 0.5;
                 }
+            }
+
+            .panel-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+            .panel-title {
+                font-family: var(--font-display);
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--text-muted);
             }
         </style>
     </head>
@@ -613,7 +648,7 @@
                     </svg>
                 </button>
                 <h1>Semantic Prompt Workstation</h1>
-                <span class="version-badge">v2.2</span>
+                <span class="version-badge">v2.3</span>
                 <div
                     id="sync-indicator"
                     class="sync-indicator"
@@ -624,7 +659,7 @@
                 <button
                     class="btn-secondary btn-icon"
                     onclick="document.getElementById('file-upload').click()"
-                    title="Import agents"
+                    title="Import"
                 >
                     <svg
                         width="16"
@@ -644,12 +679,12 @@
                     id="file-upload"
                     class="hidden-input"
                     accept=".json"
-                    onchange="importAgents(this)"
+                    onchange="importData(this)"
                 />
                 <button
                     class="btn-secondary btn-icon"
-                    onclick="exportAgents()"
-                    title="Export agents"
+                    onclick="exportData()"
+                    title="Export"
                 >
                     <svg
                         width="16"
@@ -668,30 +703,140 @@
         </header>
 
         <div class="workspace">
+            <!-- SIDEBAR -->
             <aside class="panel" id="sidebar-panel">
-                <div class="panel-header">
-                    <span class="panel-title">Agent Library</span>
-                    <button
-                        class="btn-secondary btn-sm"
-                        onclick="openAgentModal()"
+                <!-- Agent Library Section -->
+                <div class="collapsible-section" id="agents-section">
+                    <div
+                        class="collapsible-header"
+                        onclick="toggleSection('agents-section')"
                     >
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        New
-                    </button>
+                        <span class="collapsible-title">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                                />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            Agent Library
+                            <span class="count" id="agents-count">0</span>
+                        </span>
+                        <div class="collapsible-actions">
+                            <button
+                                class="btn-ghost btn-xs"
+                                onclick="
+                                    event.stopPropagation();
+                                    openAgentModal();
+                                "
+                                title="New Agent"
+                            >
+                                <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                            </button>
+                            <svg
+                                class="chevron"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="collapsible-content">
+                        <div id="agent-list" class="collapsible-list">
+                            <div class="empty-state">Loading agents...</div>
+                        </div>
+                    </div>
                 </div>
-                <div id="agent-list" class="agent-list">
-                    <div class="empty-state">Loading agents...</div>
+
+                <!-- Output Requirements Section -->
+                <div class="collapsible-section" id="requirements-section">
+                    <div
+                        class="collapsible-header"
+                        onclick="toggleSection('requirements-section')"
+                    >
+                        <span class="collapsible-title">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                                />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                            Output Requirements
+                            <span class="count" id="requirements-count">0</span>
+                        </span>
+                        <div class="collapsible-actions">
+                            <button
+                                class="btn-ghost btn-xs"
+                                onclick="
+                                    event.stopPropagation();
+                                    openRequirementModal();
+                                "
+                                title="New Requirement"
+                            >
+                                <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                            </button>
+                            <svg
+                                class="chevron"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="collapsible-content">
+                        <div id="requirement-list" class="collapsible-list">
+                            <div class="empty-state">
+                                Loading requirements...
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <button
                     class="btn-secondary close-sidebar-btn menu-toggle"
                     onclick="toggleSidebar()"
@@ -700,15 +845,21 @@
                 </button>
             </aside>
 
+            <!-- BUILDER -->
             <section class="panel active-view" id="view-builder">
                 <div class="panel-header">
                     <span class="panel-title">Prompt Builder</span>
                 </div>
 
                 <div class="input-group">
-                    <div id="current-agent-display" class="agent-tag">
-                        <span class="agent-tag-name">No agent selected</span>
-                        <span class="agent-tag-status">Select from left</span>
+                    <label>Selected Agent</label>
+                    <div id="current-agent-display" class="selection-tag">
+                        <span class="selection-tag-name"
+                            >No agent selected</span
+                        >
+                        <span class="selection-tag-status"
+                            >Select from sidebar</span
+                        >
                     </div>
                 </div>
 
@@ -716,7 +867,7 @@
                     <label for="task">Task Description</label>
                     <textarea
                         id="task"
-                        rows="5"
+                        rows="4"
                         placeholder="Describe what you want the AI to do. Be specific about the desired outcome..."
                     ></textarea>
                 </div>
@@ -737,6 +888,45 @@
                         id="format"
                         placeholder="e.g., Markdown, JSON, bullet points, executive summary..."
                     />
+                </div>
+
+                <div class="input-group">
+                    <label>Output Requirements</label>
+                    <div
+                        id="current-requirement-display"
+                        class="selection-tag"
+                        style="margin-bottom: 0.5rem"
+                    >
+                        <span class="selection-tag-name"
+                            >No template selected</span
+                        >
+                        <div class="selection-tag-actions">
+                            <button
+                                class="btn-ghost btn-xs"
+                                id="clear-requirement-btn"
+                                onclick="clearSelectedRequirement()"
+                                title="Clear"
+                                style="display: none"
+                            >
+                                <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea
+                        id="output-requirements"
+                        rows="4"
+                        placeholder="Specify detailed requirements for the output, or select a saved template from the sidebar..."
+                    ></textarea>
                 </div>
 
                 <button
@@ -760,6 +950,7 @@
                 </button>
             </section>
 
+            <!-- OUTPUT -->
             <section class="panel" id="view-output">
                 <div class="panel-header">
                     <span class="panel-title">Generated Output</span>
@@ -805,11 +996,11 @@
             <div class="mobile-tab" onclick="switchView('output')">Output</div>
         </div>
 
+        <!-- Agent Modal -->
         <div id="agent-modal" class="modal-overlay">
             <div class="modal">
-                <h2 id="modal-title">Create New Agent</h2>
+                <h2 id="agent-modal-title">Create New Agent</h2>
                 <input type="hidden" id="agent-id" />
-
                 <div class="input-group">
                     <label for="agent-name">Agent Name</label>
                     <input
@@ -818,7 +1009,6 @@
                         placeholder="e.g., Senior Software Engineer"
                     />
                 </div>
-
                 <div class="input-group">
                     <label for="agent-role">System Persona</label>
                     <textarea
@@ -827,7 +1017,6 @@
                         placeholder="Define the agent's expertise, background, and approach to tasks..."
                     ></textarea>
                 </div>
-
                 <div class="input-group">
                     <label for="agent-style">Response Style</label>
                     <input
@@ -836,11 +1025,10 @@
                         placeholder="e.g., Technical, concise, with code examples"
                     />
                 </div>
-
                 <div class="modal-actions">
                     <button
                         class="btn-secondary"
-                        id="btn-delete"
+                        id="btn-delete-agent"
                         onclick="deleteAgent()"
                         style="
                             margin-right: auto;
@@ -850,12 +1038,12 @@
                     >
                         Delete
                     </button>
-                    <button class="btn-secondary" onclick="closeModal()">
+                    <button class="btn-secondary" onclick="closeAgentModal()">
                         Cancel
                     </button>
                     <button
                         class="btn-primary"
-                        id="btn-save"
+                        id="btn-save-agent"
                         onclick="saveAgent()"
                     >
                         Save Agent
@@ -864,35 +1052,97 @@
             </div>
         </div>
 
+        <!-- Output Requirement Modal -->
+        <div id="requirement-modal" class="modal-overlay">
+            <div class="modal">
+                <h2 id="requirement-modal-title">Create Output Requirement</h2>
+                <input type="hidden" id="requirement-id" />
+                <div class="input-group">
+                    <label for="requirement-name">Name</label>
+                    <input
+                        type="text"
+                        id="requirement-name"
+                        placeholder="e.g., Production-Ready Code"
+                    />
+                </div>
+                <div class="input-group">
+                    <label for="requirement-description"
+                        >Description (optional)</label
+                    >
+                    <input
+                        type="text"
+                        id="requirement-description"
+                        placeholder="Brief description of when to use this"
+                    />
+                </div>
+                <div class="input-group">
+                    <label for="requirement-content"
+                        >Requirements Content</label
+                    >
+                    <textarea
+                        id="requirement-content"
+                        rows="6"
+                        placeholder="Define the detailed output requirements..."
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        class="btn-secondary"
+                        id="btn-delete-requirement"
+                        onclick="deleteRequirement()"
+                        style="
+                            margin-right: auto;
+                            color: #ef4444;
+                            border-color: #ef4444;
+                        "
+                    >
+                        Delete
+                    </button>
+                    <button
+                        class="btn-secondary"
+                        onclick="closeRequirementModal()"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        class="btn-primary"
+                        id="btn-save-requirement"
+                        onclick="saveRequirement()"
+                    >
+                        Save Requirement
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="toast" class="toast"></div>
 
         <script>
+            const API_BASE = "/api";
+            let agents = [];
+            let outputRequirements = [];
+            let selectedAgentId = null;
+            let selectedRequirementId = null;
+
             // ============================================
             // API CLIENT
             // ============================================
-            const API_BASE = "/api";
-
             async function api(endpoint, options = {}) {
-                const url = `${API_BASE}${endpoint}`;
                 const config = {
                     headers: { "Content-Type": "application/json" },
                     ...options,
                 };
-
-                if (options.body && typeof options.body === "object") {
+                if (options.body && typeof options.body === "object")
                     config.body = JSON.stringify(options.body);
-                }
-
                 setSyncStatus("syncing");
-
                 try {
-                    const response = await fetch(url, config);
+                    const response = await fetch(
+                        `${API_BASE}${endpoint}`,
+                        config,
+                    );
                     const data = await response.json();
-
-                    if (!response.ok) {
+                    if (!response.ok)
                         throw new Error(data.error || "API request failed");
-                    }
-
                     setSyncStatus("synced");
                     return data;
                 } catch (error) {
@@ -908,9 +1158,7 @@
                 const toast = document.getElementById("toast");
                 toast.textContent = message;
                 toast.className = `toast ${type} show`;
-                setTimeout(() => {
-                    toast.classList.remove("show");
-                }, 3000);
+                setTimeout(() => toast.classList.remove("show"), 3000);
             }
 
             function setSyncStatus(status) {
@@ -927,91 +1175,76 @@
                 }
             }
 
-            // ============================================
-            // PWA LOGIC
-            // ============================================
-            let deferredPrompt;
-
-            if ("serviceWorker" in navigator) {
-                window.addEventListener("load", () => {
-                    navigator.serviceWorker
-                        .register("./sw.js")
-                        .then((reg) => console.log("Service Worker registered"))
-                        .catch((err) =>
-                            console.log(
-                                "Service Worker registration failed",
-                                err,
-                            ),
-                        );
-                });
+            function escapeHtml(text) {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
             }
 
-            window.addEventListener("beforeinstallprompt", (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                document.getElementById("install-prompt").style.display =
-                    "block";
-            });
+            function toggleSection(sectionId) {
+                document
+                    .getElementById(sectionId)
+                    .classList.toggle("collapsed");
+            }
 
-            async function installPWA() {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    await deferredPrompt.userChoice;
-                    deferredPrompt = null;
-                    document.getElementById("install-prompt").style.display =
-                        "none";
-                }
+            function toggleSidebar() {
+                document
+                    .getElementById("sidebar-panel")
+                    .classList.toggle("mobile-open");
+            }
+
+            function switchView(viewName) {
+                if (window.innerWidth >= 769) return;
+                document
+                    .querySelectorAll(".panel")
+                    .forEach((el) => el.classList.remove("active-view"));
+                document
+                    .querySelectorAll(".mobile-tab")
+                    .forEach((el) => el.classList.remove("active"));
+                document
+                    .getElementById(`view-${viewName}`)
+                    .classList.add("active-view");
+                document
+                    .querySelectorAll(".mobile-tab")
+                    [viewName === "builder" ? 0 : 1].classList.add("active");
             }
 
             // ============================================
-            // APP STATE
-            // ============================================
-            let agents = [];
-            let selectedAgentId = null;
-
-            // ============================================
-            // AGENT OPERATIONS
+            // AGENTS
             // ============================================
             async function loadAgents() {
                 try {
                     agents = await api("/agents");
+                    document.getElementById("agents-count").textContent =
+                        agents.length;
                     renderAgentList();
-                    if (agents.length > 0 && !selectedAgentId) {
+                    if (agents.length > 0 && !selectedAgentId)
                         selectAgent(agents[0].id);
-                    }
                 } catch (error) {
                     console.error("Failed to load agents:", error);
                     document.getElementById("agent-list").innerHTML =
-                        '<div class="empty-state">Failed to load agents. Please refresh.</div>';
-                    showToast("Failed to load agents", "error");
+                        '<div class="empty-state">Failed to load agents</div>';
                 }
             }
 
             function renderAgentList() {
                 const container = document.getElementById("agent-list");
-
                 if (agents.length === 0) {
                     container.innerHTML =
-                        '<div class="empty-state">No agents yet. Create one to get started!</div>';
+                        '<div class="empty-state">No agents yet. Create one!</div>';
                     return;
                 }
-
                 container.innerHTML = agents
                     .map(
                         (agent) => `
-                    <div class="agent-card ${agent.id === selectedAgentId ? "active" : ""}"
-                         onclick="selectAgent('${agent.id}'); if(window.innerWidth < 769) toggleSidebar();">
-                        <div class="agent-card-header">
-                            <span class="agent-name">${escapeHtml(agent.name)}</span>
-                            <button class="btn-secondary btn-sm" style="padding: 4px 8px;"
-                                    onclick="event.stopPropagation(); editAgent('${agent.id}')">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                </svg>
+                    <div class="item-card ${agent.id === selectedAgentId ? "active" : ""}" onclick="selectAgent('${agent.id}'); if(window.innerWidth < 769) toggleSidebar();">
+                        <div class="item-card-header">
+                            <span class="item-name">${escapeHtml(agent.name)}</span>
+                            <button class="btn-ghost btn-xs" onclick="event.stopPropagation(); editAgent('${agent.id}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             </button>
                         </div>
-                        <span class="agent-role">${escapeHtml(agent.role)}</span>
+                        <span class="item-preview">${escapeHtml(agent.role)}</span>
                     </div>
                 `,
                     )
@@ -1024,46 +1257,41 @@
                 const display = document.getElementById(
                     "current-agent-display",
                 );
-
                 if (agent) {
-                    display.innerHTML = `
-                        <span class="agent-tag-name">${escapeHtml(agent.name)}</span>
-                        <span class="agent-tag-status">Active</span>
-                    `;
-                    display.classList.add("has-agent");
+                    display.innerHTML = `<span class="selection-tag-name">${escapeHtml(agent.name)}</span><span class="selection-tag-status">Active</span>`;
+                    display.classList.add("has-selection");
                 }
                 renderAgentList();
             }
 
             function openAgentModal() {
-                document.getElementById("modal-title").textContent =
+                document.getElementById("agent-modal-title").textContent =
                     "Create New Agent";
                 document.getElementById("agent-id").value = "";
                 document.getElementById("agent-name").value = "";
                 document.getElementById("agent-role").value = "";
                 document.getElementById("agent-style").value = "";
-                document.getElementById("btn-delete").style.display = "none";
+                document.getElementById("btn-delete-agent").style.display =
+                    "none";
                 document.getElementById("agent-modal").classList.add("open");
-                if (window.innerWidth < 769) toggleSidebar();
             }
 
             function editAgent(id) {
                 const agent = agents.find((a) => a.id === id);
                 if (!agent) return;
-
-                document.getElementById("modal-title").textContent =
+                document.getElementById("agent-modal-title").textContent =
                     "Edit Agent";
                 document.getElementById("agent-id").value = agent.id;
                 document.getElementById("agent-name").value = agent.name;
                 document.getElementById("agent-role").value = agent.role;
                 document.getElementById("agent-style").value =
                     agent.style || "";
-                document.getElementById("btn-delete").style.display = "block";
+                document.getElementById("btn-delete-agent").style.display =
+                    "block";
                 document.getElementById("agent-modal").classList.add("open");
-                if (window.innerWidth < 769) toggleSidebar();
             }
 
-            function closeModal() {
+            function closeAgentModal() {
                 document.getElementById("agent-modal").classList.remove("open");
             }
 
@@ -1074,89 +1302,271 @@
                 const style = document
                     .getElementById("agent-style")
                     .value.trim();
-
-                if (!name) {
-                    showToast("Please enter an agent name", "error");
+                if (!name || !role) {
+                    showToast("Name and persona are required", "error");
                     return;
                 }
 
-                if (!role) {
-                    showToast("Please enter a system persona", "error");
-                    return;
-                }
-
-                const saveBtn = document.getElementById("btn-save");
-                saveBtn.disabled = true;
-                saveBtn.innerHTML =
+                const btn = document.getElementById("btn-save-agent");
+                btn.disabled = true;
+                btn.innerHTML =
                     '<span class="loading-spinner"></span> Saving...';
 
                 try {
                     if (id) {
-                        // Update existing agent
                         const updated = await api(`/agents/${id}`, {
                             method: "PUT",
                             body: { name, role, style },
                         });
                         const idx = agents.findIndex((a) => a.id === id);
                         if (idx !== -1) agents[idx] = updated;
-                        showToast("Agent updated successfully");
+                        showToast("Agent updated");
                     } else {
-                        // Create new agent
                         const created = await api("/agents", {
                             method: "POST",
                             body: { name, role, style },
                         });
                         agents.unshift(created);
                         selectAgent(created.id);
-                        showToast("Agent created successfully");
+                        showToast("Agent created");
                     }
-
+                    document.getElementById("agents-count").textContent =
+                        agents.length;
                     renderAgentList();
-                    closeModal();
+                    closeAgentModal();
                 } catch (error) {
-                    showToast(error.message || "Failed to save agent", "error");
+                    showToast(error.message || "Failed to save", "error");
                 } finally {
-                    saveBtn.disabled = false;
-                    saveBtn.textContent = "Save Agent";
+                    btn.disabled = false;
+                    btn.textContent = "Save Agent";
                 }
             }
 
             async function deleteAgent() {
                 const id = document.getElementById("agent-id").value;
-                if (!id) return;
-
-                if (!confirm("Are you sure you want to delete this agent?"))
-                    return;
-
+                if (!id || !confirm("Delete this agent?")) return;
                 try {
                     await api(`/agents/${id}`, { method: "DELETE" });
                     agents = agents.filter((a) => a.id !== id);
-
                     if (selectedAgentId === id) {
                         selectedAgentId =
                             agents.length > 0 ? agents[0].id : null;
-                        if (selectedAgentId) {
-                            selectAgent(selectedAgentId);
-                        } else {
+                        if (selectedAgentId) selectAgent(selectedAgentId);
+                        else {
                             const display = document.getElementById(
                                 "current-agent-display",
                             );
-                            display.innerHTML = `
-                                <span class="agent-tag-name">No agent selected</span>
-                                <span class="agent-tag-status">Select from left</span>
-                            `;
-                            display.classList.remove("has-agent");
+                            display.innerHTML =
+                                '<span class="selection-tag-name">No agent selected</span><span class="selection-tag-status">Select from sidebar</span>';
+                            display.classList.remove("has-selection");
                         }
                     }
-
+                    document.getElementById("agents-count").textContent =
+                        agents.length;
                     renderAgentList();
-                    closeModal();
-                    showToast("Agent deleted successfully");
+                    closeAgentModal();
+                    showToast("Agent deleted");
                 } catch (error) {
-                    showToast(
-                        error.message || "Failed to delete agent",
-                        "error",
+                    showToast(error.message || "Failed to delete", "error");
+                }
+            }
+
+            // ============================================
+            // OUTPUT REQUIREMENTS
+            // ============================================
+            async function loadOutputRequirements() {
+                try {
+                    outputRequirements = await api("/output-requirements");
+                    document.getElementById("requirements-count").textContent =
+                        outputRequirements.length;
+                    renderRequirementList();
+                } catch (error) {
+                    console.error("Failed to load requirements:", error);
+                    document.getElementById("requirement-list").innerHTML =
+                        '<div class="empty-state">Failed to load requirements</div>';
+                }
+            }
+
+            function renderRequirementList() {
+                const container = document.getElementById("requirement-list");
+                if (outputRequirements.length === 0) {
+                    container.innerHTML =
+                        '<div class="empty-state">No requirements yet. Create one!</div>';
+                    return;
+                }
+                container.innerHTML = outputRequirements
+                    .map(
+                        (req) => `
+                    <div class="item-card ${req.id === selectedRequirementId ? "active" : ""}" onclick="selectRequirement('${req.id}'); if(window.innerWidth < 769) toggleSidebar();">
+                        <div class="item-card-header">
+                            <span class="item-name">${escapeHtml(req.name)}</span>
+                            <button class="btn-ghost btn-xs" onclick="event.stopPropagation(); editRequirement('${req.id}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                        </div>
+                        <span class="item-preview">${escapeHtml(req.requirements_content)}</span>
+                    </div>
+                `,
+                    )
+                    .join("");
+            }
+
+            function selectRequirement(id) {
+                selectedRequirementId = id;
+                const req = outputRequirements.find((r) => r.id === id);
+                const display = document.getElementById(
+                    "current-requirement-display",
+                );
+                const textarea = document.getElementById("output-requirements");
+                const clearBtn = document.getElementById(
+                    "clear-requirement-btn",
+                );
+
+                if (req) {
+                    display.querySelector(".selection-tag-name").textContent =
+                        req.name;
+                    display.classList.add("has-selection");
+                    textarea.value = req.requirements_content;
+                    clearBtn.style.display = "block";
+                    // Track usage
+                    api(`/output-requirements/${id}/use`, {
+                        method: "POST",
+                    }).catch(() => {});
+                }
+                renderRequirementList();
+            }
+
+            function clearSelectedRequirement() {
+                selectedRequirementId = null;
+                const display = document.getElementById(
+                    "current-requirement-display",
+                );
+                display.querySelector(".selection-tag-name").textContent =
+                    "No template selected";
+                display.classList.remove("has-selection");
+                document.getElementById("clear-requirement-btn").style.display =
+                    "none";
+                renderRequirementList();
+            }
+
+            function openRequirementModal() {
+                document.getElementById("requirement-modal-title").textContent =
+                    "Create Output Requirement";
+                document.getElementById("requirement-id").value = "";
+                document.getElementById("requirement-name").value = "";
+                document.getElementById("requirement-description").value = "";
+                document.getElementById("requirement-content").value = "";
+                document.getElementById(
+                    "btn-delete-requirement",
+                ).style.display = "none";
+                document
+                    .getElementById("requirement-modal")
+                    .classList.add("open");
+            }
+
+            function editRequirement(id) {
+                const req = outputRequirements.find((r) => r.id === id);
+                if (!req) return;
+                document.getElementById("requirement-modal-title").textContent =
+                    "Edit Output Requirement";
+                document.getElementById("requirement-id").value = req.id;
+                document.getElementById("requirement-name").value = req.name;
+                document.getElementById("requirement-description").value =
+                    req.description || "";
+                document.getElementById("requirement-content").value =
+                    req.requirements_content;
+                document.getElementById(
+                    "btn-delete-requirement",
+                ).style.display = "block";
+                document
+                    .getElementById("requirement-modal")
+                    .classList.add("open");
+            }
+
+            function closeRequirementModal() {
+                document
+                    .getElementById("requirement-modal")
+                    .classList.remove("open");
+            }
+
+            async function saveRequirement() {
+                const id = document.getElementById("requirement-id").value;
+                const name = document
+                    .getElementById("requirement-name")
+                    .value.trim();
+                const description = document
+                    .getElementById("requirement-description")
+                    .value.trim();
+                const requirements_content = document
+                    .getElementById("requirement-content")
+                    .value.trim();
+                if (!name || !requirements_content) {
+                    showToast("Name and content are required", "error");
+                    return;
+                }
+
+                const btn = document.getElementById("btn-save-requirement");
+                btn.disabled = true;
+                btn.innerHTML =
+                    '<span class="loading-spinner"></span> Saving...';
+
+                try {
+                    if (id) {
+                        const updated = await api(
+                            `/output-requirements/${id}`,
+                            {
+                                method: "PUT",
+                                body: {
+                                    name,
+                                    description,
+                                    requirements_content,
+                                },
+                            },
+                        );
+                        const idx = outputRequirements.findIndex(
+                            (r) => r.id === id,
+                        );
+                        if (idx !== -1) outputRequirements[idx] = updated;
+                        showToast("Requirement updated");
+                    } else {
+                        const created = await api("/output-requirements", {
+                            method: "POST",
+                            body: { name, description, requirements_content },
+                        });
+                        outputRequirements.unshift(created);
+                        showToast("Requirement created");
+                    }
+                    document.getElementById("requirements-count").textContent =
+                        outputRequirements.length;
+                    renderRequirementList();
+                    closeRequirementModal();
+                } catch (error) {
+                    showToast(error.message || "Failed to save", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Save Requirement";
+                }
+            }
+
+            async function deleteRequirement() {
+                const id = document.getElementById("requirement-id").value;
+                if (!id || !confirm("Delete this requirement?")) return;
+                try {
+                    await api(`/output-requirements/${id}`, {
+                        method: "DELETE",
+                    });
+                    outputRequirements = outputRequirements.filter(
+                        (r) => r.id !== id,
                     );
+                    if (selectedRequirementId === id)
+                        clearSelectedRequirement();
+                    document.getElementById("requirements-count").textContent =
+                        outputRequirements.length;
+                    renderRequirementList();
+                    closeRequirementModal();
+                    showToast("Requirement deleted");
+                } catch (error) {
+                    showToast(error.message || "Failed to delete", "error");
                 }
             }
 
@@ -1167,13 +1577,15 @@
                 const task = document.getElementById("task").value.trim();
                 const context = document.getElementById("context").value.trim();
                 const format = document.getElementById("format").value.trim();
+                const outputReqs = document
+                    .getElementById("output-requirements")
+                    .value.trim();
                 const agent = agents.find((a) => a.id === selectedAgentId);
 
                 if (!agent) {
                     showToast("Please select an agent first", "error");
                     return;
                 }
-
                 if (!task) {
                     showToast("Please enter a task description", "error");
                     return;
@@ -1193,134 +1605,135 @@ ${context || "No additional context provided."}
 ${task}
 </task_instruction>
 
+<output_format>
+${format || "Best fit for the task."}
+</output_format>
+
 <output_requirements>
-${format || "Best fit."}
+${outputReqs || "Best fit."}
 </output_requirements>`;
 
                 document.getElementById("output-display").textContent = prompt;
                 showToast("Prompt generated!");
-
-                if (window.innerWidth < 769) {
-                    switchView("output");
-                }
+                if (window.innerWidth < 769) switchView("output");
             }
 
             // ============================================
             // IMPORT/EXPORT
             // ============================================
-            function exportAgents() {
-                if (agents.length === 0) {
-                    showToast("No agents to export", "error");
-                    return;
-                }
-
-                const data = JSON.stringify(agents, null, 2);
-                const blob = new Blob([data], { type: "application/json" });
+            function exportData() {
+                const data = { agents, outputRequirements };
+                const blob = new Blob([JSON.stringify(data, null, 2)], {
+                    type: "application/json",
+                });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "prompt_agents.json";
+                a.download = "prompt_workstation_data.json";
                 a.click();
                 URL.revokeObjectURL(url);
-                showToast("Agents exported successfully");
+                showToast("Data exported");
             }
 
-            async function importAgents(input) {
+            async function importData(input) {
                 const file = input.files[0];
                 if (!file) return;
-
                 try {
                     const text = await file.text();
-                    const imported = JSON.parse(text);
-
-                    if (!Array.isArray(imported)) {
-                        throw new Error("Invalid format");
-                    }
-
-                    let importedCount = 0;
-                    for (const agent of imported) {
-                        if (agent.name && agent.role) {
-                            await api("/agents", {
-                                method: "POST",
-                                body: {
-                                    name: agent.name,
-                                    role: agent.role,
-                                    style: agent.style || "",
-                                },
-                            });
-                            importedCount++;
+                    const data = JSON.parse(text);
+                    let count = 0;
+                    if (data.agents && Array.isArray(data.agents)) {
+                        for (const agent of data.agents) {
+                            if (agent.name && agent.role) {
+                                await api("/agents", {
+                                    method: "POST",
+                                    body: {
+                                        name: agent.name,
+                                        role: agent.role,
+                                        style: agent.style || "",
+                                    },
+                                });
+                                count++;
+                            }
                         }
                     }
-
+                    if (
+                        data.outputRequirements &&
+                        Array.isArray(data.outputRequirements)
+                    ) {
+                        for (const req of data.outputRequirements) {
+                            if (req.name && req.requirements_content) {
+                                await api("/output-requirements", {
+                                    method: "POST",
+                                    body: {
+                                        name: req.name,
+                                        description: req.description || "",
+                                        requirements_content:
+                                            req.requirements_content,
+                                    },
+                                });
+                                count++;
+                            }
+                        }
+                    }
                     await loadAgents();
-                    showToast(`Imported ${importedCount} agents successfully`);
+                    await loadOutputRequirements();
+                    showToast(`Imported ${count} items`);
                 } catch (error) {
-                    showToast("Import failed: Invalid JSON file", "error");
+                    showToast("Import failed: Invalid file", "error");
                 }
-
                 input.value = "";
-            }
-
-            // ============================================
-            // UTILITIES
-            // ============================================
-            function escapeHtml(text) {
-                const div = document.createElement("div");
-                div.textContent = text;
-                return div.innerHTML;
-            }
-
-            function toggleSidebar() {
-                document
-                    .getElementById("sidebar-panel")
-                    .classList.toggle("mobile-open");
-            }
-
-            function switchView(viewName) {
-                if (window.innerWidth >= 769) return;
-
-                document
-                    .querySelectorAll(".panel")
-                    .forEach((el) => el.classList.remove("active-view"));
-                document
-                    .querySelectorAll(".mobile-tab")
-                    .forEach((el) => el.classList.remove("active"));
-
-                document
-                    .getElementById(`view-${viewName}`)
-                    .classList.add("active-view");
-                const tabIndex = viewName === "builder" ? 0 : 1;
-                document
-                    .querySelectorAll(".mobile-tab")
-                    [tabIndex].classList.add("active");
             }
 
             function copyToClipboard() {
                 const text =
                     document.getElementById("output-display").textContent;
                 if (text.includes("Generated prompt will appear here")) {
-                    showToast("No prompt to copy yet", "error");
+                    showToast("No prompt to copy", "error");
                     return;
                 }
-
                 navigator.clipboard
                     .writeText(text)
-                    .then(() => {
-                        showToast("Copied to clipboard!");
-                    })
-                    .catch(() => {
-                        showToast("Failed to copy", "error");
-                    });
+                    .then(() => showToast("Copied!"))
+                    .catch(() => showToast("Failed to copy", "error"));
             }
 
             // ============================================
-            // INITIALIZATION
+            // PWA
+            // ============================================
+            let deferredPrompt;
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker
+                        .register("./sw.js")
+                        .catch((err) =>
+                            console.log("SW registration failed", err),
+                        );
+                });
+            }
+            window.addEventListener("beforeinstallprompt", (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById("install-prompt").style.display =
+                    "block";
+            });
+            async function installPWA() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    document.getElementById("install-prompt").style.display =
+                        "none";
+                }
+            }
+
+            // ============================================
+            // INIT
             // ============================================
             window.addEventListener("DOMContentLoaded", () => {
                 loadAgents();
-                if (window.innerWidth < 769) {
-                    switchView("builder");
-                }
+                loadOutputRequirements();
+                if (window.innerWidth < 769) switchView("builder");
             });
         </script>
     </body>

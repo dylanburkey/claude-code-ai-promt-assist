@@ -276,6 +276,151 @@ app.delete("/api/templates/:id", async (c) => {
 });
 
 // ============================================
+// OUTPUT REQUIREMENTS API
+// ============================================
+
+// List output requirements
+app.get("/api/output-requirements", async (c) => {
+  const db = c.env.DB;
+  const category = c.req.query("category");
+
+  let query = "SELECT * FROM output_requirements WHERE is_active = 1";
+  const params = [];
+
+  if (category) {
+    query += " AND category = ?";
+    params.push(category);
+  }
+
+  query += " ORDER BY usage_count DESC, created_at DESC";
+
+  const stmt = db.prepare(query);
+  const result =
+    params.length > 0 ? await stmt.bind(...params).all() : await stmt.all();
+  return c.json(result.results);
+});
+
+// Get single output requirement
+app.get("/api/output-requirements/:id", async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param("id");
+  const result = await db
+    .prepare("SELECT * FROM output_requirements WHERE id = ?")
+    .bind(id)
+    .first();
+
+  if (!result) {
+    return c.json({ error: "Output requirement not found" }, 404);
+  }
+  return c.json(result);
+});
+
+// Create output requirement
+app.post("/api/output-requirements", async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.json();
+  const { name, description, requirements_content, category, tags } = body;
+
+  if (!name || !requirements_content) {
+    return c.json({ error: "Name and requirements_content are required" }, 400);
+  }
+
+  const id = generateId();
+  await db
+    .prepare(
+      `INSERT INTO output_requirements
+       (id, name, description, requirements_content, category, tags)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      id,
+      name,
+      description || "",
+      requirements_content,
+      category || null,
+      JSON.stringify(tags || []),
+    )
+    .run();
+
+  const requirement = await db
+    .prepare("SELECT * FROM output_requirements WHERE id = ?")
+    .bind(id)
+    .first();
+  return c.json(requirement, 201);
+});
+
+// Update output requirement
+app.put("/api/output-requirements/:id", async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param("id");
+  const body = await c.req.json();
+
+  const existing = await db
+    .prepare("SELECT * FROM output_requirements WHERE id = ?")
+    .bind(id)
+    .first();
+
+  if (!existing) {
+    return c.json({ error: "Output requirement not found" }, 404);
+  }
+
+  await db
+    .prepare(
+      `UPDATE output_requirements
+       SET name = ?, description = ?, requirements_content = ?,
+           category = ?, tags = ?, is_active = ?
+       WHERE id = ?`,
+    )
+    .bind(
+      body.name ?? existing.name,
+      body.description ?? existing.description,
+      body.requirements_content ?? existing.requirements_content,
+      body.category ?? existing.category,
+      body.tags ? JSON.stringify(body.tags) : existing.tags,
+      body.is_active ?? existing.is_active,
+      id,
+    )
+    .run();
+
+  const requirement = await db
+    .prepare("SELECT * FROM output_requirements WHERE id = ?")
+    .bind(id)
+    .first();
+  return c.json(requirement);
+});
+
+// Delete output requirement (soft delete)
+app.delete("/api/output-requirements/:id", async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param("id");
+
+  const result = await db
+    .prepare("UPDATE output_requirements SET is_active = 0 WHERE id = ?")
+    .bind(id)
+    .run();
+
+  if (result.meta.changes === 0) {
+    return c.json({ error: "Output requirement not found" }, 404);
+  }
+  return c.json({ success: true });
+});
+
+// Increment usage count
+app.post("/api/output-requirements/:id/use", async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param("id");
+
+  await db
+    .prepare(
+      "UPDATE output_requirements SET usage_count = usage_count + 1 WHERE id = ?",
+    )
+    .bind(id)
+    .run();
+
+  return c.json({ success: true });
+});
+
+// ============================================
 // IDES API (read-only)
 // ============================================
 
