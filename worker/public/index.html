@@ -622,6 +622,38 @@
                 letter-spacing: 0.08em;
                 color: var(--text-muted);
             }
+
+            /* Main Navigation */
+            .main-nav {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem 1rem;
+                color: var(--text-muted);
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.875rem;
+                border-radius: var(--radius-md);
+                transition: var(--transition-fast);
+            }
+
+            .nav-link:hover {
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .nav-link.active {
+                color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.1);
+            }
+
+            @media (max-width: 768px) {
+                .main-nav {
+                    display: none;
+                }
+            }
         </style>
     </head>
     <body>
@@ -648,13 +680,17 @@
                     </svg>
                 </button>
                 <h1>Semantic Prompt Workstation</h1>
-                <span class="version-badge">v2.3</span>
+                <span class="version-badge">v3.0</span>
                 <div
                     id="sync-indicator"
                     class="sync-indicator"
                     title="Synced with cloud"
                 ></div>
             </div>
+            <nav class="main-nav">
+                <a href="/" class="nav-link active">Prompt Builder</a>
+                <a href="/projects" class="nav-link">Projects</a>
+            </nav>
             <div class="header-actions">
                 <button
                     class="btn-secondary btn-icon"
@@ -837,6 +873,69 @@
                     </div>
                 </div>
 
+                <!-- Projects Section -->
+                <div class="collapsible-section" id="projects-section">
+                    <div
+                        class="collapsible-header"
+                        onclick="toggleSection('projects-section')"
+                    >
+                        <span class="collapsible-title">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                                />
+                            </svg>
+                            Projects
+                            <span class="count" id="projects-count">0</span>
+                        </span>
+                        <div class="collapsible-actions">
+                            <a
+                                class="btn-ghost btn-xs"
+                                href="/projects"
+                                onclick="event.stopPropagation()"
+                                title="Manage Projects"
+                            >
+                                <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <circle cx="12" cy="12" r="3" />
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                                    />
+                                </svg>
+                            </a>
+                            <svg
+                                class="chevron"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="collapsible-content">
+                        <div id="project-list" class="collapsible-list">
+                            <div class="empty-state">Loading projects...</div>
+                        </div>
+                    </div>
+                </div>
+
                 <button
                     class="btn-secondary close-sidebar-btn menu-toggle"
                     onclick="toggleSidebar()"
@@ -861,6 +960,46 @@
                             >Select from sidebar</span
                         >
                     </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Link to Projects</label>
+                    <div id="current-projects-display" class="selection-tag">
+                        <span class="selection-tag-name"
+                            >No projects linked</span
+                        >
+                        <div class="selection-tag-actions">
+                            <button
+                                class="btn-ghost btn-xs"
+                                id="clear-projects-btn"
+                                onclick="clearSelectedProjects()"
+                                title="Clear"
+                                style="display: none"
+                            >
+                                <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div
+                        id="selected-projects-list"
+                        style="
+                            display: none;
+                            margin-top: 0.5rem;
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 0.25rem;
+                        "
+                    ></div>
                 </div>
 
                 <div class="input-group">
@@ -929,34 +1068,12 @@
                     ></textarea>
                 </div>
 
-                <button
-                    class="btn-primary"
-                    style="margin-top: auto"
-                    onclick="generatePrompt()"
-                >
-                    <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <polygon
-                            points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
-                        />
-                    </svg>
-                    Generate Prompt
-                </button>
-            </section>
-
-            <!-- OUTPUT -->
-            <section class="panel" id="view-output">
-                <div class="panel-header">
-                    <span class="panel-title">Generated Output</span>
+                <div style="display: flex; gap: 0.5rem; margin-top: auto">
                     <button
-                        class="btn-secondary btn-sm"
-                        onclick="copyToClipboard()"
+                        class="btn-secondary"
+                        id="enhance-btn"
+                        onclick="enhancePrompt('claude_optimize')"
+                        title="AI-enhance your task description"
                     >
                         <svg
                             width="14"
@@ -966,20 +1083,94 @@
                             stroke="currentColor"
                             stroke-width="2"
                         >
-                            <rect
-                                x="9"
-                                y="9"
-                                width="13"
-                                height="13"
-                                rx="2"
-                                ry="2"
-                            />
                             <path
-                                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
                             />
                         </svg>
-                        Copy
+                        Enhance
                     </button>
+                    <button
+                        class="btn-primary"
+                        style="flex: 1"
+                        onclick="generatePrompt()"
+                    >
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <polygon
+                                points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+                            />
+                        </svg>
+                        Generate Prompt
+                    </button>
+                </div>
+            </section>
+
+            <!-- OUTPUT -->
+            <section class="panel" id="view-output">
+                <div class="panel-header">
+                    <span class="panel-title">Generated Output</span>
+                    <div style="display: flex; gap: 0.5rem">
+                        <button
+                            class="btn-secondary btn-sm"
+                            onclick="copyToClipboard()"
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <rect
+                                    x="9"
+                                    y="9"
+                                    width="13"
+                                    height="13"
+                                    rx="2"
+                                    ry="2"
+                                />
+                                <path
+                                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                                />
+                            </svg>
+                            Copy
+                        </button>
+                        <button
+                            class="btn-primary btn-sm export-btn"
+                            onclick="exportClaudeCode()"
+                            title="Copy in Claude Code format"
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Claude Code
+                        </button>
+                        <button
+                            class="btn-secondary btn-sm export-btn"
+                            onclick="downloadClaudeMd()"
+                            title="Download CLAUDE.md file"
+                        >
+                            CLAUDE.md
+                        </button>
+                    </div>
                 </div>
                 <div id="output-display" class="output-area">
                     <span class="output-placeholder"
@@ -1121,8 +1312,10 @@
             const API_BASE = "/api";
             let agents = [];
             let outputRequirements = [];
+            let projects = [];
             let selectedAgentId = null;
             let selectedRequirementId = null;
+            let selectedProjectIds = []; // Array for multi-project selection
 
             // ============================================
             // API CLIENT
@@ -1571,9 +1764,118 @@
             }
 
             // ============================================
+            // PROJECTS
+            // ============================================
+            async function loadProjects() {
+                try {
+                    projects = await api("/projects?status=active");
+                    document.getElementById("projects-count").textContent =
+                        projects.length;
+                    renderProjectList();
+                } catch (error) {
+                    console.error("Failed to load projects:", error);
+                    document.getElementById("project-list").innerHTML =
+                        '<div class="empty-state">Failed to load projects</div>';
+                }
+            }
+
+            function renderProjectList() {
+                const container = document.getElementById("project-list");
+                if (projects.length === 0) {
+                    container.innerHTML =
+                        '<div class="empty-state">No active projects. <a href="projects.html" style="color: var(--accent-primary);">Create one</a></div>';
+                    return;
+                }
+                container.innerHTML = projects
+                    .map(
+                        (project) => `
+                    <div class="item-card ${selectedProjectIds.includes(project.id) ? "active" : ""}" onclick="toggleProjectSelection(${project.id}); if(window.innerWidth < 769) toggleSidebar();">
+                        <div class="item-card-header">
+                            <span class="item-name">${escapeHtml(project.name)}</span>
+                            <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">${project.status}</span>
+                        </div>
+                        <span class="item-preview">${escapeHtml(project.description || project.project_info || "No description")}</span>
+                    </div>
+                `,
+                    )
+                    .join("");
+            }
+
+            function toggleProjectSelection(id) {
+                const idx = selectedProjectIds.indexOf(id);
+                if (idx === -1) {
+                    selectedProjectIds.push(id);
+                } else {
+                    selectedProjectIds.splice(idx, 1);
+                }
+                updateProjectsDisplay();
+                renderProjectList();
+            }
+
+            function updateProjectsDisplay() {
+                const display = document.getElementById(
+                    "current-projects-display",
+                );
+                const listContainer = document.getElementById(
+                    "selected-projects-list",
+                );
+                const clearBtn = document.getElementById("clear-projects-btn");
+
+                if (selectedProjectIds.length === 0) {
+                    display.querySelector(".selection-tag-name").textContent =
+                        "No projects linked";
+                    display.classList.remove("has-selection");
+                    clearBtn.style.display = "none";
+                    listContainer.style.display = "none";
+                    listContainer.innerHTML = "";
+                } else {
+                    const selectedProjects = projects.filter((p) =>
+                        selectedProjectIds.includes(p.id),
+                    );
+                    const names = selectedProjects.map((p) => p.name);
+
+                    if (names.length === 1) {
+                        display.querySelector(
+                            ".selection-tag-name",
+                        ).textContent = names[0];
+                    } else {
+                        display.querySelector(
+                            ".selection-tag-name",
+                        ).textContent = `${names.length} projects selected`;
+                    }
+                    display.classList.add("has-selection");
+                    clearBtn.style.display = "block";
+
+                    // Show tags for each selected project
+                    listContainer.style.display = "flex";
+                    listContainer.innerHTML = selectedProjects
+                        .map(
+                            (p) => `
+                        <span style="background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            ${escapeHtml(p.name)}
+                            <button onclick="event.stopPropagation(); toggleProjectSelection(${p.id})" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; line-height: 1;">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </span>
+                    `,
+                        )
+                        .join("");
+                }
+            }
+
+            function clearSelectedProjects() {
+                selectedProjectIds = [];
+                updateProjectsDisplay();
+                renderProjectList();
+            }
+
+            // ============================================
             // PROMPT GENERATION
             // ============================================
-            function generatePrompt() {
+            // Current export format
+            let exportFormat = "claude-code";
+
+            async function generatePrompt() {
                 const task = document.getElementById("task").value.trim();
                 const context = document.getElementById("context").value.trim();
                 const format = document.getElementById("format").value.trim();
@@ -1591,31 +1893,265 @@
                     return;
                 }
 
-                const prompt = `${agent.role}
+                let prompt;
+                if (exportFormat === "claude-code") {
+                    // Claude Code optimized XML format
+                    prompt = `<context>\n${context || "No additional context provided."}\n</context>\n\n<instructions>\n${task}\n</instructions>\n\n<constraints>\nOutput Format: ${format || "Best fit for the task."}\nStyle: ${agent.style || "Professional and helpful."}\n</constraints>\n\n<output_requirements>\n${outputReqs || "Follow best practices for the requested output."}\n</output_requirements>`;
 
-<agent_style>
-${agent.style || "Professional and helpful."}
-</agent_style>
-
-<context>
-${context || "No additional context provided."}
-</context>
-
-<task_instruction>
-${task}
-</task_instruction>
-
-<output_format>
-${format || "Best fit for the task."}
-</output_format>
-
-<output_requirements>
-${outputReqs || "Best fit."}
-</output_requirements>`;
+                    // Store system prompt for separate display
+                    window.generatedSystemPrompt = `You are ${agent.name}, ${agent.role}.\nStyle: ${agent.style || "Professional and helpful."}\n${agent.description || ""}`;
+                } else {
+                    // Legacy format
+                    prompt = `${agent.role}\n\n<agent_style>\n${agent.style || "Professional and helpful."}\n</agent_style>\n\n<context>\n${context || "No additional context provided."}\n</context>\n\n<task_instruction>\n${task}\n</task_instruction>\n\n<output_format>\n${format || "Best fit for the task."}\n</output_format>\n\n<output_requirements>\n${outputReqs || "Best fit."}\n</output_requirements>`;
+                }
 
                 document.getElementById("output-display").textContent = prompt;
-                showToast("Prompt generated!");
+                updateExportButtons();
+
+                // Save prompt to selected projects
+                if (selectedProjectIds.length > 0) {
+                    try {
+                        await savePromptToProjects(prompt, {
+                            task,
+                            context,
+                            format,
+                            outputReqs,
+                            agent,
+                        });
+                        showToast(
+                            `Prompt generated and saved to ${selectedProjectIds.length} project(s)!`,
+                        );
+                    } catch (error) {
+                        console.error("Failed to save to projects:", error);
+                        showToast(
+                            "Prompt generated (failed to save to projects)",
+                            "error",
+                        );
+                    }
+                } else {
+                    showToast("Prompt generated!");
+                }
+
                 if (window.innerWidth < 769) switchView("output");
+            }
+
+            async function savePromptToProjects(promptContent, metadata) {
+                const { task, context, format, outputReqs, agent } = metadata;
+
+                // Save to each selected project
+                const savePromises = selectedProjectIds.map(
+                    async (projectId) => {
+                        const project = projects.find(
+                            (p) => p.id === projectId,
+                        );
+
+                        // Save the prompt to project_prompts
+                        const savedPrompt = await api(
+                            `/projects/${projectId}/prompts`,
+                            {
+                                method: "POST",
+                                body: {
+                                    prompt_content: promptContent,
+                                    prompt_type: "general",
+                                    title: task.substring(0, 100),
+                                    agent_id: agent?.id,
+                                    agent_name: agent?.name,
+                                    context_used: context,
+                                    constraints_used: `Output Format: ${format || "Best fit"}`,
+                                    output_format: format,
+                                    output_requirements_id:
+                                        selectedRequirementId,
+                                    output_requirements_content: outputReqs,
+                                    is_primary:
+                                        selectedProjectIds.indexOf(
+                                            projectId,
+                                        ) === 0
+                                            ? 1
+                                            : 0,
+                                },
+                            },
+                        );
+
+                        // Trigger AI to learn from this prompt and update project context
+                        try {
+                            await api(
+                                `/projects/${projectId}/learn-from-prompt`,
+                                {
+                                    method: "POST",
+                                    body: {
+                                        prompt_content: promptContent,
+                                        task_description: task,
+                                        context: context,
+                                        agent_role: agent?.role,
+                                    },
+                                },
+                            );
+                        } catch (e) {
+                            // AI learning is optional, don't fail if it doesn't work
+                            console.log("AI learning skipped:", e.message);
+                        }
+
+                        return savedPrompt;
+                    },
+                );
+
+                return Promise.all(savePromises);
+            }
+
+            function updateExportButtons() {
+                const hasPrompt = !document
+                    .getElementById("output-display")
+                    .textContent.includes("Generated prompt will appear here");
+                document.querySelectorAll(".export-btn").forEach((btn) => {
+                    btn.disabled = !hasPrompt;
+                });
+            }
+
+            // ============================================
+            // AI ENHANCEMENT
+            // ============================================
+            async function enhancePrompt(type = "general") {
+                const task = document.getElementById("task").value.trim();
+                if (!task) {
+                    showToast("Enter a task description first", "error");
+                    return;
+                }
+
+                const btn = document.getElementById("enhance-btn");
+                btn.disabled = true;
+                btn.innerHTML =
+                    '<span class="loading-spinner"></span> Enhancing...';
+
+                try {
+                    const result = await api("/ai/enhance-prompt", {
+                        method: "POST",
+                        body: { prompt: task, enhancementType: type },
+                    });
+                    document.getElementById("task").value = result.enhanced;
+                    showToast(`Enhanced with ${type} mode!`);
+                } catch (error) {
+                    showToast(error.message || "Enhancement failed", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML =
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Enhance';
+                }
+            }
+
+            async function analyzePrompt() {
+                const task = document.getElementById("task").value.trim();
+                if (!task) {
+                    showToast("Enter a task description first", "error");
+                    return;
+                }
+
+                try {
+                    const result = await api("/ai/analyze-prompt", {
+                        method: "POST",
+                        body: { prompt: task },
+                    });
+                    const a = result.analysis;
+                    showToast(`Quality: ${a.overall}/10 - ${a.summary}`);
+                } catch (error) {
+                    showToast(error.message || "Analysis failed", "error");
+                }
+            }
+
+            // ============================================
+            // CLAUDE CODE EXPORT
+            // ============================================
+            async function exportClaudeCode() {
+                const text =
+                    document.getElementById("output-display").textContent;
+                if (text.includes("Generated prompt will appear here")) {
+                    showToast("Generate a prompt first", "error");
+                    return;
+                }
+
+                const agent = agents.find((a) => a.id === selectedAgentId);
+                const context = document.getElementById("context").value.trim();
+                const outputReqs = document
+                    .getElementById("output-requirements")
+                    .value.trim();
+                const format = document.getElementById("format").value.trim();
+
+                try {
+                    const result = await api("/export/claude-code", {
+                        method: "POST",
+                        body: {
+                            agent,
+                            prompt: document
+                                .getElementById("task")
+                                .value.trim(),
+                            context,
+                            constraints: `Output Format: ${format || "Best fit"}`,
+                            outputRequirements: outputReqs,
+                            includeSystemPrompt: true,
+                        },
+                    });
+
+                    // Show in a modal or copy directly
+                    const fullExport = result.systemPrompt
+                        ? `## System Prompt\n${result.systemPrompt}\n\n## User Prompt\n${result.userPrompt}`
+                        : result.userPrompt;
+
+                    await navigator.clipboard.writeText(fullExport);
+                    showToast("Claude Code format copied!");
+                } catch (error) {
+                    showToast(error.message || "Export failed", "error");
+                }
+            }
+
+            async function downloadClaudeMd() {
+                const agent = agents.find((a) => a.id === selectedAgentId);
+                const context = document.getElementById("context").value.trim();
+                const outputReqs = document
+                    .getElementById("output-requirements")
+                    .value.trim();
+
+                const projectName = prompt(
+                    "Project name for CLAUDE.md:",
+                    "My Project",
+                );
+                if (!projectName) return;
+
+                try {
+                    const response = await fetch(
+                        `${API_BASE}/export/claude-md`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                projectName,
+                                agent,
+                                constraints: outputReqs,
+                                additionalContext: context,
+                            }),
+                        },
+                    );
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "CLAUDE.md";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast("CLAUDE.md downloaded!");
+                } catch (error) {
+                    showToast(error.message || "Download failed", "error");
+                }
+            }
+
+            function setExportFormat(format) {
+                exportFormat = format;
+                document.querySelectorAll(".format-btn").forEach((btn) => {
+                    btn.classList.remove("active");
+                });
+                document
+                    .querySelector(`[data-format="${format}"]`)
+                    .classList.add("active");
+                showToast(`Export format: ${format}`);
             }
 
             // ============================================
@@ -1733,6 +2269,7 @@ ${outputReqs || "Best fit."}
             window.addEventListener("DOMContentLoaded", () => {
                 loadAgents();
                 loadOutputRequirements();
+                loadProjects();
                 if (window.innerWidth < 769) switchView("builder");
             });
         </script>

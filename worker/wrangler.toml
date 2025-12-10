@@ -3,8 +3,13 @@ account_id = "59bda891c7a76a83bb024456598cccba"
 compatibility_date = "2024-12-01"
 main = "./src/index.js"
 
+# Workers AI binding for text enhancement
+[ai]
+binding = "AI"
+
 [assets]
 directory = "./public"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
 
 # D1 Database binding

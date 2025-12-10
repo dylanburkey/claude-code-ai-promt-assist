@@ -1,0 +1,1703 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Project - Semantic Prompt Workstation</title>
+
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0a0a0f" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            :root {
+                --bg-base: #0a0a0f;
+                --bg-surface: #12121a;
+                --bg-elevated: #1a1a24;
+                --bg-hover: #22222e;
+                --accent-primary: #6366f1;
+                --accent-primary-hover: #818cf8;
+                --accent-secondary: #22d3ee;
+                --accent-success: #34d399;
+                --accent-warning: #fbbf24;
+                --accent-error: #ef4444;
+                --text-primary: #f4f4f5;
+                --text-secondary: #a1a1aa;
+                --text-muted: #71717a;
+                --border-subtle: #27272a;
+                --border-default: #3f3f46;
+                --font-display: "Space Grotesk", system-ui, sans-serif;
+                --font-body: "IBM Plex Sans", system-ui, sans-serif;
+                --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+                --header-height: 60px;
+                --radius-sm: 6px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --transition-fast: 150ms ease;
+                --transition-normal: 200ms ease;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: var(--bg-base);
+                color: var(--text-primary);
+                font-family: var(--font-body);
+                font-size: 14px;
+                line-height: 1.6;
+                min-height: 100vh;
+            }
+
+            /* Header */
+            header {
+                background: var(--bg-surface);
+                border-bottom: 1px solid var(--border-subtle);
+                padding: 0 1.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: var(--header-height);
+                position: sticky;
+                top: 0;
+                z-index: 20;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .logo-section h1 {
+                font-family: var(--font-display);
+                font-size: 1.25rem;
+                font-weight: 600;
+            }
+
+            .version-badge {
+                font-size: 0.65rem;
+                font-weight: 600;
+                color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.15);
+                padding: 0.2rem 0.5rem;
+                border-radius: var(--radius-sm);
+            }
+
+            nav {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem 1rem;
+                color: var(--text-muted);
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.875rem;
+                border-radius: var(--radius-md);
+                transition: var(--transition-fast);
+            }
+
+            .nav-link:hover {
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .nav-link.active {
+                color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.1);
+            }
+
+            .header-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            /* Buttons */
+            button,
+            .btn {
+                cursor: pointer;
+                border: none;
+                border-radius: var(--radius-md);
+                padding: 0.625rem 1rem;
+                font-family: var(--font-body);
+                font-size: 0.8rem;
+                font-weight: 500;
+                transition: var(--transition-fast);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                text-decoration: none;
+            }
+
+            .btn-primary {
+                background: var(--accent-primary);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: var(--accent-primary-hover);
+            }
+
+            .btn-secondary {
+                background: transparent;
+                color: var(--text-secondary);
+                border: 1px solid var(--border-default);
+            }
+
+            .btn-secondary:hover {
+                border-color: var(--text-muted);
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .btn-ghost {
+                background: transparent;
+                color: var(--text-muted);
+                padding: 0.5rem;
+            }
+
+            .btn-ghost:hover {
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .btn-sm {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+            }
+
+            /* Main Layout */
+            .project-layout {
+                display: grid;
+                grid-template-columns: 1fr 320px;
+                gap: 2rem;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 2rem 1.5rem;
+            }
+
+            @media (max-width: 1024px) {
+                .project-layout {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Project Header */
+            .project-header {
+                margin-bottom: 2rem;
+            }
+
+            .breadcrumb {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                margin-bottom: 1rem;
+            }
+
+            .breadcrumb a {
+                color: var(--text-muted);
+                text-decoration: none;
+                transition: var(--transition-fast);
+            }
+
+            .breadcrumb a:hover {
+                color: var(--accent-primary);
+            }
+
+            .project-title-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .project-title {
+                font-family: var(--font-display);
+                font-size: 2rem;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            .project-status-badge {
+                font-size: 0.7rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                padding: 0.3rem 0.75rem;
+                border-radius: var(--radius-sm);
+                white-space: nowrap;
+            }
+
+            .status-active {
+                background: rgba(52, 211, 153, 0.15);
+                color: var(--accent-success);
+            }
+            .status-draft {
+                background: rgba(113, 113, 122, 0.15);
+                color: var(--text-muted);
+            }
+            .status-completed {
+                background: rgba(99, 102, 241, 0.15);
+                color: var(--accent-primary);
+            }
+            .status-on_hold {
+                background: rgba(251, 191, 36, 0.15);
+                color: var(--accent-warning);
+            }
+            .status-archived {
+                background: rgba(239, 68, 68, 0.15);
+                color: var(--accent-error);
+            }
+
+            .project-meta {
+                display: flex;
+                gap: 1.5rem;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                flex-wrap: wrap;
+            }
+
+            .project-meta-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            /* Cover Image */
+            .project-cover {
+                width: 100%;
+                height: 300px;
+                background: var(--bg-surface);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                margin-bottom: 2rem;
+            }
+
+            .project-cover img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .project-cover-placeholder {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(
+                    135deg,
+                    var(--bg-elevated) 0%,
+                    var(--bg-surface) 100%
+                );
+                color: var(--text-muted);
+            }
+
+            /* Content Sections */
+            .content-section {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-lg);
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .section-title {
+                font-family: var(--font-display);
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+            .section-content {
+                color: var(--text-secondary);
+                line-height: 1.7;
+            }
+
+            .section-content p {
+                margin-bottom: 1rem;
+            }
+
+            .section-content p:last-child {
+                margin-bottom: 0;
+            }
+
+            /* Project Info Textarea */
+            .project-info-textarea {
+                width: 100%;
+                min-height: 200px;
+                background: var(--bg-elevated);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+                color: var(--text-primary);
+                font-family: var(--font-body);
+                font-size: 0.9rem;
+                line-height: 1.7;
+                resize: vertical;
+            }
+
+            .project-info-textarea:focus {
+                outline: none;
+                border-color: var(--accent-primary);
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            }
+
+            .project-info-textarea::placeholder {
+                color: var(--text-muted);
+            }
+
+            /* Sidebar */
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .sidebar-card {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-lg);
+                padding: 1.25rem;
+            }
+
+            .sidebar-card-title {
+                font-family: var(--font-display);
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--text-muted);
+                margin-bottom: 1rem;
+            }
+
+            /* Tags */
+            .tags-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .tag {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.75rem;
+                background: var(--bg-elevated);
+                border-radius: var(--radius-sm);
+                color: var(--text-secondary);
+            }
+
+            /* Related Projects */
+            .related-project {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem;
+                background: var(--bg-elevated);
+                border-radius: var(--radius-md);
+                margin-bottom: 0.5rem;
+                cursor: pointer;
+                transition: var(--transition-fast);
+            }
+
+            .related-project:hover {
+                background: var(--bg-hover);
+            }
+
+            .related-project:last-child {
+                margin-bottom: 0;
+            }
+
+            .related-project-icon {
+                width: 40px;
+                height: 40px;
+                background: var(--bg-surface);
+                border-radius: var(--radius-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-muted);
+                flex-shrink: 0;
+            }
+
+            .related-project-info {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .related-project-name {
+                font-weight: 600;
+                font-size: 0.85rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .related-project-type {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                text-transform: capitalize;
+            }
+
+            /* AI Context */
+            .ai-context-box {
+                background: rgba(99, 102, 241, 0.05);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+            }
+
+            .ai-context-label {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--accent-primary);
+                margin-bottom: 0.5rem;
+            }
+
+            .ai-context-text {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                line-height: 1.6;
+            }
+
+            /* Actions */
+            .actions-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: flex-start;
+                padding: 0.75rem 1rem;
+            }
+
+            /* Empty State */
+            .empty-state {
+                text-align: center;
+                padding: 2rem;
+                color: var(--text-muted);
+            }
+
+            /* Toast */
+            .toast {
+                position: fixed;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%) translateY(100px);
+                background: var(--bg-elevated);
+                border: 1px solid var(--border-default);
+                padding: 0.75rem 1.25rem;
+                border-radius: var(--radius-md);
+                font-size: 0.85rem;
+                z-index: 200;
+                opacity: 0;
+                transition: all 0.3s ease;
+            }
+
+            .toast.show {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+
+            .toast.success {
+                border-color: var(--accent-success);
+                color: var(--accent-success);
+            }
+            .toast.error {
+                border-color: var(--accent-error);
+                color: var(--accent-error);
+            }
+
+            /* Loading */
+            .loading-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 400px;
+            }
+
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid var(--border-default);
+                border-top-color: var(--accent-primary);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* Modal */
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(4px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 100;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity var(--transition-normal);
+                padding: 1rem;
+            }
+
+            .modal-overlay.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .modal {
+                background: var(--bg-surface);
+                padding: 1.75rem;
+                border-radius: var(--radius-lg);
+                width: 100%;
+                max-width: 500px;
+                border: 1px solid var(--border-default);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+
+            .modal h2 {
+                font-family: var(--font-display);
+                font-size: 1.1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .modal-actions {
+                display: flex;
+                gap: 0.75rem;
+                justify-content: flex-end;
+                margin-top: 1.5rem;
+            }
+
+            /* Form Elements */
+            .input-group {
+                margin-bottom: 1rem;
+            }
+
+            label {
+                display: block;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: var(--text-secondary);
+                margin-bottom: 0.5rem;
+            }
+
+            input,
+            select {
+                width: 100%;
+                background: var(--bg-elevated);
+                border: 1px solid var(--border-subtle);
+                color: var(--text-primary);
+                padding: 0.75rem 1rem;
+                border-radius: var(--radius-md);
+                font-family: var(--font-body);
+                font-size: 0.875rem;
+            }
+
+            input:focus,
+            select:focus {
+                outline: none;
+                border-color: var(--accent-primary);
+            }
+
+            /* Scrollbar */
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--border-default);
+                border-radius: 3px;
+            }
+
+            /* Prompt Cards */
+            .prompt-card {
+                background: var(--bg-elevated);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+                transition: var(--transition-fast);
+            }
+
+            .prompt-card:hover {
+                border-color: var(--border-default);
+            }
+
+            .prompt-card:last-child {
+                margin-bottom: 0;
+            }
+
+            .prompt-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 0.5rem;
+            }
+
+            .prompt-card-title {
+                font-weight: 600;
+                font-size: 0.9rem;
+                color: var(--text-primary);
+                flex: 1;
+            }
+
+            .prompt-card-meta {
+                display: flex;
+                gap: 0.75rem;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                margin-bottom: 0.75rem;
+            }
+
+            .prompt-card-content {
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                color: var(--accent-success);
+                background: var(--bg-base);
+                padding: 0.75rem;
+                border-radius: var(--radius-sm);
+                max-height: 120px;
+                overflow: hidden;
+                position: relative;
+                white-space: pre-wrap;
+                line-height: 1.5;
+            }
+
+            .prompt-card-content::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 40px;
+                background: linear-gradient(transparent, var(--bg-base));
+            }
+
+            .prompt-card-actions {
+                display: flex;
+                gap: 0.5rem;
+                margin-top: 0.75rem;
+            }
+
+            .prompt-agent-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+                background: rgba(99, 102, 241, 0.15);
+                color: var(--accent-primary);
+                border-radius: var(--radius-sm);
+            }
+
+            /* Insight Cards */
+            .insight-card {
+                background: var(--bg-elevated);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .insight-card.pending {
+                border-left: 3px solid var(--accent-warning);
+            }
+
+            .insight-card.accepted {
+                border-left: 3px solid var(--accent-success);
+            }
+
+            .insight-card.rejected {
+                border-left: 3px solid var(--accent-error);
+            }
+
+            .insight-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .insight-type {
+                font-size: 0.7rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                color: var(--accent-primary);
+            }
+
+            .insight-content {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                margin-bottom: 0.75rem;
+            }
+
+            .insight-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            @media (max-width: 768px) {
+                nav {
+                    display: none;
+                }
+
+                .project-title {
+                    font-size: 1.5rem;
+                }
+
+                .project-title-row {
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo-section">
+                <h1>Semantic Prompt Workstation</h1>
+                <span class="version-badge">v3.0</span>
+            </div>
+            <nav>
+                <a href="/" class="nav-link">Prompt Builder</a>
+                <a href="/projects" class="nav-link active">Projects</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="editProject()">
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                        />
+                        <path
+                            d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                        />
+                    </svg>
+                    Edit
+                </button>
+            </div>
+        </header>
+
+        <div id="loading-state" class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div id="project-content" class="project-layout" style="display: none">
+            <!-- Main Content -->
+            <main>
+                <div class="project-header">
+                    <div class="breadcrumb">
+                        <a href="/projects">Projects</a>
+                        <span>/</span>
+                        <span id="breadcrumb-name">Loading...</span>
+                    </div>
+                    <div class="project-title-row">
+                        <h1 id="project-title" class="project-title">
+                            Loading...
+                        </h1>
+                        <span
+                            id="project-status"
+                            class="project-status-badge status-active"
+                            >Active</span
+                        >
+                    </div>
+                    <div class="project-meta">
+                        <span
+                            class="project-meta-item"
+                            id="meta-category"
+                            style="display: none"
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                                />
+                            </svg>
+                            <span id="category-text"></span>
+                        </span>
+                        <span class="project-meta-item">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                    ry="2"
+                                />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            Created <span id="created-date"></span>
+                        </span>
+                        <span class="project-meta-item" id="meta-priority">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polygon
+                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                                />
+                            </svg>
+                            <span id="priority-text">Medium</span> Priority
+                        </span>
+                    </div>
+                </div>
+
+                <div
+                    id="cover-container"
+                    class="project-cover"
+                    style="display: none"
+                >
+                    <img id="cover-image" src="" alt="" />
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Project Information</h2>
+                        <button
+                            class="btn-secondary btn-sm"
+                            onclick="saveProjectInfo()"
+                        >
+                            <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+                                />
+                                <polyline points="17 21 17 13 7 13 7 21" />
+                                <polyline points="7 3 7 8 15 8" />
+                            </svg>
+                            Save
+                        </button>
+                    </div>
+                    <textarea
+                        id="project-info-input"
+                        class="project-info-textarea"
+                        placeholder="Describe your project here. Include:
+- Project goals and objectives
+- Target audience or users
+- Key features and requirements
+- Technical constraints or preferences
+- Related technologies or frameworks"
+                    ></textarea>
+                </div>
+
+                <div
+                    class="content-section"
+                    id="description-section"
+                    style="display: none"
+                >
+                    <div class="section-header">
+                        <h2 class="section-title">Description</h2>
+                    </div>
+                    <div class="section-content">
+                        <p id="project-description"></p>
+                    </div>
+                </div>
+
+                <!-- Generated Prompts Section -->
+                <div class="content-section" id="prompts-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Generated Prompts</h2>
+                        <a href="/" class="btn-primary btn-sm">
+                            <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            New Prompt
+                        </a>
+                    </div>
+                    <div id="prompts-list">
+                        <div class="empty-state">Loading prompts...</div>
+                    </div>
+                </div>
+
+                <!-- AI Insights Section -->
+                <div
+                    class="content-section"
+                    id="insights-section"
+                    style="display: none"
+                >
+                    <div class="section-header">
+                        <h2 class="section-title">AI Learning Insights</h2>
+                        <span
+                            id="insights-count"
+                            class="tag"
+                            style="
+                                background: var(--accent-primary);
+                                color: white;
+                            "
+                            >0 pending</span
+                        >
+                    </div>
+                    <div id="insights-list">
+                        <div class="empty-state">No insights yet</div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- AI Context -->
+                <div
+                    class="sidebar-card"
+                    id="ai-context-card"
+                    style="display: none"
+                >
+                    <div class="sidebar-card-title">AI Context</div>
+                    <div class="ai-context-box">
+                        <div class="ai-context-label">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                                />
+                            </svg>
+                            Context for AI Assistance
+                        </div>
+                        <p class="ai-context-text" id="ai-context-text"></p>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="sidebar-card" id="tags-card" style="display: none">
+                    <div class="sidebar-card-title">Tags</div>
+                    <div class="tags-list" id="tags-list"></div>
+                </div>
+
+                <!-- Related Projects -->
+                <div
+                    class="sidebar-card"
+                    id="related-projects-card"
+                    style="display: none"
+                >
+                    <div class="sidebar-card-title">Related Projects</div>
+                    <div id="related-projects-list"></div>
+                    <button
+                        class="btn-secondary btn-sm"
+                        style="margin-top: 1rem; width: 100%"
+                        onclick="openRelationshipModal()"
+                    >
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Add Relationship
+                    </button>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-title">Quick Actions</div>
+                    <div class="actions-list">
+                        <button
+                            class="btn-secondary action-btn"
+                            onclick="copyAIContext()"
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <rect
+                                    x="9"
+                                    y="9"
+                                    width="13"
+                                    height="13"
+                                    rx="2"
+                                    ry="2"
+                                />
+                                <path
+                                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                                />
+                            </svg>
+                            Copy AI Context
+                        </button>
+                        <a href="/" class="btn-primary action-btn">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polygon
+                                    points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+                                />
+                            </svg>
+                            Open Prompt Builder
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Add Relationship Modal -->
+        <div id="relationship-modal" class="modal-overlay">
+            <div class="modal">
+                <h2>Add Related Project</h2>
+                <div class="input-group">
+                    <label for="related-project-select">Select Project</label>
+                    <select id="related-project-select">
+                        <option value="">Choose a project...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="relationship-type">Relationship Type</label>
+                    <select id="relationship-type">
+                        <option value="related">Related</option>
+                        <option value="depends_on">Depends On</option>
+                        <option value="blocks">Blocks</option>
+                        <option value="parent">Parent Of</option>
+                        <option value="child">Child Of</option>
+                        <option value="shares_code">Shares Code</option>
+                        <option value="shares_resources">
+                            Shares Resources
+                        </option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="bidirectional-check" />
+                        Bidirectional relationship
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        class="btn-secondary"
+                        onclick="closeRelationshipModal()"
+                    >
+                        Cancel
+                    </button>
+                    <button class="btn-primary" onclick="addRelationship()">
+                        Add Relationship
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <script>
+            const API_BASE = "/api";
+            let currentProject = null;
+            let allProjects = [];
+
+            // ============================================
+            // API CLIENT
+            // ============================================
+            async function api(endpoint, options = {}) {
+                const config = {
+                    headers: { "Content-Type": "application/json" },
+                    ...options,
+                };
+                if (options.body && typeof options.body === "object") {
+                    config.body = JSON.stringify(options.body);
+                }
+                const response = await fetch(`${API_BASE}${endpoint}`, config);
+                const data = await response.json();
+                if (!response.ok)
+                    throw new Error(data.error || "API request failed");
+                return data;
+            }
+
+            // ============================================
+            // UI HELPERS
+            // ============================================
+            function showToast(message, type = "success") {
+                const toast = document.getElementById("toast");
+                toast.textContent = message;
+                toast.className = `toast ${type} show`;
+                setTimeout(() => toast.classList.remove("show"), 3000);
+            }
+
+            function escapeHtml(text) {
+                if (!text) return "";
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return "Unknown";
+                return new Date(dateStr).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                });
+            }
+
+            function getSlugFromURL() {
+                const path = window.location.pathname;
+                const match = path.match(/\/project\/(.+)/);
+                return match ? match[1] : null;
+            }
+
+            // ============================================
+            // PROJECT LOADING
+            // ============================================
+            async function loadProject() {
+                const slug = getSlugFromURL();
+                if (!slug) {
+                    showToast("Invalid project URL", "error");
+                    setTimeout(
+                        () => (window.location.href = "/projects"),
+                        1500,
+                    );
+                    return;
+                }
+
+                try {
+                    currentProject = await api(`/projects/by-slug/${slug}`);
+                    renderProject();
+
+                    // Load all projects for relationship modal
+                    allProjects = await api("/projects");
+                    populateProjectSelect();
+                } catch (error) {
+                    console.error("Failed to load project:", error);
+                    showToast("Project not found", "error");
+                    setTimeout(
+                        () => (window.location.href = "/projects"),
+                        1500,
+                    );
+                }
+            }
+
+            function renderProject() {
+                const p = currentProject;
+
+                // Update page title
+                document.title = `${p.name} - Semantic Prompt Workstation`;
+
+                // Basic info
+                document.getElementById("breadcrumb-name").textContent = p.name;
+                document.getElementById("project-title").textContent = p.name;
+
+                // Status
+                const statusEl = document.getElementById("project-status");
+                statusEl.textContent = p.status.replace("_", " ");
+                statusEl.className = `project-status-badge status-${p.status}`;
+
+                // Meta
+                if (p.category) {
+                    document.getElementById("meta-category").style.display =
+                        "flex";
+                    document.getElementById("category-text").textContent =
+                        p.category;
+                }
+
+                document.getElementById("created-date").textContent =
+                    formatDate(p.created_at);
+                document.getElementById("priority-text").textContent =
+                    p.priority.charAt(0).toUpperCase() + p.priority.slice(1);
+
+                // Cover image
+                if (p.cover_image) {
+                    document.getElementById("cover-container").style.display =
+                        "block";
+                    document.getElementById("cover-image").src = p.cover_image;
+                    document.getElementById("cover-image").alt =
+                        p.cover_image_alt || p.name;
+                }
+
+                // Project info
+                document.getElementById("project-info-input").value =
+                    p.project_info || "";
+
+                // Description
+                if (p.description) {
+                    document.getElementById(
+                        "description-section",
+                    ).style.display = "block";
+                    document.getElementById("project-description").textContent =
+                        p.description;
+                }
+
+                // AI Context
+                if (p.ai_context_summary) {
+                    document.getElementById("ai-context-card").style.display =
+                        "block";
+                    document.getElementById("ai-context-text").textContent =
+                        p.ai_context_summary;
+                }
+
+                // Tags
+                const tags = p.tags || [];
+                if (tags.length > 0) {
+                    document.getElementById("tags-card").style.display =
+                        "block";
+                    document.getElementById("tags-list").innerHTML = tags
+                        .map(
+                            (tag) =>
+                                `<span class="tag">${escapeHtml(tag)}</span>`,
+                        )
+                        .join("");
+                }
+
+                // Related projects
+                renderRelatedProjects();
+
+                // Show content, hide loading
+                document.getElementById("loading-state").style.display = "none";
+                document.getElementById("project-content").style.display =
+                    "grid";
+
+                // Load prompts and insights
+                loadProjectPrompts();
+                loadAIInsights();
+            }
+
+            function renderRelatedProjects() {
+                const relationships = currentProject.relationships || [];
+                const container = document.getElementById(
+                    "related-projects-list",
+                );
+                const card = document.getElementById("related-projects-card");
+
+                card.style.display = "block";
+
+                if (relationships.length === 0) {
+                    container.innerHTML =
+                        '<div class="empty-state">No related projects yet</div>';
+                    return;
+                }
+
+                container.innerHTML = relationships
+                    .map(
+                        (rel) => `
+                    <div class="related-project" onclick="window.location.href='/project/${escapeHtml(rel.related_slug)}'">
+                        <div class="related-project-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="related-project-info">
+                            <div class="related-project-name">${escapeHtml(rel.related_name)}</div>
+                            <div class="related-project-type">${rel.relationship_type.replace("_", " ")}</div>
+                        </div>
+                    </div>
+                `,
+                    )
+                    .join("");
+            }
+
+            function populateProjectSelect() {
+                const select = document.getElementById(
+                    "related-project-select",
+                );
+                const existingIds = new Set(
+                    (currentProject.relationships || []).map(
+                        (r) => r.related_project_id,
+                    ),
+                );
+                existingIds.add(currentProject.id);
+
+                const options = allProjects
+                    .filter((p) => !existingIds.has(p.id))
+                    .map(
+                        (p) =>
+                            `<option value="${p.id}">${escapeHtml(p.name)}</option>`,
+                    )
+                    .join("");
+
+                select.innerHTML =
+                    '<option value="">Choose a project...</option>' + options;
+            }
+
+            // ============================================
+            // ACTIONS
+            // ============================================
+            async function saveProjectInfo() {
+                const projectInfo =
+                    document.getElementById("project-info-input").value;
+
+                try {
+                    await api(`/projects/${currentProject.id}`, {
+                        method: "PUT",
+                        body: { project_info: projectInfo },
+                    });
+                    currentProject.project_info = projectInfo;
+                    showToast("Project info saved");
+                } catch (error) {
+                    showToast(error.message || "Failed to save", "error");
+                }
+            }
+
+            function editProject() {
+                // Redirect to projects page with edit modal
+                window.location.href = `/projects?edit=${currentProject.id}`;
+            }
+
+            async function copyAIContext() {
+                try {
+                    const context = await api(
+                        `/projects/${currentProject.id}/ai-context`,
+                    );
+                    await navigator.clipboard.writeText(context.contextPrompt);
+                    showToast("AI context copied to clipboard");
+                } catch (error) {
+                    showToast("Failed to copy context", "error");
+                }
+            }
+
+            // ============================================
+            // RELATIONSHIPS
+            // ============================================
+            function openRelationshipModal() {
+                document
+                    .getElementById("relationship-modal")
+                    .classList.add("open");
+            }
+
+            function closeRelationshipModal() {
+                document
+                    .getElementById("relationship-modal")
+                    .classList.remove("open");
+            }
+
+            async function addRelationship() {
+                const relatedId = document.getElementById(
+                    "related-project-select",
+                ).value;
+                const relationType =
+                    document.getElementById("relationship-type").value;
+                const bidirectional = document.getElementById(
+                    "bidirectional-check",
+                ).checked;
+
+                if (!relatedId) {
+                    showToast("Please select a project", "error");
+                    return;
+                }
+
+                try {
+                    await api(`/projects/${currentProject.id}/relationships`, {
+                        method: "POST",
+                        body: {
+                            related_project_id: relatedId,
+                            relationship_type: relationType,
+                            is_bidirectional: bidirectional,
+                        },
+                    });
+
+                    // Reload project to get updated relationships
+                    currentProject = await api(
+                        `/projects/by-slug/${currentProject.slug}`,
+                    );
+                    renderRelatedProjects();
+                    populateProjectSelect();
+                    closeRelationshipModal();
+                    showToast("Relationship added");
+                } catch (error) {
+                    showToast(
+                        error.message || "Failed to add relationship",
+                        "error",
+                    );
+                }
+            }
+
+            // ============================================
+            // PROMPTS
+            // ============================================
+            async function loadProjectPrompts() {
+                try {
+                    const prompts = await api(
+                        `/projects/${currentProject.id}/prompts?limit=20`,
+                    );
+                    renderPrompts(prompts);
+                } catch (error) {
+                    console.error("Failed to load prompts:", error);
+                    document.getElementById("prompts-list").innerHTML =
+                        '<div class="empty-state">Failed to load prompts</div>';
+                }
+            }
+
+            function renderPrompts(prompts) {
+                const container = document.getElementById("prompts-list");
+
+                if (!prompts || prompts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p>No prompts generated yet for this project.</p>
+                            <a href="/" class="btn-primary btn-sm" style="margin-top: 1rem;">
+                                Create Your First Prompt
+                            </a>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = prompts
+                    .map(
+                        (prompt) => `
+                    <div class="prompt-card" data-prompt-id="${prompt.id}">
+                        <div class="prompt-card-header">
+                            <span class="prompt-card-title">${escapeHtml(prompt.title || "Untitled Prompt")}</span>
+                            ${prompt.agent_name ? `<span class="prompt-agent-tag">${escapeHtml(prompt.agent_name)}</span>` : ""}
+                        </div>
+                        <div class="prompt-card-meta">
+                            <span>${formatDate(prompt.created_at)}</span>
+                            <span>${prompt.prompt_type || "general"}</span>
+                            ${prompt.was_useful === 1 ? '<span style="color: var(--accent-success);">Marked useful</span>' : ""}
+                        </div>
+                        <div class="prompt-card-content">${escapeHtml(prompt.prompt_content)}</div>
+                        <div class="prompt-card-actions">
+                            <button class="btn-secondary btn-sm" onclick="copyPrompt('${prompt.id}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copy
+                            </button>
+                            <button class="btn-secondary btn-sm" onclick="markPromptUseful('${prompt.id}', true)">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                                </svg>
+                                Useful
+                            </button>
+                            <button class="btn-ghost btn-sm" onclick="deletePrompt('${prompt.id}')" style="color: var(--accent-error);">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `,
+                    )
+                    .join("");
+            }
+
+            async function copyPrompt(promptId) {
+                const card = document.querySelector(
+                    `[data-prompt-id="${promptId}"]`,
+                );
+                const content = card.querySelector(
+                    ".prompt-card-content",
+                ).textContent;
+                try {
+                    await navigator.clipboard.writeText(content);
+                    showToast("Prompt copied to clipboard");
+                } catch (error) {
+                    showToast("Failed to copy", "error");
+                }
+            }
+
+            async function markPromptUseful(promptId, useful) {
+                try {
+                    await api(
+                        `/projects/${currentProject.id}/prompts/${promptId}`,
+                        {
+                            method: "PUT",
+                            body: { was_useful: useful ? 1 : 0 },
+                        },
+                    );
+                    showToast("Feedback recorded");
+                    loadProjectPrompts(); // Refresh
+                } catch (error) {
+                    showToast("Failed to record feedback", "error");
+                }
+            }
+
+            async function deletePrompt(promptId) {
+                if (!confirm("Delete this prompt?")) return;
+
+                try {
+                    await api(
+                        `/projects/${currentProject.id}/prompts/${promptId}`,
+                        {
+                            method: "DELETE",
+                        },
+                    );
+                    showToast("Prompt deleted");
+                    loadProjectPrompts(); // Refresh
+                } catch (error) {
+                    showToast("Failed to delete prompt", "error");
+                }
+            }
+
+            // ============================================
+            // AI INSIGHTS
+            // ============================================
+            async function loadAIInsights() {
+                try {
+                    const insights = await api(
+                        `/projects/${currentProject.id}/ai-insights`,
+                    );
+                    renderInsights(insights);
+                } catch (error) {
+                    console.error("Failed to load insights:", error);
+                }
+            }
+
+            function renderInsights(insights) {
+                const container = document.getElementById("insights-list");
+                const section = document.getElementById("insights-section");
+                const countEl = document.getElementById("insights-count");
+
+                const pendingCount = insights.filter(
+                    (i) => i.status === "pending",
+                ).length;
+
+                if (!insights || insights.length === 0) {
+                    section.style.display = "none";
+                    return;
+                }
+
+                section.style.display = "block";
+                countEl.textContent = `${pendingCount} pending`;
+
+                container.innerHTML = insights
+                    .map((insight) => {
+                        let content = "";
+                        try {
+                            const parsed = JSON.parse(insight.insight_content);
+                            content =
+                                parsed.context_update || JSON.stringify(parsed);
+                        } catch {
+                            content = insight.insight_content;
+                        }
+
+                        return `
+                        <div class="insight-card ${insight.status}" data-insight-id="${insight.id}">
+                            <div class="insight-header">
+                                <span class="insight-type">${insight.insight_type.replace("_", " ")}</span>
+                                <span class="tag">${insight.status}</span>
+                            </div>
+                            <div class="insight-content">${escapeHtml(content)}</div>
+                            ${
+                                insight.status === "pending"
+                                    ? `
+                                <div class="insight-actions">
+                                    <button class="btn-primary btn-sm" onclick="updateInsightStatus('${insight.id}', 'accepted')">
+                                        Accept
+                                    </button>
+                                    <button class="btn-secondary btn-sm" onclick="updateInsightStatus('${insight.id}', 'rejected')">
+                                        Reject
+                                    </button>
+                                </div>
+                            `
+                                    : ""
+                            }
+                        </div>
+                    `;
+                    })
+                    .join("");
+            }
+
+            async function updateInsightStatus(insightId, status) {
+                try {
+                    await api(
+                        `/projects/${currentProject.id}/ai-insights/${insightId}`,
+                        {
+                            method: "PUT",
+                            body: { status },
+                        },
+                    );
+                    showToast(`Insight ${status}`);
+                    loadAIInsights(); // Refresh
+                } catch (error) {
+                    showToast("Failed to update insight", "error");
+                }
+            }
+
+            // ============================================
+            // INIT
+            // ============================================
+            window.addEventListener("DOMContentLoaded", loadProject);
+        </script>
+    </body>
+</html>
