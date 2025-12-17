@@ -1,0 +1,718 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Button from '../components/ui/Button.astro';
+import Form from '../components/ui/Form.astro';
+import Modal from '../components/ui/Modal.astro';
+import SimpleAgentManager from '../components/SimpleAgentManager.astro';
+import SimplePromptBuilder from '../components/SimplePromptBuilder.astro';
+import SimpleExportPanel from '../components/SimpleExportPanel.astro';
+import PWAStatus from '../components/PWAStatus.astro';
+---
+
+<Layout title="Semantic Prompt Workstation">
+  <Navigation currentPath="/" />
+
+  <div class="workspace">
+    <!-- SIDEBAR -->
+    <aside class="panel" id="sidebar-panel">
+      <!-- Project Context Section -->
+      <div class="collapsible-section" id="project-context-section">
+        <div class="collapsible-header">
+          <span class="collapsible-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            Project Context
+          </span>
+          <div class="collapsible-actions">
+            <Button variant="ghost" size="xs" title="Import Resources">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </Button>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+        <div class="collapsible-content">
+          <div id="project-context-display" class="collapsible-list">
+            <div class="empty-state">Select a project to see context</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project Agents Section -->
+      <div class="collapsible-section" id="project-agents-section">
+        <div class="collapsible-header">
+          <span class="collapsible-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Project Agents
+            <span class="count" id="project-agents-count">0</span>
+          </span>
+          <div class="collapsible-actions">
+            <Button variant="ghost" size="xs" id="new-agent-btn" title="New Agent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </Button>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+        <div class="collapsible-content">
+          <div id="project-agent-list" class="collapsible-list">
+            <div class="empty-state">No agents assigned to project</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Agents Section - Simplified Component -->
+      <SimpleAgentManager />
+
+      <!-- Output Requirements Section -->
+      <div class="collapsible-section collapsed" id="requirements-section">
+        <div class="collapsible-header">
+          <span class="collapsible-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            Output Requirements
+            <span class="count" id="requirements-count">0</span>
+          </span>
+          <div class="collapsible-actions">
+            <Button variant="ghost" size="xs" id="new-requirement-btn" title="New Requirement">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </Button>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+        <div class="collapsible-content">
+          <div id="requirement-list" class="collapsible-list">
+            <div class="empty-state">Loading requirements...</div>
+          </div>
+        </div>
+      </div>
+
+      <Button variant="secondary" class="close-sidebar-btn menu-toggle" id="close-sidebar">
+        Close Menu
+      </Button>
+    </aside>
+
+    <!-- BUILDER -->
+    <section class="panel" id="view-builder">
+      <SimplePromptBuilder />
+    </section>
+
+    <!-- OUTPUT -->
+    <section class="panel" id="view-output">
+      <div class="panel-header">
+        <span class="panel-title">Generated Output</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="copy-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Copy
+          </Button>
+          <Button variant="secondary" size="sm" id="export-output-btn" style="display: none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export
+          </Button>
+        </div>
+      </div>
+      <div id="output-display" class="output-area">
+        <span class="output-placeholder">Generated prompt will appear here...</span>
+      </div>
+    </section>
+
+    <!-- EXPORT PANEL -->
+    <section class="panel" id="view-export">
+      <SimpleExportPanel />
+    </section>
+  </div>
+
+  <div class="mobile-tabs">
+    <div class="mobile-tab active" data-view="builder">Builder</div>
+    <div class="mobile-tab" data-view="output">Output</div>
+  </div>
+
+  <!-- Agent Modal is now managed by AgentManager component -->
+
+  <!-- Output Requirement Modal -->
+  <Modal id="requirement-modal" title="Create Output Requirement">
+    <input type="hidden" id="requirement-id" />
+    <Form>
+      <label for="requirement-name">Name</label>
+      <input type="text" id="requirement-name" placeholder="e.g., Production-Ready Code" />
+    </Form>
+    <Form>
+      <label for="requirement-description">Description (optional)</label>
+      <input type="text" id="requirement-description" placeholder="Brief description of when to use this" />
+    </Form>
+    <Form>
+      <label for="requirement-content">Requirements Content</label>
+      <textarea id="requirement-content" rows="6" placeholder="Define the detailed output requirements..."></textarea>
+    </Form>
+    <div class="modal-actions">
+      <Button variant="secondary" id="btn-delete-requirement" style="margin-right: auto; color: #ef4444; border-color: #ef4444;">
+        Delete
+      </Button>
+      <Button variant="secondary" id="btn-cancel-requirement">Cancel</Button>
+      <Button variant="primary" id="btn-save-requirement">Save Requirement</Button>
+    </div>
+  </Modal>
+
+  <div id="toast" class="toast"></div>
+  
+  <!-- PWA Status Component -->
+  <PWAStatus />
+</Layout>
+
+<style>
+  .workspace {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr 300px;
+    height: calc(100vh - var(--header-height));
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .workspace {
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+    }
+    #sidebar-panel {
+      display: none;
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      width: 85%;
+      max-width: 320px;
+      height: calc(100% - var(--header-height));
+      z-index: 50;
+      background: var(--bg-base);
+      border-right: 1px solid var(--border-default);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    }
+    #sidebar-panel.mobile-open {
+      display: flex;
+    }
+    .mobile-tabs {
+      display: flex;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .mobile-tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.875rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .mobile-tab.active {
+      color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+    .panel {
+      display: none;
+    }
+    .panel.active-view {
+      display: flex;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .panel {
+      display: flex;
+    }
+    .mobile-tabs,
+    .menu-toggle {
+      display: none;
+    }
+  }
+
+  .panel {
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-base);
+  }
+  .panel:last-child {
+    border-right: none;
+  }
+
+  /* Collapsible Section */
+  .collapsible-section {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--bg-surface);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition-fast);
+  }
+  .collapsible-header:hover {
+    background: var(--bg-elevated);
+  }
+  .collapsible-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .collapsible-title .count {
+    background: var(--accent-primary);
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+  }
+  .collapsible-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .chevron {
+    transition: transform var(--transition-fast);
+    color: var(--text-muted);
+  }
+  .collapsible-section.collapsed .chevron {
+    transform: rotate(-90deg);
+  }
+  .collapsible-content {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+  }
+  .collapsible-section.collapsed .collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+  }
+  .collapsible-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+
+  /* Cards */
+  .item-card {
+    background: var(--bg-base);
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+  .item-card:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+  }
+  .item-card.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+  }
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+  .item-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+  }
+  .item-preview {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  /* Selection Tag */
+  .selection-tag {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+  .selection-tag.has-selection {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  .selection-tag-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  .selection-tag-status {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .selection-tag-actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  /* Output Area */
+  .output-area {
+    background: var(--bg-surface);
+    padding: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--accent-success);
+    white-space: pre-wrap;
+    flex: 1;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow-y: auto;
+  }
+  .output-placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Install Banner */
+  #install-prompt {
+    background: linear-gradient(90deg, var(--accent-primary), #8b5cf6);
+    color: white;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  #install-prompt:hover {
+    filter: brightness(1.1);
+  }
+
+  .close-sidebar-btn {
+    margin-top: auto;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  /* Progress Indicators */
+  .progress-container {
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .progress-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* AI Enhancement Indicators */
+  .ai-enhanced {
+    position: relative;
+  }
+
+  .ai-enhanced::after {
+    content: "✨";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  .ai-suggestion {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .ai-suggestion-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--accent-primary);
+  }
+</style>
+
+<script>
+  import { api } from '../scripts/api';
+  import type { OutputRequirement, Project } from '../types';
+
+  // Simplified state
+  let outputRequirements: OutputRequirement[] = [];
+  let projects: Project[] = [];
+  let selectedRequirementId: string | null = null;
+  let currentProjectId: string | null = null;
+
+  // Initialize application
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadOutputRequirements();
+    await loadProjects();
+    setupEventListeners();
+
+    // Initialize mobile view
+    if (window.innerWidth < 769) {
+      switchView('builder');
+    }
+  });
+
+  async function loadOutputRequirements() {
+    try {
+      outputRequirements = await api.requirements.list();
+      updateRequirementCount();
+      renderRequirementList();
+    } catch (error) {
+      console.error('Failed to load requirements:', error);
+      showToast('Failed to load requirements', 'error');
+    }
+  }
+
+  async function loadProjects() {
+    try {
+      const response = await api.projects.list();
+      projects = response.projects || [];
+      renderProjectSelector();
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+      showToast('Failed to load projects', 'error');
+    }
+  }
+
+  function switchView(viewName: 'builder' | 'output') {
+    if (window.innerWidth >= 769) return;
+    
+    document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-view'));
+    document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
+    
+    const panel = document.getElementById(`view-${viewName}`);
+    if (panel) panel.classList.add('active-view');
+    
+    const tab = document.querySelector(`[data-view="${viewName}"]`);
+    if (tab) tab.classList.add('active');
+  }
+
+  function selectRequirement(id: string) {
+    selectedRequirementId = id;
+    const requirement = outputRequirements.find(r => r.id === id);
+    
+    if (requirement) {
+      // Dispatch event for PromptBuilder
+      document.dispatchEvent(new CustomEvent('requirement-selected', {
+        detail: { requirement }
+      }));
+      
+      // Track usage
+      api.requirements.trackUsage(id).catch(() => {});
+    }
+    
+    renderRequirementList();
+  }
+
+  function renderRequirementList() {
+    const container = document.getElementById('requirement-list');
+    if (!container) return;
+    
+    if (outputRequirements.length === 0) {
+      container.innerHTML = '<div class="empty-state">No requirements yet. Create one!</div>';
+      return;
+    }
+    
+    container.innerHTML = outputRequirements.map(req => `
+      <div class="item-card ${req.id === selectedRequirementId ? 'active' : ''}" onclick="selectRequirement('${req.id}')">
+        <div class="item-card-header">
+          <span class="item-name">${escapeHtml(req.name)}</span>
+          <button class="btn-ghost btn-xs" onclick="event.stopPropagation(); editRequirement('${req.id}')" title="Edit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+        <span class="item-preview">${escapeHtml(req.requirements_content)}</span>
+      </div>
+    `).join('');
+  }
+
+  function updateRequirementCount() {
+    const countEl = document.getElementById('requirements-count');
+    if (countEl) countEl.textContent = outputRequirements.length.toString();
+  }
+
+  function renderProjectSelector() {
+    const select = document.getElementById('current-project-select') as HTMLSelectElement;
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">No Project Selected</option>';
+    
+    projects.forEach(project => {
+      const option = document.createElement('option');
+      option.value = project.id;
+      option.textContent = project.name;
+      select.appendChild(option);
+    });
+  }
+
+  function copyToClipboard() {
+    const outputDisplay = document.getElementById('output-display');
+    if (!outputDisplay) return;
+    
+    const text = outputDisplay.textContent;
+    if (!text || text.includes('Generated prompt will appear here')) {
+      showToast('No prompt to copy', 'error');
+      return;
+    }
+    
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('Copied!'))
+      .catch(() => showToast('Failed to copy', 'error'));
+  }
+
+  function setupEventListeners() {
+    // Mobile tabs
+    document.querySelectorAll('.mobile-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const view = tab.getAttribute('data-view') as 'builder' | 'output';
+        if (view) switchView(view);
+      });
+    });
+    
+    // Collapsible sections
+    document.querySelectorAll('.collapsible-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.closest('.collapsible-section');
+        if (section) section.classList.toggle('collapsed');
+      });
+    });
+    
+    // Copy button
+    document.getElementById('copy-btn')?.addEventListener('click', copyToClipboard);
+    
+    // Project selector
+    document.getElementById('current-project-select')?.addEventListener('change', (e) => {
+      const target = e.target as HTMLSelectElement;
+      currentProjectId = target.value;
+      
+      // Dispatch event for other components
+      document.dispatchEvent(new CustomEvent('project-changed', {
+        detail: { projectId: currentProjectId }
+      }));
+    });
+    
+    // Close sidebar
+    document.getElementById('close-sidebar')?.addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar-panel');
+      if (sidebar) sidebar.classList.remove('mobile-open');
+    });
+
+    // Listen for prompt generation
+    document.addEventListener('prompt-generated', (event: CustomEvent) => {
+      const outputDisplay = document.getElementById('output-display');
+      if (outputDisplay) {
+        outputDisplay.textContent = event.detail.prompt;
+        outputDisplay.classList.remove('output-placeholder');
+      }
+    });
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  }
+
+  // Make functions available globally
+  (window as any).selectRequirement = selectRequirement;
+  (window as any).editRequirement = (id: string) => console.log('Edit requirement:', id);
+</script>

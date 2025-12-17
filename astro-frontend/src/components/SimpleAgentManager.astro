@@ -1,0 +1,465 @@
+---
+import Button from './ui/Button.astro';
+import Modal from './ui/Modal.astro';
+import Form from './ui/Form.astro';
+---
+
+<!-- AGENT SECTION -->
+<div class="collapsible-section" id="agents-section">
+  <div class="collapsible-header">
+    <span class="collapsible-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      Agents
+      <span class="count" id="agents-count">0</span>
+    </span>
+    <div class="collapsible-actions">
+      <Button variant="ghost" size="xs" id="new-agent-btn" title="New Agent">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </Button>
+      <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+  </div>
+  <div class="collapsible-content">
+    <div class="selection-tag" id="current-agent-display">
+      <span class="selection-tag-name">No agent selected</span>
+      <span class="selection-tag-status">Select</span>
+      <div class="selection-tag-actions">
+        <Button variant="ghost" size="xs" id="clear-agent-btn" style="display: none;" title="Clear Selection">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </Button>
+      </div>
+    </div>
+    <div id="agent-list" class="collapsible-list">
+      <div class="empty-state">Loading agents...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent Modal -->
+<Modal id="agent-modal" title="Agent Details">
+  <input type="hidden" id="agent-id" />
+  <Form>
+    <label for="agent-name">Agent Name</label>
+    <input type="text" id="agent-name" placeholder="e.g., Senior Developer" required />
+  </Form>
+  <Form>
+    <label for="agent-role">Role Description</label>
+    <textarea id="agent-role" rows="4" placeholder="Define the agent's role and expertise..." required></textarea>
+  </Form>
+  <Form>
+    <label for="agent-style">Communication Style</label>
+    <textarea id="agent-style" rows="3" placeholder="How should this agent communicate? (tone, format, etc.)"></textarea>
+  </Form>
+  <div class="modal-actions">
+    <Button variant="secondary" id="btn-delete-agent" style="margin-right: auto; color: #ef4444; border-color: #ef4444;">
+      Delete
+    </Button>
+    <Button variant="secondary" id="btn-cancel-agent">Cancel</Button>
+    <Button variant="primary" id="btn-save-agent">Save Agent</Button>
+  </div>
+</Modal>
+
+<style>
+  .collapsible-section {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  
+  .collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--bg-surface);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition-fast);
+  }
+  
+  .collapsible-header:hover {
+    background: var(--bg-elevated);
+  }
+  
+  .collapsible-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .collapsible-title .count {
+    background: var(--accent-primary);
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+  }
+  
+  .collapsible-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .chevron {
+    transition: transform var(--transition-fast);
+    color: var(--text-muted);
+  }
+  
+  .collapsible-section.collapsed .chevron {
+    transform: rotate(-90deg);
+  }
+  
+  .collapsible-content {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+  }
+  
+  .collapsible-section.collapsed .collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+  }
+  
+  .collapsible-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+
+  .selection-tag {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .selection-tag.has-selection {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  
+  .selection-tag-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  
+  .selection-tag-status {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .selection-tag-actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .item-card {
+    background: var(--bg-base);
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+  
+  .item-card:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+  }
+  
+  .item-card.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+  }
+  
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+  
+  .item-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+  }
+  
+  .item-preview {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+</style>
+
+<script>
+  import { api } from '../scripts/api';
+  import type { Agent } from '../types';
+
+  // Simple state management
+  let agents: Agent[] = [];
+  let selectedAgentId: string | null = null;
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadAgents();
+    setupEventListeners();
+  });
+
+  async function loadAgents() {
+    try {
+      agents = await api.agents.list();
+      renderAgentList();
+      updateAgentCount();
+    } catch (error) {
+      console.error('Failed to load agents:', error);
+      showToast('Failed to load agents', 'error');
+    }
+  }
+
+  function renderAgentList() {
+    const container = document.getElementById('agent-list');
+    if (!container) return;
+
+    if (agents.length === 0) {
+      container.innerHTML = '<div class="empty-state">No agents yet. Create one!</div>';
+      return;
+    }
+
+    container.innerHTML = agents.map(agent => `
+      <div class="item-card ${agent.id === selectedAgentId ? 'active' : ''}" onclick="selectAgent('${agent.id}')">
+        <div class="item-card-header">
+          <span class="item-name">${escapeHtml(agent.name)}</span>
+          <button class="btn-ghost btn-xs" onclick="event.stopPropagation(); editAgent('${agent.id}')" title="Edit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+        <span class="item-preview">${escapeHtml(agent.role)}</span>
+      </div>
+    `).join('');
+  }
+
+  function updateAgentCount() {
+    const countEl = document.getElementById('agents-count');
+    if (countEl) countEl.textContent = agents.length.toString();
+  }
+
+  function selectAgent(id: string) {
+    selectedAgentId = id;
+    const agent = agents.find(a => a.id === id);
+    
+    if (agent) {
+      const display = document.getElementById('current-agent-display');
+      const clearBtn = document.getElementById('clear-agent-btn');
+      
+      if (display) {
+        const nameEl = display.querySelector('.selection-tag-name');
+        if (nameEl) nameEl.textContent = agent.name;
+        display.classList.add('has-selection');
+      }
+      
+      if (clearBtn) clearBtn.style.display = 'block';
+      
+      // Dispatch event for other components
+      document.dispatchEvent(new CustomEvent('agent-selected', { 
+        detail: { agent } 
+      }));
+    }
+    
+    renderAgentList();
+  }
+
+  function clearAgentSelection() {
+    selectedAgentId = null;
+    const display = document.getElementById('current-agent-display');
+    const clearBtn = document.getElementById('clear-agent-btn');
+    
+    if (display) {
+      const nameEl = display.querySelector('.selection-tag-name');
+      if (nameEl) nameEl.textContent = 'No agent selected';
+      display.classList.remove('has-selection');
+    }
+    
+    if (clearBtn) clearBtn.style.display = 'none';
+    
+    renderAgentList();
+  }
+
+  function editAgent(id: string) {
+    const agent = agents.find(a => a.id === id);
+    if (!agent) return;
+
+    // Populate modal
+    const modal = document.getElementById('agent-modal');
+    const idInput = document.getElementById('agent-id') as HTMLInputElement;
+    const nameInput = document.getElementById('agent-name') as HTMLInputElement;
+    const roleInput = document.getElementById('agent-role') as HTMLTextAreaElement;
+    const styleInput = document.getElementById('agent-style') as HTMLTextAreaElement;
+    const deleteBtn = document.getElementById('btn-delete-agent');
+
+    if (idInput) idInput.value = agent.id;
+    if (nameInput) nameInput.value = agent.name;
+    if (roleInput) roleInput.value = agent.role;
+    if (styleInput) styleInput.value = agent.style || '';
+    if (deleteBtn) deleteBtn.style.display = 'block';
+
+    // Show modal
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function openNewAgentModal() {
+    const modal = document.getElementById('agent-modal');
+    const form = modal?.querySelector('form');
+    const deleteBtn = document.getElementById('btn-delete-agent');
+    
+    if (form) form.reset();
+    if (deleteBtn) deleteBtn.style.display = 'none';
+    if (modal) modal.style.display = 'flex';
+  }
+
+  async function saveAgent() {
+    const idInput = document.getElementById('agent-id') as HTMLInputElement;
+    const nameInput = document.getElementById('agent-name') as HTMLInputElement;
+    const roleInput = document.getElementById('agent-role') as HTMLTextAreaElement;
+    const styleInput = document.getElementById('agent-style') as HTMLTextAreaElement;
+
+    if (!nameInput || !roleInput) return;
+
+    const name = nameInput.value.trim();
+    const role = roleInput.value.trim();
+    const style = styleInput.value.trim();
+
+    if (!name || !role) {
+      showToast('Name and role are required', 'error');
+      return;
+    }
+
+    try {
+      const agentData = { name, role, style };
+      const isUpdate = idInput && idInput.value;
+
+      if (isUpdate) {
+        await api.agents.update(idInput.value, agentData);
+        showToast('Agent updated!');
+      } else {
+        await api.agents.create(agentData);
+        showToast('Agent created!');
+      }
+
+      await loadAgents();
+      closeAgentModal();
+    } catch (error) {
+      console.error('Failed to save agent:', error);
+      showToast('Failed to save agent', 'error');
+    }
+  }
+
+  async function deleteAgent() {
+    const idInput = document.getElementById('agent-id') as HTMLInputElement;
+    if (!idInput || !idInput.value) return;
+
+    const agent = agents.find(a => a.id === idInput.value);
+    if (!agent) return;
+
+    if (!confirm(`Delete agent "${agent.name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.agents.delete(idInput.value);
+      showToast('Agent deleted');
+      
+      if (selectedAgentId === idInput.value) {
+        clearAgentSelection();
+      }
+      
+      await loadAgents();
+      closeAgentModal();
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+      showToast('Failed to delete agent', 'error');
+    }
+  }
+
+  function closeAgentModal() {
+    const modal = document.getElementById('agent-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function setupEventListeners() {
+    // Collapsible header
+    document.querySelector('#agents-section .collapsible-header')?.addEventListener('click', () => {
+      const section = document.getElementById('agents-section');
+      if (section) section.classList.toggle('collapsed');
+    });
+
+    // Buttons
+    document.getElementById('new-agent-btn')?.addEventListener('click', openNewAgentModal);
+    document.getElementById('clear-agent-btn')?.addEventListener('click', clearAgentSelection);
+    document.getElementById('btn-save-agent')?.addEventListener('click', saveAgent);
+    document.getElementById('btn-delete-agent')?.addEventListener('click', deleteAgent);
+    document.getElementById('btn-cancel-agent')?.addEventListener('click', closeAgentModal);
+  }
+
+  // Utility functions
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  }
+
+  // Make functions available globally
+  (window as any).selectAgent = selectAgent;
+  (window as any).editAgent = editAgent;
+</script>

@@ -1,0 +1,684 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Button from '../components/ui/Button.astro';
+import Form from '../components/ui/Form.astro';
+import Modal from '../components/ui/Modal.astro';
+---
+
+<Layout title="Agents - Semantic Prompt Workstation">
+  <Navigation currentPath="/agents" />
+
+  <div class="main-layout">
+    <!-- AGENT LIST -->
+    <section class="panel" id="agent-list-panel">
+      <div class="panel-header">
+        <span class="panel-title">Custom Agents</span>
+        <div class="header-actions">
+          <Button variant="primary" size="sm" id="new-agent-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Agent
+          </Button>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input type="text" id="agent-search" placeholder="Search agents..." />
+        </div>
+      </div>
+
+      <div id="agent-list" class="item-list">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <h3>No agents yet</h3>
+          <p>Create your first AI agent to get started</p>
+          <Button variant="primary" id="empty-new-agent-btn">Create Agent</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENT EDITOR -->
+    <section class="panel" id="agent-editor-panel">
+      <div class="panel-header">
+        <span class="panel-title">Agent Editor</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="duplicate-agent-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Duplicate
+          </Button>
+          <Button variant="secondary" size="sm" id="delete-agent-btn" style="display: none; color: #ef4444; border-color: #ef4444;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      <div id="agent-editor-content" class="editor-content">
+        <div class="empty-editor">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <h3>Select an agent to edit</h3>
+          <p>Choose an agent from the list or create a new one</p>
+        </div>
+      </div>
+
+      <div id="agent-form" class="agent-form" style="display: none;">
+        <input type="hidden" id="agent-id" />
+        
+        <Form>
+          <label for="agent-name">Agent Name</label>
+          <input type="text" id="agent-name" placeholder="e.g., Senior Developer" required />
+        </Form>
+
+        <Form>
+          <label for="agent-role">Role Description</label>
+          <textarea id="agent-role" rows="4" placeholder="Define the agent's role and expertise..." required></textarea>
+        </Form>
+
+        <Form>
+          <label for="agent-style">Communication Style</label>
+          <textarea id="agent-style" rows="3" placeholder="How should this agent communicate? (tone, format, etc.)"></textarea>
+        </Form>
+
+        <div class="form-actions">
+          <Button variant="secondary" id="cancel-agent-btn">Cancel</Button>
+          <Button variant="primary" id="save-agent-btn">Save Agent</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENT PREVIEW -->
+    <section class="panel preview-panel" id="agent-preview-panel">
+      <div class="panel-header">
+        <span class="panel-title">Preview</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="test-agent-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Test
+          </Button>
+        </div>
+      </div>
+
+      <div id="agent-preview-content" class="preview-content">
+        <div class="empty-preview">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <h3>Agent Preview</h3>
+          <p>Select an agent to see how it will appear in prompts</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Agent Test Modal -->
+  <Modal id="test-modal" title="Test Agent">
+    <Form>
+      <label for="test-task">Test Task</label>
+      <textarea id="test-task" rows="3" placeholder="Enter a sample task to test the agent..."></textarea>
+    </Form>
+    <Form>
+      <label for="test-context">Context (optional)</label>
+      <textarea id="test-context" rows="2" placeholder="Any additional context..."></textarea>
+    </Form>
+    <div class="modal-actions">
+      <Button variant="secondary" id="btn-cancel-test">Cancel</Button>
+      <Button variant="primary" id="btn-run-test">Generate Test Prompt</Button>
+    </div>
+  </Modal>
+
+  <div id="toast" class="toast"></div>
+</Layout>
+
+<style>
+  .main-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 420px;
+    height: calc(100vh - var(--header-height));
+    overflow: hidden;
+  }
+
+  @media (max-width: 1200px) {
+    .main-layout {
+      grid-template-columns: 280px 1fr;
+    }
+    .preview-panel {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .main-layout {
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-panel {
+      display: none;
+    }
+  }
+
+  .panel {
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-base);
+  }
+  .panel:last-child {
+    border-right: none;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .search-section {
+    margin-bottom: 1rem;
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    z-index: 1;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .item-card {
+    background: var(--bg-surface);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .item-card:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+  }
+
+  .item-card.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+  }
+
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .item-preview {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  .empty-state, .empty-editor, .empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    flex: 1;
+  }
+
+  .empty-state svg, .empty-editor svg, .empty-preview svg {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3, .empty-editor h3, .empty-preview h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state p, .empty-editor p, .empty-preview p {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .editor-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .agent-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .preview-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .agent-preview {
+    background: var(--bg-surface);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    flex: 1;
+  }
+
+  .preview-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .preview-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .preview-label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .preview-value {
+    color: var(--text-primary);
+  }
+</style>
+
+<script>
+  import { api } from '../scripts/api';
+  import type { Agent } from '../types';
+
+  // Global state
+  let agents: Agent[] = [];
+  let selectedAgentId: string | null = null;
+  let isEditing = false;
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadAgents();
+    setupEventListeners();
+  });
+
+  // Data loading
+  async function loadAgents() {
+    try {
+      agents = await api.agents.list();
+      renderAgentList();
+      
+      if (agents.length > 0 && !selectedAgentId) {
+        selectAgent(agents[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to load agents:', error);
+      showToast('Failed to load agents', 'error');
+    }
+  }
+
+  // UI rendering
+  function renderAgentList() {
+    const container = document.getElementById('agent-list');
+    if (!container) return;
+
+    if (agents.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <h3>No agents yet</h3>
+          <p>Create your first AI agent to get started</p>
+          <button class="btn-primary" onclick="startNewAgent()">Create Agent</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = agents.map(agent => `
+      <div class="item-card ${agent.id === selectedAgentId ? 'active' : ''}" onclick="selectAgent('${agent.id}')">
+        <div class="item-card-header">
+          <span class="item-name">${escapeHtml(agent.name)}</span>
+        </div>
+        <span class="item-preview">${escapeHtml(agent.role)}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderAgentEditor(agent?: Agent) {
+    const content = document.getElementById('agent-editor-content');
+    const form = document.getElementById('agent-form');
+    
+    if (!content || !form) return;
+
+    if (!agent) {
+      content.style.display = 'flex';
+      form.style.display = 'none';
+      return;
+    }
+
+    content.style.display = 'none';
+    form.style.display = 'flex';
+
+    // Populate form
+    const idInput = document.getElementById('agent-id') as HTMLInputElement;
+    const nameInput = document.getElementById('agent-name') as HTMLInputElement;
+    const roleInput = document.getElementById('agent-role') as HTMLTextAreaElement;
+    const styleInput = document.getElementById('agent-style') as HTMLTextAreaElement;
+
+    if (idInput) idInput.value = agent.id || '';
+    if (nameInput) nameInput.value = agent.name || '';
+    if (roleInput) roleInput.value = agent.role || '';
+    if (styleInput) styleInput.value = agent.style || '';
+
+    // Show/hide action buttons
+    const duplicateBtn = document.getElementById('duplicate-agent-btn');
+    const deleteBtn = document.getElementById('delete-agent-btn');
+    
+    if (duplicateBtn && deleteBtn) {
+      if (agent.id) {
+        duplicateBtn.style.display = 'flex';
+        deleteBtn.style.display = 'flex';
+      } else {
+        duplicateBtn.style.display = 'none';
+        deleteBtn.style.display = 'none';
+      }
+    }
+  }
+
+  function renderAgentPreview(agent?: Agent) {
+    const container = document.getElementById('agent-preview-content');
+    if (!container) return;
+
+    if (!agent) {
+      container.innerHTML = `
+        <div class="empty-preview">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <h3>Agent Preview</h3>
+          <p>Select an agent to see how it will appear in prompts</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="agent-preview">
+        <div class="preview-section">
+          <div class="preview-label">ROLE</div>
+          <div class="preview-value">${escapeHtml(agent.role)}</div>
+        </div>
+        ${agent.style ? `
+          <div class="preview-section">
+            <div class="preview-label">STYLE</div>
+            <div class="preview-value">${escapeHtml(agent.style)}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    const testBtn = document.getElementById('test-agent-btn');
+    if (testBtn) testBtn.style.display = 'flex';
+  }
+
+  // Agent management
+  function selectAgent(id: string) {
+    selectedAgentId = id;
+    const agent = agents.find(a => a.id === id);
+    
+    renderAgentList();
+    renderAgentEditor(agent);
+    renderAgentPreview(agent);
+    
+    isEditing = false;
+  }
+
+  function startNewAgent() {
+    selectedAgentId = null;
+    isEditing = true;
+    
+    const newAgent: Partial<Agent> = {
+      name: '',
+      role: '',
+      style: ''
+    };
+    
+    renderAgentEditor(newAgent as Agent);
+    renderAgentPreview();
+    
+    const nameInput = document.getElementById('agent-name') as HTMLInputElement;
+    if (nameInput) nameInput.focus();
+  }
+
+  async function saveAgent() {
+    const idInput = document.getElementById('agent-id') as HTMLInputElement;
+    const nameInput = document.getElementById('agent-name') as HTMLInputElement;
+    const roleInput = document.getElementById('agent-role') as HTMLTextAreaElement;
+    const styleInput = document.getElementById('agent-style') as HTMLTextAreaElement;
+
+    if (!nameInput || !roleInput) return;
+
+    const name = nameInput.value.trim();
+    const role = roleInput.value.trim();
+    const style = styleInput.value.trim();
+
+    if (!name || !role) {
+      showToast('Name and role are required', 'error');
+      return;
+    }
+
+    try {
+      const agentData = { name, role, style };
+      const isUpdate = idInput && idInput.value;
+
+      let savedAgent: Agent;
+      if (isUpdate) {
+        savedAgent = await api.agents.update(idInput.value, agentData);
+        showToast('Agent updated!');
+      } else {
+        savedAgent = await api.agents.create(agentData);
+        showToast('Agent created!');
+      }
+
+      await loadAgents();
+      selectAgent(savedAgent.id);
+      isEditing = false;
+    } catch (error) {
+      console.error('Failed to save agent:', error);
+      showToast('Failed to save agent', 'error');
+    }
+  }
+
+  async function deleteAgent() {
+    if (!selectedAgentId) return;
+
+    const agent = agents.find(a => a.id === selectedAgentId);
+    if (!agent) return;
+
+    if (!confirm(`Delete agent "${agent.name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.agents.delete(selectedAgentId);
+      showToast('Agent deleted');
+      
+      await loadAgents();
+      
+      if (agents.length > 0) {
+        selectAgent(agents[0].id);
+      } else {
+        selectedAgentId = null;
+        renderAgentEditor();
+        renderAgentPreview();
+      }
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+      showToast('Failed to delete agent', 'error');
+    }
+  }
+
+  function cancelEdit() {
+    isEditing = false;
+    
+    if (selectedAgentId) {
+      const agent = agents.find(a => a.id === selectedAgentId);
+      renderAgentEditor(agent);
+    } else {
+      renderAgentEditor();
+    }
+  }
+
+  // Utility functions
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  }
+
+  // Event listeners
+  function setupEventListeners() {
+    // New agent button
+    document.getElementById('new-agent-btn')?.addEventListener('click', startNewAgent);
+    document.getElementById('empty-new-agent-btn')?.addEventListener('click', startNewAgent);
+    
+    // Form actions
+    document.getElementById('save-agent-btn')?.addEventListener('click', saveAgent);
+    document.getElementById('cancel-agent-btn')?.addEventListener('click', cancelEdit);
+    document.getElementById('delete-agent-btn')?.addEventListener('click', deleteAgent);
+    
+    // Search
+    document.getElementById('agent-search')?.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      const query = target.value.toLowerCase();
+      
+      const cards = document.querySelectorAll('.item-card');
+      cards.forEach(card => {
+        const name = card.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+        const preview = card.querySelector('.item-preview')?.textContent?.toLowerCase() || '';
+        
+        if (name.includes(query) || preview.includes(query)) {
+          (card as HTMLElement).style.display = 'block';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Make functions available globally
+  (window as any).selectAgent = selectAgent;
+  (window as any).startNewAgent = startNewAgent;
+</script>

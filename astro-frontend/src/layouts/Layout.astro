@@ -1,0 +1,416 @@
+---
+import PWAStatus from '../components/PWAStatus.astro';
+
+export interface Props {
+  title?: string;
+}
+
+const { title = "Semantic Prompt Workstation" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>{title}</title>
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="PromptEngine" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+  </head>
+  <body>
+    <slot />
+    
+    <!-- PWA Status Component -->
+    <PWAStatus />
+    
+    <!-- Install Prompt -->
+    <div id="install-prompt" class="install-prompt hidden">
+      <span>Install Semantic Prompt Workstation</span>
+      <button id="install-button" class="install-button">Install</button>
+      <button id="dismiss-install" class="dismiss-button">×</button>
+    </div>
+    
+    <script>
+      // PWA Service Worker Registration
+      // Initialize PWA functionality
+      let deferredPrompt = null;
+      
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('SW registered: ', registration);
+          } catch (registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          }
+        });
+      }
+      
+      // Listen for install prompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installPrompt = document.getElementById('install-prompt');
+        if (installPrompt) {
+          installPrompt.classList.remove('hidden');
+        }
+      });
+      
+      // Handle install button click
+      document.addEventListener('DOMContentLoaded', () => {
+        const installButton = document.getElementById('install-button');
+        const dismissButton = document.getElementById('dismiss-install');
+        const installPrompt = document.getElementById('install-prompt');
+        
+        if (installButton) {
+          installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              const { outcome } = await deferredPrompt.userChoice;
+              deferredPrompt = null;
+              if (installPrompt) {
+                installPrompt.classList.add('hidden');
+              }
+            }
+          });
+        }
+        
+        if (dismissButton) {
+          dismissButton.addEventListener('click', () => {
+            if (installPrompt) {
+              installPrompt.classList.add('hidden');
+            }
+          });
+        }
+      });
+      
+      // Auto-load saved theme on page load
+      function loadSavedTheme() {
+        const saved = localStorage.getItem('theme-settings');
+        if (saved) {
+          try {
+            const themeData = JSON.parse(saved);
+            
+            const themeConfigs = {
+              default: {
+                "--bg-base": "#0a0a0f",
+                "--bg-surface": "#12121a",
+                "--bg-elevated": "#1a1a24",
+                "--bg-hover": "#22222e",
+                "--accent-primary": "#6366f1",
+                "--accent-primary-hover": "#818cf8",
+                "--accent-secondary": "#22d3ee",
+                "--accent-success": "#34d399",
+                "--accent-warning": "#fbbf24",
+                "--accent-error": "#ef4444",
+                "--text-primary": "#f4f4f5",
+                "--text-secondary": "#a1a1aa",
+                "--text-muted": "#71717a",
+                "--border-subtle": "#27272a",
+                "--border-default": "#3f3f46",
+              },
+              light: {
+                "--bg-base": "#ffffff",
+                "--bg-surface": "#f8fafc",
+                "--bg-elevated": "#f1f5f9",
+                "--bg-hover": "#e2e8f0",
+                "--accent-primary": "#6366f1",
+                "--accent-primary-hover": "#4f46e5",
+                "--accent-secondary": "#0891b2",
+                "--accent-success": "#059669",
+                "--accent-warning": "#d97706",
+                "--accent-error": "#dc2626",
+                "--text-primary": "#0f172a",
+                "--text-secondary": "#475569",
+                "--text-muted": "#64748b",
+                "--border-subtle": "#e2e8f0",
+                "--border-default": "#cbd5e1",
+              },
+              ocean: {
+                "--bg-base": "#0c1821",
+                "--bg-surface": "#1b2838",
+                "--bg-elevated": "#243447",
+                "--bg-hover": "#2d4057",
+                "--accent-primary": "#3b82f6",
+                "--accent-primary-hover": "#60a5fa",
+                "--accent-secondary": "#06b6d4",
+                "--accent-success": "#10b981",
+                "--accent-warning": "#f59e0b",
+                "--accent-error": "#ef4444",
+                "--text-primary": "#f0f9ff",
+                "--text-secondary": "#bae6fd",
+                "--text-muted": "#7dd3fc",
+                "--border-subtle": "#334155",
+                "--border-default": "#475569",
+              },
+              forest: {
+                "--bg-base": "#0f1419",
+                "--bg-surface": "#1a2332",
+                "--bg-elevated": "#253344",
+                "--bg-hover": "#304455",
+                "--accent-primary": "#22c55e",
+                "--accent-primary-hover": "#4ade80",
+                "--accent-secondary": "#14b8a6",
+                "--accent-success": "#10b981",
+                "--accent-warning": "#f59e0b",
+                "--accent-error": "#ef4444",
+                "--text-primary": "#f0fdf4",
+                "--text-secondary": "#bbf7d0",
+                "--text-muted": "#86efac",
+                "--border-subtle": "#374151",
+                "--border-default": "#4b5563",
+              }
+            };
+            
+            let themeVars = {};
+            
+            if (themeData.custom) {
+              themeVars = { ...themeData.custom.colors, ...themeData.custom.fonts };
+            } else {
+              const themeConfig = themeConfigs[themeData.id];
+              if (themeConfig) {
+                themeVars = themeConfig;
+              }
+            }
+            
+            // Apply theme variables to document root
+            Object.entries(themeVars).forEach(([property, value]) => {
+              document.documentElement.style.setProperty(property, value);
+            });
+            
+          } catch (e) {
+            console.warn('Failed to load saved theme:', e);
+          }
+        }
+      }
+      
+      // Load theme immediately
+      loadSavedTheme();
+      
+      // Also load theme when DOM is ready (in case script runs before DOM)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadSavedTheme);
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  @import '../styles/global.css';
+  @import '../styles/components.css';
+</style>
+
+<style is:global>
+  :root {
+    --bg-base: #0a0a0f;
+    --bg-surface: #12121a;
+    --bg-elevated: #1a1a24;
+    --bg-hover: #22222e;
+    --accent-primary: #6366f1;
+    --accent-primary-hover: #818cf8;
+    --accent-secondary: #22d3ee;
+    --accent-success: #34d399;
+    --accent-warning: #fbbf24;
+    --accent-error: #ef4444;
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --border-subtle: #27272a;
+    --border-default: #3f3f46;
+    --font-display: "Space Grotesk", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+    --header-height: 60px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --transition-fast: 150ms ease;
+    --transition-normal: 200ms ease;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  /* Loading & Toast */
+  .loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-default);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.success {
+    border-color: var(--accent-success);
+    color: var(--accent-success);
+  }
+  .toast.error {
+    border-color: var(--accent-error);
+    color: var(--accent-error);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .sync-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-success);
+    margin-left: 0.5rem;
+  }
+  .sync-indicator.syncing {
+    background: var(--accent-warning);
+    animation: pulse 1s infinite;
+  }
+  .sync-indicator.error {
+    background: var(--accent-error);
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .hidden-input {
+    display: none;
+  }
+
+  /* Install Prompt */
+  .install-prompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, var(--accent-primary), #8b5cf6);
+    color: white;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+  
+  .install-prompt.hidden {
+    transform: translateY(-100%);
+  }
+  
+  .install-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .install-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  .dismiss-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+  }
+  
+  .dismiss-button:hover {
+    opacity: 1;
+  }
+</style>

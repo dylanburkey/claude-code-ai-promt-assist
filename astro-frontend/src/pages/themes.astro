@@ -1,0 +1,615 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import ThemeManager from '../components/ThemeManager.astro';
+---
+
+<Layout title="Theme Management - Semantic Prompt Workstation">
+  <div id="install-prompt" style="display: none;">
+    Install Semantic Prompt Workstation
+  </div>
+
+  <Navigation currentPath="/themes" />
+
+  <div class="workspace">
+    <!-- SIDEBAR -->
+    <aside class="panel" id="sidebar-panel">
+      <div class="panel-header">
+        <span class="panel-title">Theme Options</span>
+      </div>
+      
+      <div class="theme-info">
+        <h4>Customize Your Experience</h4>
+        <p>Personalize the appearance of your workspace with custom themes, colors, and typography.</p>
+        
+        <div class="theme-features">
+          <div class="feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5L17 8l-1.5-1.5M8 17l-1.5 1.5M1 12l6-6m6 6l6 6"></path>
+            </svg>
+            <span>Live Preview</span>
+          </div>
+          <div class="feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Auto-Save</span>
+          </div>
+          <div class="feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            <span>Presets</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="current-theme-display">
+        <h5>Current Theme</h5>
+        <div class="current-theme-preview" id="current-theme-preview">
+          <div class="theme-preview-colors">
+            <div class="theme-preview-color" style="background: var(--bg-base)"></div>
+            <div class="theme-preview-color" style="background: var(--accent-primary)"></div>
+            <div class="theme-preview-color" style="background: var(--accent-secondary)"></div>
+          </div>
+          <span id="current-theme-name">Dark Professional</span>
+        </div>
+      </div>
+
+      <button class="btn-secondary close-sidebar-btn menu-toggle" id="close-sidebar">
+        Close Menu
+      </button>
+    </aside>
+
+    <!-- THEME MANAGER -->
+    <section class="panel active-view" id="view-theme-manager">
+      <div class="panel-header">
+        <span class="panel-title">Theme Customization</span>
+        <div class="header-actions">
+          <button class="btn-ghost btn-xs" id="export-theme-btn" title="Export Theme">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+          <button class="btn-ghost btn-xs" id="import-theme-btn" title="Import Theme">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <ThemeManager />
+    </section>
+
+    <!-- PREVIEW PANEL -->
+    <section class="panel" id="view-preview">
+      <div class="panel-header">
+        <span class="panel-title">Application Preview</span>
+        <div class="header-actions">
+          <button class="btn-secondary btn-sm" id="refresh-preview-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+              <path d="M21 3v5h-5"></path>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+              <path d="M3 21v-5h5"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="preview-container">
+        <div class="preview-mockup">
+          <!-- Mock Header -->
+          <div class="mock-header">
+            <div class="mock-logo">
+              <h3>Prompt Workstation</h3>
+              <span class="mock-version">v3.0</span>
+            </div>
+            <div class="mock-nav">
+              <a href="#" class="mock-nav-link active">Builder</a>
+              <a href="#" class="mock-nav-link">Projects</a>
+              <a href="#" class="mock-nav-link">Themes</a>
+            </div>
+          </div>
+
+          <!-- Mock Content -->
+          <div class="mock-content">
+            <div class="mock-sidebar">
+              <div class="mock-section">
+                <h5>Agents</h5>
+                <div class="mock-item">
+                  <span class="mock-item-name">Senior Developer</span>
+                  <span class="mock-item-desc">Technical expert</span>
+                </div>
+                <div class="mock-item">
+                  <span class="mock-item-name">Product Manager</span>
+                  <span class="mock-item-desc">Strategy focused</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mock-main">
+              <div class="mock-form">
+                <label>Task Description</label>
+                <div class="mock-textarea">Write a comprehensive API documentation...</div>
+                
+                <label>Context & Constraints</label>
+                <div class="mock-textarea">RESTful API with authentication...</div>
+                
+                <div class="mock-buttons">
+                  <button class="mock-btn-primary">Generate Prompt</button>
+                  <button class="mock-btn-secondary">Save Draft</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mock-output">
+              <h5>Generated Output</h5>
+              <div class="mock-code">
+                <span class="mock-code-comment"># API Documentation</span><br>
+                <span class="mock-code-keyword">## Overview</span><br>
+                <span class="mock-code-text">This API provides...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="mobile-tabs">
+    <div class="mobile-tab active" id="tab-theme">Theme</div>
+    <div class="mobile-tab" id="tab-preview">Preview</div>
+  </div>
+
+  <!-- Hidden file input for theme import -->
+  <input type="file" id="theme-file-input" accept=".json" style="display: none;" />
+</Layout>
+
+<style>
+  .theme-info {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .theme-info h4 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  .theme-info p {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin: 0 0 1rem 0;
+    line-height: 1.4;
+  }
+
+  .theme-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+  }
+
+  .feature-item svg {
+    color: var(--accent-primary);
+  }
+
+  .current-theme-display {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+  }
+
+  .current-theme-display h5 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .current-theme-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .theme-preview-colors {
+    display: flex;
+    gap: 2px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .theme-preview-color {
+    width: 16px;
+    height: 16px;
+  }
+
+  #current-theme-name {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .preview-container {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .preview-mockup {
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    min-height: 500px;
+  }
+
+  .mock-header {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mock-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mock-logo h3 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .mock-version {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-primary);
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.6rem;
+    font-weight: 600;
+  }
+
+  .mock-nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .mock-nav-link {
+    padding: 0.375rem 0.75rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+  }
+
+  .mock-nav-link.active {
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+  }
+
+  .mock-content {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    height: 400px;
+  }
+
+  .mock-sidebar {
+    background: var(--bg-base);
+    border-right: 1px solid var(--border-subtle);
+    padding: 1rem;
+  }
+
+  .mock-section h5 {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .mock-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mock-item-name {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  .mock-item-desc {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+  }
+
+  .mock-main {
+    padding: 1rem;
+    background: var(--bg-base);
+  }
+
+  .mock-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mock-form label {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  .mock-textarea {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.7rem;
+    min-height: 60px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .mock-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .mock-btn-primary {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    cursor: pointer;
+  }
+
+  .mock-btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    cursor: pointer;
+  }
+
+  .mock-output {
+    background: var(--bg-base);
+    border-left: 1px solid var(--border-subtle);
+    padding: 1rem;
+  }
+
+  .mock-output h5 {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .mock-code {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    line-height: 1.4;
+  }
+
+  .mock-code-comment {
+    color: var(--text-muted);
+  }
+
+  .mock-code-keyword {
+    color: var(--accent-primary);
+  }
+
+  .mock-code-text {
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 768px) {
+    .mock-content {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .mock-sidebar,
+    .mock-output {
+      display: none;
+    }
+  }
+
+  /* Buttons */
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0.25rem;
+  }
+
+  .btn-ghost:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .btn-xs {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .close-sidebar-btn {
+    margin-top: auto;
+  }
+</style>
+
+<script>
+  // Mobile tab switching
+  document.getElementById('tab-theme')?.addEventListener('click', () => {
+    document.getElementById('view-theme-manager')?.classList.add('active-view');
+    document.getElementById('view-preview')?.classList.remove('active-view');
+    document.getElementById('tab-theme')?.classList.add('active');
+    document.getElementById('tab-preview')?.classList.remove('active');
+  });
+
+  document.getElementById('tab-preview')?.addEventListener('click', () => {
+    document.getElementById('view-preview')?.classList.add('active-view');
+    document.getElementById('view-theme-manager')?.classList.remove('active-view');
+    document.getElementById('tab-preview')?.classList.add('active');
+    document.getElementById('tab-theme')?.classList.remove('active');
+  });
+
+  // Sidebar toggle
+  document.getElementById('close-sidebar')?.addEventListener('click', () => {
+    document.getElementById('sidebar-panel')?.classList.toggle('mobile-open');
+  });
+
+  // Theme export/import
+  document.getElementById('export-theme-btn')?.addEventListener('click', () => {
+    const themeData = localStorage.getItem('theme-settings');
+    if (themeData) {
+      const blob = new Blob([themeData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'theme-settings.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  });
+
+  document.getElementById('import-theme-btn')?.addEventListener('click', () => {
+    document.getElementById('theme-file-input')?.click();
+  });
+
+  document.getElementById('theme-file-input')?.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const themeData = JSON.parse(e.target.result);
+          localStorage.setItem('theme-settings', JSON.stringify(themeData));
+          location.reload(); // Reload to apply imported theme
+        } catch (error) {
+          console.error('Failed to import theme:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  });
+
+  // Preview refresh
+  document.getElementById('refresh-preview-btn')?.addEventListener('click', () => {
+    // Force refresh of preview mockup styles
+    const mockup = document.querySelector('.preview-mockup');
+    if (mockup) {
+      mockup.style.display = 'none';
+      setTimeout(() => {
+        mockup.style.display = 'block';
+      }, 100);
+    }
+  });
+
+  // Update current theme display
+  function updateCurrentThemeDisplay() {
+    const saved = localStorage.getItem('theme-settings');
+    if (saved) {
+      try {
+        const themeData = JSON.parse(saved);
+        const nameElement = document.getElementById('current-theme-name');
+        if (nameElement) {
+          nameElement.textContent = themeData.custom ? 'Custom Theme' : 
+            (themeData.id === 'light' ? 'Light Professional' :
+             themeData.id === 'ocean' ? 'Ocean Blue' :
+             themeData.id === 'forest' ? 'Forest Green' : 'Dark Professional');
+        }
+      } catch (e) {
+        console.warn('Failed to parse theme data:', e);
+      }
+    }
+  }
+
+  // Initialize
+  updateCurrentThemeDisplay();
+
+  // Listen for theme changes
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'theme-settings') {
+      updateCurrentThemeDisplay();
+    }
+  });
+</script>

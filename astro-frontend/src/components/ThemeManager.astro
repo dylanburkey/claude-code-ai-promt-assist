@@ -1,0 +1,769 @@
+---
+export interface Props {
+  initialTheme?: string;
+}
+
+const { initialTheme = "default" } = Astro.props;
+
+// Define available themes
+const themes = [
+  {
+    id: "default",
+    name: "Dark Professional",
+    colors: {
+      "--bg-base": "#0a0a0f",
+      "--bg-surface": "#12121a",
+      "--bg-elevated": "#1a1a24",
+      "--bg-hover": "#22222e",
+      "--accent-primary": "#6366f1",
+      "--accent-primary-hover": "#818cf8",
+      "--accent-secondary": "#22d3ee",
+      "--accent-success": "#34d399",
+      "--accent-warning": "#fbbf24",
+      "--accent-error": "#ef4444",
+      "--text-primary": "#f4f4f5",
+      "--text-secondary": "#a1a1aa",
+      "--text-muted": "#71717a",
+      "--border-subtle": "#27272a",
+      "--border-default": "#3f3f46",
+    },
+    fonts: {
+      "--font-display": '"Space Grotesk", system-ui, sans-serif',
+      "--font-body": '"IBM Plex Sans", system-ui, sans-serif',
+      "--font-mono": '"IBM Plex Mono", "SF Mono", monospace',
+    }
+  },
+  {
+    id: "light",
+    name: "Light Professional",
+    colors: {
+      "--bg-base": "#ffffff",
+      "--bg-surface": "#f8fafc",
+      "--bg-elevated": "#f1f5f9",
+      "--bg-hover": "#e2e8f0",
+      "--accent-primary": "#6366f1",
+      "--accent-primary-hover": "#4f46e5",
+      "--accent-secondary": "#0891b2",
+      "--accent-success": "#059669",
+      "--accent-warning": "#d97706",
+      "--accent-error": "#dc2626",
+      "--text-primary": "#0f172a",
+      "--text-secondary": "#475569",
+      "--text-muted": "#64748b",
+      "--border-subtle": "#e2e8f0",
+      "--border-default": "#cbd5e1",
+    },
+    fonts: {
+      "--font-display": '"Space Grotesk", system-ui, sans-serif',
+      "--font-body": '"IBM Plex Sans", system-ui, sans-serif',
+      "--font-mono": '"IBM Plex Mono", "SF Mono", monospace',
+    }
+  },
+  {
+    id: "ocean",
+    name: "Ocean Blue",
+    colors: {
+      "--bg-base": "#0c1821",
+      "--bg-surface": "#1b2838",
+      "--bg-elevated": "#243447",
+      "--bg-hover": "#2d4057",
+      "--accent-primary": "#3b82f6",
+      "--accent-primary-hover": "#60a5fa",
+      "--accent-secondary": "#06b6d4",
+      "--accent-success": "#10b981",
+      "--accent-warning": "#f59e0b",
+      "--accent-error": "#ef4444",
+      "--text-primary": "#f0f9ff",
+      "--text-secondary": "#bae6fd",
+      "--text-muted": "#7dd3fc",
+      "--border-subtle": "#334155",
+      "--border-default": "#475569",
+    },
+    fonts: {
+      "--font-display": '"Space Grotesk", system-ui, sans-serif',
+      "--font-body": '"IBM Plex Sans", system-ui, sans-serif',
+      "--font-mono": '"IBM Plex Mono", "SF Mono", monospace',
+    }
+  },
+  {
+    id: "forest",
+    name: "Forest Green",
+    colors: {
+      "--bg-base": "#0f1419",
+      "--bg-surface": "#1a2332",
+      "--bg-elevated": "#253344",
+      "--bg-hover": "#304455",
+      "--accent-primary": "#22c55e",
+      "--accent-primary-hover": "#4ade80",
+      "--accent-secondary": "#14b8a6",
+      "--accent-success": "#10b981",
+      "--accent-warning": "#f59e0b",
+      "--accent-error": "#ef4444",
+      "--text-primary": "#f0fdf4",
+      "--text-secondary": "#bbf7d0",
+      "--text-muted": "#86efac",
+      "--border-subtle": "#374151",
+      "--border-default": "#4b5563",
+    },
+    fonts: {
+      "--font-display": '"Space Grotesk", system-ui, sans-serif',
+      "--font-body": '"IBM Plex Sans", system-ui, sans-serif',
+      "--font-mono": '"IBM Plex Mono", "SF Mono", monospace',
+    }
+  }
+];
+---
+
+<div class="theme-manager">
+  <div class="theme-manager-header">
+    <h3 class="theme-manager-title">Theme Customization</h3>
+    <button class="btn-ghost btn-xs" id="reset-theme-btn" title="Reset to Default">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/>
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+        <path d="M3 21v-5h5"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Theme Presets -->
+  <div class="theme-section">
+    <label class="theme-section-label">Theme Presets</label>
+    <div class="theme-presets">
+      {themes.map(theme => (
+        <button 
+          class="theme-preset-btn" 
+          data-theme-id={theme.id}
+          title={theme.name}
+        >
+          <div class="theme-preview">
+            <div class="theme-preview-colors">
+              <div 
+                class="theme-preview-color" 
+                style={`background: ${theme.colors["--bg-base"]}`}
+              ></div>
+              <div 
+                class="theme-preview-color" 
+                style={`background: ${theme.colors["--accent-primary"]}`}
+              ></div>
+              <div 
+                class="theme-preview-color" 
+                style={`background: ${theme.colors["--accent-secondary"]}`}
+              ></div>
+            </div>
+            <span class="theme-preset-name">{theme.name}</span>
+          </div>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Custom Colors -->
+  <div class="theme-section">
+    <label class="theme-section-label">Custom Colors</label>
+    <div class="color-controls">
+      <div class="color-control">
+        <label for="primary-color">Primary Accent</label>
+        <input type="color" id="primary-color" value="#6366f1" />
+      </div>
+      <div class="color-control">
+        <label for="secondary-color">Secondary Accent</label>
+        <input type="color" id="secondary-color" value="#22d3ee" />
+      </div>
+      <div class="color-control">
+        <label for="background-color">Background</label>
+        <input type="color" id="background-color" value="#0a0a0f" />
+      </div>
+      <div class="color-control">
+        <label for="surface-color">Surface</label>
+        <input type="color" id="surface-color" value="#12121a" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Font Selection -->
+  <div class="theme-section">
+    <label class="theme-section-label">Typography</label>
+    <div class="font-controls">
+      <div class="font-control">
+        <label for="display-font">Display Font</label>
+        <select id="display-font">
+          <option value="Space Grotesk">Space Grotesk</option>
+          <option value="Inter">Inter</option>
+          <option value="Poppins">Poppins</option>
+          <option value="Roboto">Roboto</option>
+        </select>
+      </div>
+      <div class="font-control">
+        <label for="body-font">Body Font</label>
+        <select id="body-font">
+          <option value="IBM Plex Sans">IBM Plex Sans</option>
+          <option value="Inter">Inter</option>
+          <option value="System UI">System UI</option>
+          <option value="Roboto">Roboto</option>
+        </select>
+      </div>
+      <div class="font-control">
+        <label for="mono-font">Monospace Font</label>
+        <select id="mono-font">
+          <option value="IBM Plex Mono">IBM Plex Mono</option>
+          <option value="JetBrains Mono">JetBrains Mono</option>
+          <option value="Fira Code">Fira Code</option>
+          <option value="SF Mono">SF Mono</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Preview -->
+  <div class="theme-section">
+    <label class="theme-section-label">Live Preview</label>
+    <div class="theme-preview-panel" id="theme-preview">
+      <div class="preview-header">
+        <h4>Sample Interface</h4>
+        <button class="btn-primary btn-sm">Primary Button</button>
+      </div>
+      <div class="preview-content">
+        <p class="preview-text-primary">Primary text content</p>
+        <p class="preview-text-secondary">Secondary text content</p>
+        <p class="preview-text-muted">Muted text content</p>
+        <div class="preview-card">
+          <h5>Sample Card</h5>
+          <p>This is how cards will look with your theme.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="theme-actions">
+    <button class="btn-primary" id="apply-theme-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      Apply Theme
+    </button>
+    <button class="btn-secondary" id="save-theme-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        <polyline points="7 3 7 8 15 8"></polyline>
+      </svg>
+      Save Theme
+    </button>
+  </div>
+</div>
+
+<style>
+  .theme-manager {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .theme-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .theme-manager-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .theme-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .theme-section-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Theme Presets */
+  .theme-presets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .theme-preset-btn {
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .theme-preset-btn:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-elevated);
+  }
+
+  .theme-preset-btn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+  }
+
+  .theme-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .theme-preview-colors {
+    display: flex;
+    gap: 2px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .theme-preview-color {
+    width: 20px;
+    height: 20px;
+  }
+
+  .theme-preset-name {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  /* Color Controls */
+  .color-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .color-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .color-control label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .color-control input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: none;
+  }
+
+  /* Font Controls */
+  .font-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .font-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .font-control label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .font-control select {
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+  }
+
+  /* Live Preview */
+  .theme-preview-panel {
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    transition: all var(--transition-normal);
+  }
+
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .preview-header h4 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .preview-text-primary {
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .preview-text-secondary {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .preview-text-muted {
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .preview-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+  }
+
+  .preview-card h5 {
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  .preview-card p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.8rem;
+  }
+
+  /* Actions */
+  .theme-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .theme-actions button {
+    flex: 1;
+  }
+
+  /* Buttons */
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: var(--accent-primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-primary-hover);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0.25rem;
+  }
+
+  .btn-ghost:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .btn-xs {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+</style>
+
+<script define:vars={{ themes, initialTheme }}>
+  class ThemeManager {
+    constructor() {
+      this.themes = themes;
+      this.currentTheme = initialTheme;
+      this.customTheme = null;
+      this.init();
+    }
+
+    init() {
+      this.loadSavedTheme();
+      this.bindEvents();
+      this.updatePreview();
+    }
+
+    loadSavedTheme() {
+      const saved = localStorage.getItem('theme-settings');
+      if (saved) {
+        try {
+          const themeData = JSON.parse(saved);
+          this.currentTheme = themeData.id || 'default';
+          this.customTheme = themeData.custom || null;
+          this.applyTheme(themeData);
+        } catch (e) {
+          console.warn('Failed to load saved theme:', e);
+        }
+      }
+    }
+
+    bindEvents() {
+      // Theme preset buttons
+      document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const themeId = e.currentTarget.dataset.themeId;
+          this.selectPreset(themeId);
+        });
+      });
+
+      // Color inputs
+      document.querySelectorAll('.color-control input[type="color"]').forEach(input => {
+        input.addEventListener('input', () => this.updateCustomTheme());
+      });
+
+      // Font selects
+      document.querySelectorAll('.font-control select').forEach(select => {
+        select.addEventListener('change', () => this.updateCustomTheme());
+      });
+
+      // Action buttons
+      document.getElementById('apply-theme-btn')?.addEventListener('click', () => {
+        this.applyCurrentTheme();
+      });
+
+      document.getElementById('save-theme-btn')?.addEventListener('click', () => {
+        this.saveTheme();
+      });
+
+      document.getElementById('reset-theme-btn')?.addEventListener('click', () => {
+        this.resetTheme();
+      });
+    }
+
+    selectPreset(themeId) {
+      this.currentTheme = themeId;
+      this.customTheme = null;
+      
+      // Update UI
+      document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themeId === themeId);
+      });
+
+      const theme = this.themes.find(t => t.id === themeId);
+      if (theme) {
+        this.updateControlsFromTheme(theme);
+        this.updatePreview();
+      }
+    }
+
+    updateControlsFromTheme(theme) {
+      // Update color inputs
+      document.getElementById('primary-color').value = theme.colors['--accent-primary'];
+      document.getElementById('secondary-color').value = theme.colors['--accent-secondary'];
+      document.getElementById('background-color').value = theme.colors['--bg-base'];
+      document.getElementById('surface-color').value = theme.colors['--bg-surface'];
+
+      // Update font selects
+      const displayFont = theme.fonts['--font-display'].split(',')[0].replace(/"/g, '');
+      const bodyFont = theme.fonts['--font-body'].split(',')[0].replace(/"/g, '');
+      const monoFont = theme.fonts['--font-mono'].split(',')[0].replace(/"/g, '');
+
+      document.getElementById('display-font').value = displayFont;
+      document.getElementById('body-font').value = bodyFont;
+      document.getElementById('mono-font').value = monoFont;
+    }
+
+    updateCustomTheme() {
+      this.customTheme = {
+        colors: {
+          '--accent-primary': document.getElementById('primary-color').value,
+          '--accent-secondary': document.getElementById('secondary-color').value,
+          '--bg-base': document.getElementById('background-color').value,
+          '--bg-surface': document.getElementById('surface-color').value,
+        },
+        fonts: {
+          '--font-display': `"${document.getElementById('display-font').value}", system-ui, sans-serif`,
+          '--font-body': `"${document.getElementById('body-font').value}", system-ui, sans-serif`,
+          '--font-mono': `"${document.getElementById('mono-font').value}", "SF Mono", monospace`,
+        }
+      };
+
+      // Clear preset selection
+      document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      this.updatePreview();
+    }
+
+    updatePreview() {
+      const preview = document.getElementById('theme-preview');
+      if (!preview) return;
+
+      let themeVars = {};
+
+      if (this.customTheme) {
+        themeVars = { ...this.customTheme.colors, ...this.customTheme.fonts };
+      } else {
+        const theme = this.themes.find(t => t.id === this.currentTheme);
+        if (theme) {
+          themeVars = { ...theme.colors, ...theme.fonts };
+        }
+      }
+
+      // Apply theme variables to preview
+      Object.entries(themeVars).forEach(([property, value]) => {
+        preview.style.setProperty(property, value);
+      });
+    }
+
+    applyCurrentTheme() {
+      let themeVars = {};
+
+      if (this.customTheme) {
+        themeVars = { ...this.customTheme.colors, ...this.customTheme.fonts };
+      } else {
+        const theme = this.themes.find(t => t.id === this.currentTheme);
+        if (theme) {
+          themeVars = { ...theme.colors, ...theme.fonts };
+        }
+      }
+
+      // Apply to document root
+      Object.entries(themeVars).forEach(([property, value]) => {
+        document.documentElement.style.setProperty(property, value);
+      });
+
+      // Show success message
+      this.showToast('Theme applied successfully!', 'success');
+    }
+
+    saveTheme() {
+      const themeData = {
+        id: this.currentTheme,
+        custom: this.customTheme,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('theme-settings', JSON.stringify(themeData));
+      this.showToast('Theme saved!', 'success');
+    }
+
+    resetTheme() {
+      this.currentTheme = 'default';
+      this.customTheme = null;
+      localStorage.removeItem('theme-settings');
+      
+      const defaultTheme = this.themes.find(t => t.id === 'default');
+      if (defaultTheme) {
+        this.updateControlsFromTheme(defaultTheme);
+        this.selectPreset('default');
+        this.applyCurrentTheme();
+      }
+
+      this.showToast('Theme reset to default', 'success');
+    }
+
+    applyTheme(themeData) {
+      let themeVars = {};
+
+      if (themeData.custom) {
+        themeVars = { ...themeData.custom.colors, ...themeData.custom.fonts };
+      } else {
+        const theme = this.themes.find(t => t.id === themeData.id);
+        if (theme) {
+          themeVars = { ...theme.colors, ...theme.fonts };
+        }
+      }
+
+      // Apply to document root
+      Object.entries(themeVars).forEach(([property, value]) => {
+        document.documentElement.style.setProperty(property, value);
+      });
+    }
+
+    showToast(message, type = 'success') {
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      // Show toast
+      setTimeout(() => toast.classList.add('show'), 100);
+      
+      // Hide and remove toast
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+  }
+
+  // Initialize theme manager when DOM is loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      new ThemeManager();
+    });
+  } else {
+    new ThemeManager();
+  }
+</script>

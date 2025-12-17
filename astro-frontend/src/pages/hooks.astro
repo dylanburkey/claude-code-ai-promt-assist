@@ -1,0 +1,1146 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Button from '../components/ui/Button.astro';
+import Form from '../components/ui/Form.astro';
+import Modal from '../components/ui/Modal.astro';
+---
+
+<Layout title="Hooks - Semantic Prompt Workstation">
+  <Navigation currentPath="/hooks" />
+
+  <div class="main-layout">
+    <!-- HOOKS LIST -->
+    <section class="panel" id="hooks-panel">
+      <div class="panel-header">
+        <span class="panel-title">Automation Hooks</span>
+        <div class="header-actions">
+          <Button variant="primary" size="sm" id="new-hook-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Hook
+          </Button>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input type="text" id="hook-search" placeholder="Search hooks..." />
+        </div>
+      </div>
+
+      <div class="hook-categories">
+        <div class="category-tabs">
+          <button class="category-tab active" data-category="all">All</button>
+          <button class="category-tab" data-category="workflow">Workflow</button>
+          <button class="category-tab" data-category="integration">Integration</button>
+          <button class="category-tab" data-category="automation">Automation</button>
+        </div>
+      </div>
+
+      <div id="hook-list" class="item-list">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M8 2v4" />
+            <path d="M16 2v4" />
+            <rect width="18" height="18" x="3" y="4" rx="2" />
+            <path d="M3 10h18" />
+            <path d="M8 14h.01" />
+            <path d="M12 14h.01" />
+            <path d="M16 14h.01" />
+            <path d="M8 18h.01" />
+            <path d="M12 18h.01" />
+            <path d="M16 18h.01" />
+          </svg>
+          <h3>No hooks yet</h3>
+          <p>Create automation hooks to streamline your workflow</p>
+          <Button variant="primary" id="empty-new-hook-btn">Create Hook</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOOK EDITOR -->
+    <section class="panel" id="hook-editor-panel">
+      <div class="panel-header">
+        <span class="panel-title">Hook Configuration</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="test-hook-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Test
+          </Button>
+          <Button variant="secondary" size="sm" id="duplicate-hook-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Duplicate
+          </Button>
+          <Button variant="secondary" size="sm" id="delete-hook-btn" style="display: none; color: #ef4444; border-color: #ef4444;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      <div id="hook-editor-content" class="editor-content">
+        <div class="empty-editor">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M8 2v4" />
+            <path d="M16 2v4" />
+            <rect width="18" height="18" x="3" y="4" rx="2" />
+            <path d="M3 10h18" />
+          </svg>
+          <h3>Select a hook to configure</h3>
+          <p>Choose a hook from the list or create a new one</p>
+        </div>
+      </div>
+
+      <div id="hook-form" class="hook-form" style="display: none;">
+        <input type="hidden" id="hook-id" />
+        
+        <Form>
+          <label for="hook-name">Hook Name</label>
+          <input type="text" id="hook-name" placeholder="e.g., Auto-generate Documentation" required />
+        </Form>
+
+        <Form>
+          <label for="hook-description">Description</label>
+          <textarea id="hook-description" rows="2" placeholder="Brief description of what this hook does..."></textarea>
+        </Form>
+
+        <Form>
+          <label for="hook-category">Category</label>
+          <select id="hook-category" required>
+            <option value="">Select a category</option>
+            <option value="workflow">Workflow</option>
+            <option value="integration">Integration</option>
+            <option value="automation">Automation</option>
+          </select>
+        </Form>
+
+        <Form>
+          <label for="hook-trigger">Trigger Event</label>
+          <select id="hook-trigger" required>
+            <option value="">Select a trigger</option>
+            <option value="manual">Manual Execution</option>
+            <option value="file_save">File Save</option>
+            <option value="project_create">Project Created</option>
+            <option value="agent_create">Agent Created</option>
+            <option value="prompt_generate">Prompt Generated</option>
+            <option value="schedule">Scheduled</option>
+          </select>
+        </Form>
+
+        <div id="trigger-config" class="trigger-config" style="display: none;">
+          <!-- Dynamic trigger configuration will be inserted here -->
+        </div>
+
+        <Form>
+          <label for="hook-action">Action Type</label>
+          <select id="hook-action" required>
+            <option value="">Select an action</option>
+            <option value="generate_prompt">Generate Prompt</option>
+            <option value="run_command">Run Command</option>
+            <option value="send_webhook">Send Webhook</option>
+            <option value="create_file">Create File</option>
+            <option value="update_project">Update Project</option>
+          </select>
+        </Form>
+
+        <div id="action-config" class="action-config" style="display: none;">
+          <!-- Dynamic action configuration will be inserted here -->
+        </div>
+
+        <Form>
+          <label for="hook-enabled">
+            <input type="checkbox" id="hook-enabled" checked />
+            <span>Enable this hook</span>
+          </label>
+        </Form>
+
+        <div class="form-actions">
+          <Button variant="secondary" id="cancel-hook-btn">Cancel</Button>
+          <Button variant="primary" id="save-hook-btn">Save Hook</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOOK LOGS -->
+    <section class="panel preview-panel" id="hook-logs-panel">
+      <div class="panel-header">
+        <span class="panel-title">Execution Logs</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="clear-logs-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            Clear
+          </Button>
+        </div>
+      </div>
+
+      <div id="hook-logs-content" class="logs-content">
+        <div class="empty-logs">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <h3>No Execution Logs</h3>
+          <p>Select a hook to see its execution history</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Hook Test Modal -->
+  <Modal id="test-hook-modal" title="Test Hook">
+    <Form>
+      <label for="test-context">Test Context</label>
+      <textarea id="test-context" rows="4" placeholder="Provide context or data for testing the hook..."></textarea>
+    </Form>
+    <div class="test-results" id="test-results" style="display: none;">
+      <h4>Test Results</h4>
+      <div class="test-output" id="test-output"></div>
+    </div>
+    <div class="modal-actions">
+      <Button variant="secondary" id="btn-cancel-test">Cancel</Button>
+      <Button variant="primary" id="btn-run-test">Run Test</Button>
+    </div>
+  </Modal>
+
+  <div id="toast" class="toast"></div>
+</Layout>
+
+<style>
+  .main-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 420px;
+    height: calc(100vh - var(--header-height));
+    overflow: hidden;
+  }
+
+  @media (max-width: 1200px) {
+    .main-layout {
+      grid-template-columns: 280px 1fr;
+    }
+    .preview-panel {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .main-layout {
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-panel {
+      display: none;
+    }
+  }
+
+  .panel {
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-base);
+  }
+  .panel:last-child {
+    border-right: none;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .search-section {
+    margin-bottom: 1rem;
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    z-index: 1;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+
+  .hook-categories {
+    margin-bottom: 1rem;
+  }
+
+  .category-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--bg-surface);
+    padding: 0.25rem;
+    border-radius: var(--radius-md);
+  }
+
+  .category-tab {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-align: center;
+  }
+
+  .category-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .category-tab.active {
+    color: var(--accent-primary);
+    background: var(--bg-base);
+  }
+
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .item-card {
+    background: var(--bg-surface);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    position: relative;
+  }
+
+  .item-card:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+  }
+
+  .item-card.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+  }
+
+  .item-card.disabled {
+    opacity: 0.6;
+  }
+
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .item-status {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .item-status.enabled {
+    background: rgba(52, 211, 153, 0.2);
+    color: var(--accent-success);
+  }
+
+  .item-status.disabled {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--accent-error);
+  }
+
+  .item-preview {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .hook-category-badge {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .empty-state, .empty-editor, .empty-logs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    flex: 1;
+  }
+
+  .empty-state svg, .empty-editor svg, .empty-logs svg {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3, .empty-editor h3, .empty-logs h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state p, .empty-editor p, .empty-logs p {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .editor-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hook-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+  }
+
+  .trigger-config, .action-config {
+    background: var(--bg-surface);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .config-section {
+    margin-bottom: 1rem;
+  }
+
+  .config-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .config-section label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .logs-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .log-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .log-entry {
+    background: var(--bg-surface);
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  .log-entry.success {
+    border-left-color: var(--accent-success);
+  }
+
+  .log-entry.error {
+    border-left-color: var(--accent-error);
+  }
+
+  .log-entry.warning {
+    border-left-color: var(--accent-warning);
+  }
+
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .log-timestamp {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+  }
+
+  .log-message {
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* Test Results */
+  .test-results {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .test-results h4 {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .test-output {
+    background: var(--bg-surface);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  /* Checkbox styles */
+  label input[type="checkbox"] {
+    margin-right: 0.5rem;
+    accent-color: var(--accent-primary);
+  }
+
+  /* Select styles */
+  select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+</style>
+
+<script>
+  import { api } from '../scripts/api';
+  import type { Hook } from '../types';
+
+  // Global state
+  let hooks: Hook[] = [];
+  let selectedHookId: string | null = null;
+  let isEditing = false;
+  let currentCategory = 'all';
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadHooks();
+    setupEventListeners();
+  });
+
+  // Data loading
+  async function loadHooks() {
+    try {
+      // For now, use mock data since hooks API might not be implemented
+      hooks = [
+        {
+          id: '1',
+          name: 'Auto Documentation',
+          description: 'Automatically generate documentation when code is saved',
+          category: 'automation',
+          trigger: 'file_save',
+          action: 'generate_prompt',
+          enabled: true,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: '2',
+          name: 'Project Setup',
+          description: 'Initialize project structure when a new project is created',
+          category: 'workflow',
+          trigger: 'project_create',
+          action: 'run_command',
+          enabled: false,
+          created_at: new Date().toISOString()
+        }
+      ];
+      
+      renderHookList();
+      
+      if (hooks.length > 0 && !selectedHookId) {
+        selectHook(hooks[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to load hooks:', error);
+      showToast('Failed to load hooks', 'error');
+    }
+  }
+
+  // UI rendering
+  function renderHookList() {
+    const container = document.getElementById('hook-list');
+    if (!container) return;
+
+    const filteredHooks = currentCategory === 'all' 
+      ? hooks 
+      : hooks.filter(hook => hook.category === currentCategory);
+
+    if (filteredHooks.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M8 2v4" />
+            <path d="M16 2v4" />
+            <rect width="18" height="18" x="3" y="4" rx="2" />
+            <path d="M3 10h18" />
+          </svg>
+          <h3>No hooks yet</h3>
+          <p>Create automation hooks to streamline your workflow</p>
+          <button class="btn-primary" onclick="startNewHook()">Create Hook</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filteredHooks.map(hook => `
+      <div class="item-card ${hook.id === selectedHookId ? 'active' : ''} ${!hook.enabled ? 'disabled' : ''}" onclick="selectHook('${hook.id}')">
+        <div class="item-card-header">
+          <span class="item-name">${escapeHtml(hook.name)}</span>
+          <span class="item-status ${hook.enabled ? 'enabled' : 'disabled'}">${hook.enabled ? 'Enabled' : 'Disabled'}</span>
+        </div>
+        ${hook.description ? `<div class="item-preview">${escapeHtml(hook.description)}</div>` : ''}
+        <div class="item-meta">
+          <span class="hook-category-badge">${hook.category}</span>
+          <span>Trigger: ${hook.trigger.replace('_', ' ')}</span>
+          <span>Action: ${hook.action.replace('_', ' ')}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderHookEditor(hook?: Hook) {
+    const content = document.getElementById('hook-editor-content');
+    const form = document.getElementById('hook-form');
+    
+    if (!content || !form) return;
+
+    if (!hook) {
+      content.style.display = 'flex';
+      form.style.display = 'none';
+      return;
+    }
+
+    content.style.display = 'none';
+    form.style.display = 'flex';
+
+    // Populate form
+    const idInput = document.getElementById('hook-id') as HTMLInputElement;
+    const nameInput = document.getElementById('hook-name') as HTMLInputElement;
+    const descriptionInput = document.getElementById('hook-description') as HTMLTextAreaElement;
+    const categorySelect = document.getElementById('hook-category') as HTMLSelectElement;
+    const triggerSelect = document.getElementById('hook-trigger') as HTMLSelectElement;
+    const actionSelect = document.getElementById('hook-action') as HTMLSelectElement;
+    const enabledInput = document.getElementById('hook-enabled') as HTMLInputElement;
+
+    if (idInput) idInput.value = hook.id || '';
+    if (nameInput) nameInput.value = hook.name || '';
+    if (descriptionInput) descriptionInput.value = hook.description || '';
+    if (categorySelect) categorySelect.value = hook.category || '';
+    if (triggerSelect) triggerSelect.value = hook.trigger || '';
+    if (actionSelect) actionSelect.value = hook.action || '';
+    if (enabledInput) enabledInput.checked = hook.enabled || false;
+
+    // Show/hide action buttons
+    const testBtn = document.getElementById('test-hook-btn');
+    const duplicateBtn = document.getElementById('duplicate-hook-btn');
+    const deleteBtn = document.getElementById('delete-hook-btn');
+    
+    if (testBtn && duplicateBtn && deleteBtn) {
+      if (hook.id) {
+        testBtn.style.display = 'flex';
+        duplicateBtn.style.display = 'flex';
+        deleteBtn.style.display = 'flex';
+      } else {
+        testBtn.style.display = 'none';
+        duplicateBtn.style.display = 'none';
+        deleteBtn.style.display = 'none';
+      }
+    }
+
+    // Update dynamic configurations
+    updateTriggerConfig(hook.trigger);
+    updateActionConfig(hook.action);
+  }
+
+  function renderHookLogs(hook?: Hook) {
+    const container = document.getElementById('hook-logs-content');
+    if (!container) return;
+
+    if (!hook) {
+      container.innerHTML = `
+        <div class="empty-logs">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <h3>No Execution Logs</h3>
+          <p>Select a hook to see its execution history</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Mock log entries for demonstration
+    const mockLogs = [
+      {
+        id: '1',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        status: 'success',
+        message: 'Hook executed successfully\nGenerated documentation for 3 files'
+      },
+      {
+        id: '2',
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        status: 'error',
+        message: 'Hook execution failed\nError: Unable to access file system'
+      }
+    ];
+
+    container.innerHTML = `
+      <div class="log-entries">
+        ${mockLogs.map(log => `
+          <div class="log-entry ${log.status}">
+            <div class="log-header">
+              <span class="log-status">${log.status.toUpperCase()}</span>
+              <span class="log-timestamp">${new Date(log.timestamp).toLocaleString()}</span>
+            </div>
+            <div class="log-message">${escapeHtml(log.message)}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    const clearBtn = document.getElementById('clear-logs-btn');
+    if (clearBtn) clearBtn.style.display = 'flex';
+  }
+
+  function updateTriggerConfig(trigger: string) {
+    const container = document.getElementById('trigger-config');
+    if (!container) return;
+
+    let configHtml = '';
+
+    switch (trigger) {
+      case 'schedule':
+        configHtml = `
+          <div class="config-section">
+            <label for="schedule-cron">Cron Expression</label>
+            <input type="text" id="schedule-cron" placeholder="0 0 * * *" />
+          </div>
+          <div class="config-section">
+            <label for="schedule-timezone">Timezone</label>
+            <select id="schedule-timezone">
+              <option value="UTC">UTC</option>
+              <option value="America/New_York">Eastern Time</option>
+              <option value="America/Los_Angeles">Pacific Time</option>
+            </select>
+          </div>
+        `;
+        break;
+      case 'file_save':
+        configHtml = `
+          <div class="config-section">
+            <label for="file-pattern">File Pattern</label>
+            <input type="text" id="file-pattern" placeholder="*.js,*.ts" />
+          </div>
+          <div class="config-section">
+            <label for="file-exclude">Exclude Pattern</label>
+            <input type="text" id="file-exclude" placeholder="node_modules/**" />
+          </div>
+        `;
+        break;
+    }
+
+    if (configHtml) {
+      container.innerHTML = configHtml;
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+
+  function updateActionConfig(action: string) {
+    const container = document.getElementById('action-config');
+    if (!container) return;
+
+    let configHtml = '';
+
+    switch (action) {
+      case 'generate_prompt':
+        configHtml = `
+          <div class="config-section">
+            <label for="prompt-template">Prompt Template</label>
+            <textarea id="prompt-template" rows="4" placeholder="Enter the prompt template..."></textarea>
+          </div>
+          <div class="config-section">
+            <label for="prompt-agent">Agent</label>
+            <select id="prompt-agent">
+              <option value="">Select an agent</option>
+            </select>
+          </div>
+        `;
+        break;
+      case 'run_command':
+        configHtml = `
+          <div class="config-section">
+            <label for="command-script">Command</label>
+            <input type="text" id="command-script" placeholder="npm run build" />
+          </div>
+          <div class="config-section">
+            <label for="command-working-dir">Working Directory</label>
+            <input type="text" id="command-working-dir" placeholder="./" />
+          </div>
+        `;
+        break;
+      case 'send_webhook':
+        configHtml = `
+          <div class="config-section">
+            <label for="webhook-url">Webhook URL</label>
+            <input type="url" id="webhook-url" placeholder="https://example.com/webhook" />
+          </div>
+          <div class="config-section">
+            <label for="webhook-method">HTTP Method</label>
+            <select id="webhook-method">
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+            </select>
+          </div>
+        `;
+        break;
+    }
+
+    if (configHtml) {
+      container.innerHTML = configHtml;
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+
+  // Hook management
+  function selectHook(id: string) {
+    selectedHookId = id;
+    const hook = hooks.find(h => h.id === id);
+    
+    renderHookList();
+    renderHookEditor(hook);
+    renderHookLogs(hook);
+    
+    isEditing = false;
+  }
+
+  function startNewHook() {
+    selectedHookId = null;
+    isEditing = true;
+    
+    const newHook: Partial<Hook> = {
+      name: '',
+      description: '',
+      category: 'workflow' as const,
+      trigger: 'manual' as const,
+      action: 'generate_prompt' as const,
+      enabled: true
+    };
+    
+    renderHookEditor(newHook as Hook);
+    renderHookLogs();
+    
+    const nameInput = document.getElementById('hook-name') as HTMLInputElement;
+    if (nameInput) nameInput.focus();
+  }
+
+  async function saveHook() {
+    const idInput = document.getElementById('hook-id') as HTMLInputElement;
+    const nameInput = document.getElementById('hook-name') as HTMLInputElement;
+    const descriptionInput = document.getElementById('hook-description') as HTMLTextAreaElement;
+    const categorySelect = document.getElementById('hook-category') as HTMLSelectElement;
+    const triggerSelect = document.getElementById('hook-trigger') as HTMLSelectElement;
+    const actionSelect = document.getElementById('hook-action') as HTMLSelectElement;
+    const enabledInput = document.getElementById('hook-enabled') as HTMLInputElement;
+
+    if (!nameInput || !categorySelect || !triggerSelect || !actionSelect) return;
+
+    const name = nameInput.value.trim();
+    const description = descriptionInput?.value.trim() || '';
+    const category = categorySelect.value as Hook['category'];
+    const trigger = triggerSelect.value as Hook['trigger'];
+    const action = actionSelect.value as Hook['action'];
+    const enabled = enabledInput?.checked || false;
+
+    if (!name || !category || !trigger || !action) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+
+    try {
+      const hookData = { name, description, category, trigger, action, enabled };
+      const isUpdate = idInput && idInput.value;
+
+      // For now, just update local state since API might not be implemented
+      if (isUpdate) {
+        const index = hooks.findIndex(h => h.id === idInput.value);
+        if (index !== -1) {
+          hooks[index] = { ...hooks[index], ...hookData };
+        }
+        showToast('Hook updated!');
+      } else {
+        const newHook = {
+          id: Date.now().toString(),
+          ...hookData,
+          created_at: new Date().toISOString()
+        } as Hook;
+        hooks.push(newHook);
+        selectedHookId = newHook.id;
+        showToast('Hook created!');
+      }
+
+      renderHookList();
+      if (selectedHookId) {
+        const hook = hooks.find(h => h.id === selectedHookId);
+        renderHookEditor(hook);
+      }
+      isEditing = false;
+    } catch (error) {
+      console.error('Failed to save hook:', error);
+      showToast('Failed to save hook', 'error');
+    }
+  }
+
+  async function deleteHook() {
+    if (!selectedHookId) return;
+
+    const hook = hooks.find(h => h.id === selectedHookId);
+    if (!hook) return;
+
+    if (!confirm(`Delete hook "${hook.name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      hooks = hooks.filter(h => h.id !== selectedHookId);
+      showToast('Hook deleted');
+      
+      renderHookList();
+      
+      if (hooks.length > 0) {
+        selectHook(hooks[0].id);
+      } else {
+        selectedHookId = null;
+        renderHookEditor();
+        renderHookLogs();
+      }
+    } catch (error) {
+      console.error('Failed to delete hook:', error);
+      showToast('Failed to delete hook', 'error');
+    }
+  }
+
+  function cancelEdit() {
+    isEditing = false;
+    
+    if (selectedHookId) {
+      const hook = hooks.find(h => h.id === selectedHookId);
+      renderHookEditor(hook);
+    } else {
+      renderHookEditor();
+    }
+  }
+
+  function switchCategory(category: string) {
+    currentCategory = category;
+    
+    // Update active tab
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.classList.remove('active');
+      if (tab.getAttribute('data-category') === category) {
+        tab.classList.add('active');
+      }
+    });
+    
+    renderHookList();
+  }
+
+  // Utility functions
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  }
+
+  // Event listeners
+  function setupEventListeners() {
+    // New hook button
+    document.getElementById('new-hook-btn')?.addEventListener('click', startNewHook);
+    document.getElementById('empty-new-hook-btn')?.addEventListener('click', startNewHook);
+    
+    // Form actions
+    document.getElementById('save-hook-btn')?.addEventListener('click', saveHook);
+    document.getElementById('cancel-hook-btn')?.addEventListener('click', cancelEdit);
+    document.getElementById('delete-hook-btn')?.addEventListener('click', deleteHook);
+    
+    // Category tabs
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const category = tab.getAttribute('data-category');
+        if (category) switchCategory(category);
+      });
+    });
+    
+    // Dynamic form updates
+    document.getElementById('hook-trigger')?.addEventListener('change', (e) => {
+      const target = e.target as HTMLSelectElement;
+      updateTriggerConfig(target.value);
+    });
+    
+    document.getElementById('hook-action')?.addEventListener('change', (e) => {
+      const target = e.target as HTMLSelectElement;
+      updateActionConfig(target.value);
+    });
+    
+    // Search
+    document.getElementById('hook-search')?.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      const query = target.value.toLowerCase();
+      
+      const cards = document.querySelectorAll('.item-card');
+      cards.forEach(card => {
+        const name = card.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+        const preview = card.querySelector('.item-preview')?.textContent?.toLowerCase() || '';
+        
+        if (name.includes(query) || preview.includes(query)) {
+          (card as HTMLElement).style.display = 'block';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Make functions available globally
+  (window as any).selectHook = selectHook;
+  (window as any).startNewHook = startNewHook;
+  (window as any).switchCategory = switchCategory;
+</script>

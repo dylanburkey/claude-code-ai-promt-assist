@@ -49,19 +49,30 @@ app.use(
 app.use("*", async (c, next) => {
   if (!globalErrorHandler) {
     globalErrorHandler = new ErrorHandler();
-    globalTransactionManager = new TransactionManager(c.env.DB, globalErrorHandler);
-    globalProjectManager = new ProjectManager(c.env.DB, globalErrorHandler, globalTransactionManager);
-    globalResourceManager = new ResourceManager(c.env.DB, globalErrorHandler, globalTransactionManager);
+    globalTransactionManager = new TransactionManager(
+      c.env.DB,
+      globalErrorHandler,
+    );
+    globalProjectManager = new ProjectManager(
+      c.env.DB,
+      globalErrorHandler,
+      globalTransactionManager,
+    );
+    globalResourceManager = new ResourceManager(
+      c.env.DB,
+      globalErrorHandler,
+      globalTransactionManager,
+    );
     globalProjectValidator = new ProjectValidator(c.env.DB, globalErrorHandler);
   }
-  
+
   // Add instances to context for easy access
-  c.set('errorHandler', globalErrorHandler);
-  c.set('transactionManager', globalTransactionManager);
-  c.set('projectManager', globalProjectManager);
-  c.set('resourceManager', globalResourceManager);
-  c.set('projectValidator', globalProjectValidator);
-  
+  c.set("errorHandler", globalErrorHandler);
+  c.set("transactionManager", globalTransactionManager);
+  c.set("projectManager", globalProjectManager);
+  c.set("resourceManager", globalResourceManager);
+  c.set("projectValidator", globalProjectValidator);
+
   await next();
 });
 
@@ -75,7 +86,7 @@ app.use("*", async (c, next) => {
 class SystemError extends Error {
   constructor(message, code, details = {}, recoveryOptions = []) {
     super(message);
-    this.name = 'SystemError';
+    this.name = "SystemError";
     this.code = code;
     this.details = details;
     this.recoveryOptions = recoveryOptions;
@@ -90,18 +101,18 @@ class SystemError extends Error {
       details: this.details,
       recoveryOptions: this.recoveryOptions,
       timestamp: this.timestamp,
-      stack: this.stack
+      stack: this.stack,
     };
   }
 }
 
 class ValidationError extends SystemError {
   constructor(message, field, value, details = {}) {
-    super(message, 'VALIDATION_ERROR', { field, value, ...details }, [
-      'Check input format and try again',
-      'Refer to API documentation for valid values'
+    super(message, "VALIDATION_ERROR", { field, value, ...details }, [
+      "Check input format and try again",
+      "Refer to API documentation for valid values",
     ]);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
     this.field = field;
     this.value = value;
   }
@@ -111,15 +122,15 @@ class ResourceNotFoundError extends SystemError {
   constructor(resourceType, resourceId, details = {}) {
     super(
       `${resourceType} with ID '${resourceId}' not found or not accessible`,
-      'RESOURCE_NOT_FOUND',
+      "RESOURCE_NOT_FOUND",
       { resourceType, resourceId, ...details },
       [
-        'Verify the resource ID is correct',
-        'Check if the resource is active/enabled',
-        'Ensure you have permission to access this resource'
-      ]
+        "Verify the resource ID is correct",
+        "Check if the resource is active/enabled",
+        "Ensure you have permission to access this resource",
+      ],
     );
-    this.name = 'ResourceNotFoundError';
+    this.name = "ResourceNotFoundError";
     this.resourceType = resourceType;
     this.resourceId = resourceId;
   }
@@ -127,12 +138,17 @@ class ResourceNotFoundError extends SystemError {
 
 class ConflictError extends SystemError {
   constructor(message, conflictType, existingResource = null, details = {}) {
-    super(message, 'CONFLICT_ERROR', { conflictType, existingResource, ...details }, [
-      'Use a different name or identifier',
-      'Update the existing resource instead',
-      'Delete the conflicting resource first'
-    ]);
-    this.name = 'ConflictError';
+    super(
+      message,
+      "CONFLICT_ERROR",
+      { conflictType, existingResource, ...details },
+      [
+        "Use a different name or identifier",
+        "Update the existing resource instead",
+        "Delete the conflicting resource first",
+      ],
+    );
+    this.name = "ConflictError";
     this.conflictType = conflictType;
     this.existingResource = existingResource;
   }
@@ -142,19 +158,21 @@ class TransactionError extends SystemError {
   constructor(message, operation, rollbackStatus = null, details = {}) {
     super(
       message,
-      'TRANSACTION_ERROR',
+      "TRANSACTION_ERROR",
       { operation, rollbackStatus, ...details },
-      rollbackStatus === 'success' ? [
-        'Operation was rolled back successfully',
-        'Review the error and try again',
-        'Check system logs for more details'
-      ] : [
-        'Manual intervention may be required',
-        'Contact system administrator',
-        'Check data consistency'
-      ]
+      rollbackStatus === "success"
+        ? [
+            "Operation was rolled back successfully",
+            "Review the error and try again",
+            "Check system logs for more details",
+          ]
+        : [
+            "Manual intervention may be required",
+            "Contact system administrator",
+            "Check data consistency",
+          ],
     );
-    this.name = 'TransactionError';
+    this.name = "TransactionError";
     this.operation = operation;
     this.rollbackStatus = rollbackStatus;
   }
@@ -178,13 +196,16 @@ class ErrorHandler {
   handleError(error, context = {}) {
     const errorEntry = {
       timestamp: new Date().toISOString(),
-      error: error instanceof SystemError ? error.toJSON() : {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      },
+      error:
+        error instanceof SystemError
+          ? error.toJSON()
+          : {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            },
       context,
-      id: crypto.randomUUID()
+      id: crypto.randomUUID(),
     };
 
     // Log the error
@@ -200,14 +221,14 @@ class ErrorHandler {
    */
   logError(errorEntry) {
     this.errorLog.push(errorEntry);
-    
+
     // Keep log size manageable
     if (this.errorLog.length > this.maxLogSize) {
       this.errorLog = this.errorLog.slice(-this.maxLogSize);
     }
 
     // In production, this would also log to external monitoring
-    console.error('System Error:', errorEntry);
+    console.error("System Error:", errorEntry);
   }
 
   /**
@@ -224,8 +245,8 @@ class ErrorHandler {
           details: error.details,
           recoveryOptions: error.recoveryOptions,
           errorId,
-          timestamp: error.timestamp
-        }
+          timestamp: error.timestamp,
+        },
       };
     }
 
@@ -241,8 +262,8 @@ class ErrorHandler {
         message: userMessage,
         recoveryOptions,
         errorId,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
@@ -251,19 +272,19 @@ class ErrorHandler {
    * @private
    */
   getErrorCode(error) {
-    if (error.message.includes('UNIQUE constraint failed')) {
-      return 'DUPLICATE_RESOURCE';
+    if (error.message.includes("UNIQUE constraint failed")) {
+      return "DUPLICATE_RESOURCE";
     }
-    if (error.message.includes('NOT NULL constraint failed')) {
-      return 'MISSING_REQUIRED_FIELD';
+    if (error.message.includes("NOT NULL constraint failed")) {
+      return "MISSING_REQUIRED_FIELD";
     }
-    if (error.message.includes('FOREIGN KEY constraint failed')) {
-      return 'INVALID_REFERENCE';
+    if (error.message.includes("FOREIGN KEY constraint failed")) {
+      return "INVALID_REFERENCE";
     }
-    if (error.message.includes('not found')) {
-      return 'RESOURCE_NOT_FOUND';
+    if (error.message.includes("not found")) {
+      return "RESOURCE_NOT_FOUND";
     }
-    return 'INTERNAL_ERROR';
+    return "INTERNAL_ERROR";
   }
 
   /**
@@ -272,18 +293,18 @@ class ErrorHandler {
    */
   getUserFriendlyMessage(error) {
     const code = this.getErrorCode(error);
-    
+
     switch (code) {
-      case 'DUPLICATE_RESOURCE':
-        return 'A resource with this identifier already exists. Please use a different name or update the existing resource.';
-      case 'MISSING_REQUIRED_FIELD':
-        return 'Required information is missing. Please provide all required fields and try again.';
-      case 'INVALID_REFERENCE':
-        return 'Referenced resource does not exist. Please verify the resource ID and try again.';
-      case 'RESOURCE_NOT_FOUND':
-        return 'The requested resource could not be found. Please verify the ID and try again.';
+      case "DUPLICATE_RESOURCE":
+        return "A resource with this identifier already exists. Please use a different name or update the existing resource.";
+      case "MISSING_REQUIRED_FIELD":
+        return "Required information is missing. Please provide all required fields and try again.";
+      case "INVALID_REFERENCE":
+        return "Referenced resource does not exist. Please verify the resource ID and try again.";
+      case "RESOURCE_NOT_FOUND":
+        return "The requested resource could not be found. Please verify the ID and try again.";
       default:
-        return 'An unexpected error occurred. Please try again or contact support if the problem persists.';
+        return "An unexpected error occurred. Please try again or contact support if the problem persists.";
     }
   }
 
@@ -293,37 +314,37 @@ class ErrorHandler {
    */
   getRecoveryOptions(error) {
     const code = this.getErrorCode(error);
-    
+
     switch (code) {
-      case 'DUPLICATE_RESOURCE':
+      case "DUPLICATE_RESOURCE":
         return [
-          'Use a different name or identifier',
-          'Update the existing resource instead',
-          'Delete the conflicting resource first'
+          "Use a different name or identifier",
+          "Update the existing resource instead",
+          "Delete the conflicting resource first",
         ];
-      case 'MISSING_REQUIRED_FIELD':
+      case "MISSING_REQUIRED_FIELD":
         return [
-          'Review required fields in the API documentation',
-          'Ensure all mandatory fields are provided',
-          'Check field format and data types'
+          "Review required fields in the API documentation",
+          "Ensure all mandatory fields are provided",
+          "Check field format and data types",
         ];
-      case 'INVALID_REFERENCE':
+      case "INVALID_REFERENCE":
         return [
-          'Verify the referenced resource exists',
-          'Check the resource ID format',
-          'Ensure the resource is active and accessible'
+          "Verify the referenced resource exists",
+          "Check the resource ID format",
+          "Ensure the resource is active and accessible",
         ];
-      case 'RESOURCE_NOT_FOUND':
+      case "RESOURCE_NOT_FOUND":
         return [
-          'Verify the resource ID is correct',
-          'Check if the resource has been deleted',
-          'Ensure you have permission to access this resource'
+          "Verify the resource ID is correct",
+          "Check if the resource has been deleted",
+          "Ensure you have permission to access this resource",
         ];
       default:
         return [
-          'Try the operation again',
-          'Check system status',
-          'Contact support if the problem persists'
+          "Try the operation again",
+          "Check system status",
+          "Contact support if the problem persists",
         ];
     }
   }
@@ -369,7 +390,7 @@ class TransactionManager {
       transactionId = crypto.randomUUID(),
       timeout = 30000, // 30 seconds default timeout
       retryCount = 0,
-      maxRetries = 2
+      maxRetries = 2,
     } = options;
 
     const transaction = {
@@ -377,7 +398,7 @@ class TransactionManager {
       startTime: Date.now(),
       operations: [],
       rollbackOperations: [],
-      status: 'active'
+      status: "active",
     };
 
     this.activeTransactions.set(transactionId, transaction);
@@ -386,57 +407,61 @@ class TransactionManager {
       // Set transaction timeout
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
-          reject(new TransactionError(
-            `Transaction timeout after ${timeout}ms`,
-            'timeout',
-            null,
-            { transactionId, timeout }
-          ));
+          reject(
+            new TransactionError(
+              `Transaction timeout after ${timeout}ms`,
+              "timeout",
+              null,
+              { transactionId, timeout },
+            ),
+          );
         }, timeout);
       });
 
       // Execute operations with timeout
       const result = await Promise.race([
         this._executeWithRollbackTracking(operations, transaction),
-        timeoutPromise
+        timeoutPromise,
       ]);
 
       // Mark transaction as completed
-      transaction.status = 'completed';
+      transaction.status = "completed";
       transaction.endTime = Date.now();
       transaction.duration = transaction.endTime - transaction.startTime;
 
       return result;
-
     } catch (error) {
       // Attempt rollback
       const rollbackResult = await this._performRollback(transaction);
-      
+
       // Clean up transaction
       this.activeTransactions.delete(transactionId);
 
       // If this was a retryable error and we haven't exceeded max retries
       if (this._isRetryableError(error) && retryCount < maxRetries) {
-        console.warn(`Transaction failed, retrying (${retryCount + 1}/${maxRetries}):`, error.message);
+        console.warn(
+          `Transaction failed, retrying (${retryCount + 1}/${maxRetries}):`,
+          error.message,
+        );
         return this.executeTransaction(operations, {
           ...options,
           retryCount: retryCount + 1,
-          transactionId: crypto.randomUUID() // New transaction ID for retry
+          transactionId: crypto.randomUUID(), // New transaction ID for retry
         });
       }
 
       // Throw enhanced error with rollback information
       throw new TransactionError(
         `Transaction failed: ${error.message}`,
-        'execution_failed',
-        rollbackResult.success ? 'success' : 'failed',
+        "execution_failed",
+        rollbackResult.success ? "success" : "failed",
         {
           transactionId,
           originalError: error.message,
           rollbackDetails: rollbackResult,
           retryCount,
-          duration: Date.now() - transaction.startTime
-        }
+          duration: Date.now() - transaction.startTime,
+        },
       );
     } finally {
       // Clean up completed transaction
@@ -453,7 +478,7 @@ class TransactionManager {
   async _executeWithRollbackTracking(operations, transaction) {
     // Create a proxy database that tracks operations for rollback
     const trackedDb = this._createTrackedDatabase(transaction);
-    
+
     // Execute the operations with the tracked database
     return await operations(trackedDb);
   }
@@ -464,35 +489,39 @@ class TransactionManager {
    */
   _createTrackedDatabase(transaction) {
     const self = this;
-    
+
     return {
       prepare: (query) => {
         const originalPrepared = self.db.prepare(query);
-        
+
         return {
           bind: (...params) => {
             const originalBound = originalPrepared.bind(...params);
-            
+
             return {
               run: async () => {
                 // Track the operation for potential rollback
                 const operation = {
-                  type: 'run',
+                  type: "run",
                   query,
                   params,
-                  timestamp: Date.now()
+                  timestamp: Date.now(),
                 };
 
                 try {
                   const result = await originalBound.run();
-                  
+
                   // Track successful operation
                   operation.result = result;
-                  operation.status = 'success';
+                  operation.status = "success";
                   transaction.operations.push(operation);
 
                   // Generate rollback operation if needed
-                  const rollbackOp = self._generateRollbackOperation(query, params, result);
+                  const rollbackOp = self._generateRollbackOperation(
+                    query,
+                    params,
+                    result,
+                  );
                   if (rollbackOp) {
                     transaction.rollbackOperations.unshift(rollbackOp); // Add to front for reverse order
                   }
@@ -500,7 +529,7 @@ class TransactionManager {
                   return result;
                 } catch (error) {
                   operation.error = error.message;
-                  operation.status = 'failed';
+                  operation.status = "failed";
                   transaction.operations.push(operation);
                   throw error;
                 }
@@ -508,21 +537,21 @@ class TransactionManager {
 
               first: async () => {
                 const operation = {
-                  type: 'first',
+                  type: "first",
                   query,
                   params,
-                  timestamp: Date.now()
+                  timestamp: Date.now(),
                 };
 
                 try {
                   const result = await originalBound.first();
                   operation.result = result;
-                  operation.status = 'success';
+                  operation.status = "success";
                   transaction.operations.push(operation);
                   return result;
                 } catch (error) {
                   operation.error = error.message;
-                  operation.status = 'failed';
+                  operation.status = "failed";
                   transaction.operations.push(operation);
                   throw error;
                 }
@@ -530,34 +559,34 @@ class TransactionManager {
 
               all: async () => {
                 const operation = {
-                  type: 'all',
+                  type: "all",
                   query,
                   params,
-                  timestamp: Date.now()
+                  timestamp: Date.now(),
                 };
 
                 try {
                   const result = await originalBound.all();
                   operation.result = result;
-                  operation.status = 'success';
+                  operation.status = "success";
                   transaction.operations.push(operation);
                   return result;
                 } catch (error) {
                   operation.error = error.message;
-                  operation.status = 'failed';
+                  operation.status = "failed";
                   transaction.operations.push(operation);
                   throw error;
                 }
-              }
+              },
             };
           },
 
           // Direct methods (no bind)
           run: async () => originalPrepared.run(),
           first: async () => originalPrepared.first(),
-          all: async () => originalPrepared.all()
+          all: async () => originalPrepared.all(),
         };
-      }
+      },
     };
   }
 
@@ -568,38 +597,38 @@ class TransactionManager {
   _generateRollbackOperation(query, params, result) {
     const queryLower = query.toLowerCase().trim();
 
-    if (queryLower.startsWith('insert into')) {
+    if (queryLower.startsWith("insert into")) {
       // For INSERT, generate DELETE
       const tableMatch = query.match(/insert\s+into\s+(\w+)/i);
       if (tableMatch && result.meta?.last_row_id) {
         return {
-          type: 'rollback_delete',
+          type: "rollback_delete",
           query: `DELETE FROM ${tableMatch[1]} WHERE rowid = ?`,
           params: [result.meta.last_row_id],
-          description: `Rollback INSERT into ${tableMatch[1]}`
+          description: `Rollback INSERT into ${tableMatch[1]}`,
         };
       }
-    } else if (queryLower.startsWith('update')) {
+    } else if (queryLower.startsWith("update")) {
       // For UPDATE, we would need to store the original values
       // This is a simplified implementation - in production you'd want to
       // SELECT the original values before UPDATE
       const tableMatch = query.match(/update\s+(\w+)/i);
       if (tableMatch) {
         return {
-          type: 'rollback_warning',
+          type: "rollback_warning",
           description: `UPDATE to ${tableMatch[1]} cannot be automatically rolled back`,
-          recommendation: 'Manual data restoration may be required'
+          recommendation: "Manual data restoration may be required",
         };
       }
-    } else if (queryLower.startsWith('delete from')) {
+    } else if (queryLower.startsWith("delete from")) {
       // For DELETE, we would need to store the deleted data
       // This is a simplified implementation
       const tableMatch = query.match(/delete\s+from\s+(\w+)/i);
       if (tableMatch) {
         return {
-          type: 'rollback_warning',
+          type: "rollback_warning",
           description: `DELETE from ${tableMatch[1]} cannot be automatically rolled back`,
-          recommendation: 'Manual data restoration may be required'
+          recommendation: "Manual data restoration may be required",
         };
       }
     }
@@ -617,42 +646,48 @@ class TransactionManager {
       operationsRolledBack: 0,
       operationsFailed: 0,
       warnings: [],
-      errors: []
+      errors: [],
     };
 
-    transaction.status = 'rolling_back';
+    transaction.status = "rolling_back";
 
     try {
       for (const rollbackOp of transaction.rollbackOperations) {
         try {
-          if (rollbackOp.type === 'rollback_delete') {
-            await this.db.prepare(rollbackOp.query).bind(...rollbackOp.params).run();
+          if (rollbackOp.type === "rollback_delete") {
+            await this.db
+              .prepare(rollbackOp.query)
+              .bind(...rollbackOp.params)
+              .run();
             rollbackResult.operationsRolledBack++;
-          } else if (rollbackOp.type === 'rollback_warning') {
+          } else if (rollbackOp.type === "rollback_warning") {
             rollbackResult.warnings.push(rollbackOp.description);
             if (rollbackOp.recommendation) {
-              rollbackResult.warnings.push(`Recommendation: ${rollbackOp.recommendation}`);
+              rollbackResult.warnings.push(
+                `Recommendation: ${rollbackOp.recommendation}`,
+              );
             }
           }
         } catch (error) {
           rollbackResult.operationsFailed++;
           rollbackResult.errors.push({
             operation: rollbackOp,
-            error: error.message
+            error: error.message,
           });
           rollbackResult.success = false;
         }
       }
 
-      transaction.status = rollbackResult.success ? 'rolled_back' : 'rollback_failed';
+      transaction.status = rollbackResult.success
+        ? "rolled_back"
+        : "rollback_failed";
       return rollbackResult;
-
     } catch (error) {
-      transaction.status = 'rollback_failed';
+      transaction.status = "rollback_failed";
       rollbackResult.success = false;
       rollbackResult.errors.push({
-        operation: 'rollback_process',
-        error: error.message
+        operation: "rollback_process",
+        error: error.message,
       });
       return rollbackResult;
     }
@@ -664,27 +699,27 @@ class TransactionManager {
    */
   _isRetryableError(error) {
     const retryablePatterns = [
-      'database is locked',
-      'timeout',
-      'connection',
-      'network',
-      'temporary'
+      "database is locked",
+      "timeout",
+      "connection",
+      "network",
+      "temporary",
     ];
 
     const errorMessage = error.message.toLowerCase();
-    return retryablePatterns.some(pattern => errorMessage.includes(pattern));
+    return retryablePatterns.some((pattern) => errorMessage.includes(pattern));
   }
 
   /**
    * Get active transactions for monitoring
    */
   getActiveTransactions() {
-    return Array.from(this.activeTransactions.values()).map(tx => ({
+    return Array.from(this.activeTransactions.values()).map((tx) => ({
       id: tx.id,
       status: tx.status,
       startTime: tx.startTime,
       duration: Date.now() - tx.startTime,
-      operationCount: tx.operations.length
+      operationCount: tx.operations.length,
     }));
   }
 
@@ -712,59 +747,171 @@ class TransactionManager {
 class PlatformDetectionEngine {
   constructor(db) {
     this.db = db;
-    
+
     // Platform keyword mappings with confidence weights
     this.platformKeywords = {
-      'shopify': {
-        keywords: ['shopify', 'liquid', 'storefront', 'checkout', 'cart', 'product', 'collection', 'theme', 'app store', 'webhook', 'graphql admin', 'storefront api'],
+      shopify: {
+        keywords: [
+          "shopify",
+          "liquid",
+          "storefront",
+          "checkout",
+          "cart",
+          "product",
+          "collection",
+          "theme",
+          "app store",
+          "webhook",
+          "graphql admin",
+          "storefront api",
+        ],
         weight: 1.0,
-        category: 'ecommerce'
+        category: "ecommerce",
       },
-      'stripe': {
-        keywords: ['stripe', 'payment', 'checkout', 'subscription', 'invoice', 'customer', 'charge', 'payment intent', 'webhook', 'connect', 'marketplace'],
+      stripe: {
+        keywords: [
+          "stripe",
+          "payment",
+          "checkout",
+          "subscription",
+          "invoice",
+          "customer",
+          "charge",
+          "payment intent",
+          "webhook",
+          "connect",
+          "marketplace",
+        ],
         weight: 1.0,
-        category: 'payment'
+        category: "payment",
       },
-      'nextjs': {
-        keywords: ['next.js', 'nextjs', 'vercel', 'ssg', 'ssr', 'isr', 'getstaticprops', 'getserversideprops', 'app router', 'pages router'],
+      nextjs: {
+        keywords: [
+          "next.js",
+          "nextjs",
+          "vercel",
+          "ssg",
+          "ssr",
+          "isr",
+          "getstaticprops",
+          "getserversideprops",
+          "app router",
+          "pages router",
+        ],
         weight: 1.0,
-        category: 'framework'
+        category: "framework",
       },
-      'react': {
-        keywords: ['react', 'jsx', 'component', 'hook', 'usestate', 'useeffect', 'context', 'redux', 'props', 'state'],
+      react: {
+        keywords: [
+          "react",
+          "jsx",
+          "component",
+          "hook",
+          "usestate",
+          "useeffect",
+          "context",
+          "redux",
+          "props",
+          "state",
+        ],
         weight: 0.8,
-        category: 'framework'
+        category: "framework",
       },
-      'nodejs': {
-        keywords: ['node.js', 'nodejs', 'npm', 'express', 'fastify', 'koa', 'hapi', 'middleware', 'package.json'],
+      nodejs: {
+        keywords: [
+          "node.js",
+          "nodejs",
+          "npm",
+          "express",
+          "fastify",
+          "koa",
+          "hapi",
+          "middleware",
+          "package.json",
+        ],
         weight: 0.8,
-        category: 'runtime'
+        category: "runtime",
       },
-      'aws': {
-        keywords: ['aws', 'lambda', 's3', 'ec2', 'rds', 'dynamodb', 'cloudformation', 'cloudwatch', 'api gateway', 'cognito'],
+      aws: {
+        keywords: [
+          "aws",
+          "lambda",
+          "s3",
+          "ec2",
+          "rds",
+          "dynamodb",
+          "cloudformation",
+          "cloudwatch",
+          "api gateway",
+          "cognito",
+        ],
         weight: 0.9,
-        category: 'cloud'
+        category: "cloud",
       },
-      'docker': {
-        keywords: ['docker', 'dockerfile', 'container', 'image', 'compose', 'kubernetes', 'k8s', 'pod', 'deployment'],
+      docker: {
+        keywords: [
+          "docker",
+          "dockerfile",
+          "container",
+          "image",
+          "compose",
+          "kubernetes",
+          "k8s",
+          "pod",
+          "deployment",
+        ],
         weight: 0.7,
-        category: 'infrastructure'
+        category: "infrastructure",
       },
-      'api': {
-        keywords: ['api', 'rest api', 'graphql', 'endpoint', 'json', 'http', 'get', 'post', 'put', 'delete', 'webhook'],
+      api: {
+        keywords: [
+          "api",
+          "rest api",
+          "graphql",
+          "endpoint",
+          "json",
+          "http",
+          "get",
+          "post",
+          "put",
+          "delete",
+          "webhook",
+        ],
         weight: 0.7,
-        category: 'integration'
+        category: "integration",
       },
-      'database': {
-        keywords: ['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'database', 'sql', 'nosql', 'orm', 'migration'],
+      database: {
+        keywords: [
+          "mysql",
+          "postgresql",
+          "mongodb",
+          "redis",
+          "sqlite",
+          "database",
+          "sql",
+          "nosql",
+          "orm",
+          "migration",
+        ],
         weight: 0.7,
-        category: 'database'
+        category: "database",
       },
-      'security': {
-        keywords: ['auth', 'authentication', 'authorization', 'jwt', 'oauth', 'ssl', 'https', 'encryption', 'csrf', 'xss'],
+      security: {
+        keywords: [
+          "auth",
+          "authentication",
+          "authorization",
+          "jwt",
+          "oauth",
+          "ssl",
+          "https",
+          "encryption",
+          "csrf",
+          "xss",
+        ],
         weight: 0.5,
-        category: 'security'
-      }
+        category: "security",
+      },
     };
   }
 
@@ -774,7 +921,7 @@ class PlatformDetectionEngine {
    * @returns {Array} - Array of platform detections with confidence scores
    */
   detectPlatforms(input) {
-    if (!input || typeof input !== 'string') {
+    if (!input || typeof input !== "string") {
       return [];
     }
 
@@ -783,17 +930,24 @@ class PlatformDetectionEngine {
 
     // Check each platform for keyword matches
     for (const [platform, config] of Object.entries(this.platformKeywords)) {
-      const matches = this._findKeywordMatches(normalizedInput, config.keywords);
-      
+      const matches = this._findKeywordMatches(
+        normalizedInput,
+        config.keywords,
+      );
+
       if (matches.length > 0) {
-        const confidence = this._calculateConfidence(matches, config.weight, normalizedInput.length);
-        
+        const confidence = this._calculateConfidence(
+          matches,
+          config.weight,
+          normalizedInput.length,
+        );
+
         detections.push({
           platform,
           confidence,
           keywords: matches,
           category: config.category,
-          matchCount: matches.length
+          matchCount: matches.length,
         });
       }
     }
@@ -814,21 +968,24 @@ class PlatformDetectionEngine {
 
     try {
       // Build query for multiple platforms
-      const placeholders = platforms.map(() => '?').join(',');
+      const placeholders = platforms.map(() => "?").join(",");
       const query = `
-        SELECT * FROM platform_templates 
+        SELECT * FROM platform_templates
         WHERE platform IN (${placeholders}) AND is_active = 1
         ORDER BY usage_count DESC, success_rate DESC
       `;
 
-      const result = await this.db.prepare(query).bind(...platforms).all();
-      
-      return result.results.map(template => ({
+      const result = await this.db
+        .prepare(query)
+        .bind(...platforms)
+        .all();
+
+      return result.results.map((template) => ({
         ...template,
-        keywords: template.keywords ? JSON.parse(template.keywords) : []
+        keywords: template.keywords ? JSON.parse(template.keywords) : [],
       }));
     } catch (error) {
-      console.error('Error getting platform templates:', error);
+      console.error("Error getting platform templates:", error);
       return [];
     }
   }
@@ -844,33 +1001,36 @@ class PlatformDetectionEngine {
       return [];
     }
 
-    const { 
-      projectId = null, 
-      existingRules = [], 
+    const {
+      projectId = null,
+      existingRules = [],
       detectedPlatforms = [],
-      userInput = '' 
+      userInput = "",
     } = context;
 
     // Calculate relevance score for each suggestion
-    const rankedSuggestions = suggestions.map(suggestion => {
+    const rankedSuggestions = suggestions.map((suggestion) => {
       let relevanceScore = suggestion.success_rate || 0.5; // Base score from success rate
-      
+
       // Boost score if platform matches detected platforms
-      const platformMatch = detectedPlatforms.find(p => p.platform === suggestion.platform);
+      const platformMatch = detectedPlatforms.find(
+        (p) => p.platform === suggestion.platform,
+      );
       if (platformMatch) {
         relevanceScore += platformMatch.confidence * 0.3;
       }
 
       // Boost score based on usage count (normalized)
-      const maxUsage = Math.max(...suggestions.map(s => s.usage_count || 0));
+      const maxUsage = Math.max(...suggestions.map((s) => s.usage_count || 0));
       if (maxUsage > 0) {
-        relevanceScore += (suggestion.usage_count || 0) / maxUsage * 0.2;
+        relevanceScore += ((suggestion.usage_count || 0) / maxUsage) * 0.2;
       }
 
       // Reduce score if similar rules already exist
-      const similarRules = existingRules.filter(rule => 
-        rule.category === suggestion.category || 
-        rule.platform_tags?.includes(suggestion.platform)
+      const similarRules = existingRules.filter(
+        (rule) =>
+          rule.category === suggestion.category ||
+          rule.platform_tags?.includes(suggestion.platform),
       );
       if (similarRules.length > 0) {
         relevanceScore -= Math.min(similarRules.length * 0.1, 0.3);
@@ -879,8 +1039,8 @@ class PlatformDetectionEngine {
       // Boost score for keyword matches in user input
       if (userInput && suggestion.keywords) {
         const keywordMatches = this._findKeywordMatches(
-          userInput.toLowerCase(), 
-          suggestion.keywords
+          userInput.toLowerCase(),
+          suggestion.keywords,
         );
         if (keywordMatches.length > 0) {
           relevanceScore += keywordMatches.length * 0.05;
@@ -889,12 +1049,14 @@ class PlatformDetectionEngine {
 
       return {
         ...suggestion,
-        relevanceScore: Math.max(0, Math.min(1, relevanceScore))
+        relevanceScore: Math.max(0, Math.min(1, relevanceScore)),
       };
     });
 
     // Sort by relevance score (highest first)
-    return rankedSuggestions.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    return rankedSuggestions.sort(
+      (a, b) => b.relevanceScore - a.relevanceScore,
+    );
   }
 
   /**
@@ -906,22 +1068,24 @@ class PlatformDetectionEngine {
    */
   _findKeywordMatches(input, keywords) {
     const matches = [];
-    
+
     for (const keyword of keywords) {
       const normalizedKeyword = keyword.toLowerCase();
-      
+
       // Check for exact matches and partial matches
       if (input.includes(normalizedKeyword)) {
         matches.push(keyword);
       } else {
         // Check for word boundary matches to avoid false positives
-        const wordBoundaryRegex = new RegExp(`\\b${normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+        const wordBoundaryRegex = new RegExp(
+          `\\b${normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+        );
         if (wordBoundaryRegex.test(input)) {
           matches.push(keyword);
         }
       }
     }
-    
+
     return matches;
   }
 
@@ -936,24 +1100,24 @@ class PlatformDetectionEngine {
   _calculateConfidence(matches, platformWeight, inputLength) {
     // Base confidence from number of matches
     let confidence = Math.min(matches.length * 0.4, 0.9);
-    
+
     // Apply platform weight
     confidence *= platformWeight;
-    
+
     // For very short inputs, if we have a clear keyword match, be more lenient
     if (inputLength <= 10 && matches.length > 0) {
       confidence = Math.max(confidence, 0.3); // Minimum confidence for short inputs with matches
     }
-    
+
     // Adjust for input length (but don't penalize too much for short inputs with clear matches)
     const lengthFactor = Math.min(inputLength / 30, 1.0); // Further reduced threshold
     confidence *= Math.max(0.5, 0.7 + lengthFactor * 0.3); // Higher minimum multiplier
-    
+
     // Boost confidence for multiple unique matches
     if (matches.length > 1) {
       confidence += Math.min((matches.length - 1) * 0.1, 0.2);
     }
-    
+
     return Math.max(0, Math.min(1, confidence));
   }
 
@@ -1001,33 +1165,53 @@ class TemplateSuggestionService {
   async getSuggestionsForPlatform(platform, existingRules = []) {
     try {
       // Get templates for the specific platform
-      const platformTemplates = await this.db.prepare(`
-        SELECT * FROM platform_templates 
+      const platformTemplates = await this.db
+        .prepare(
+          `
+        SELECT * FROM platform_templates
         WHERE platform = ? AND is_active = 1
         ORDER BY usage_count DESC, success_rate DESC
         LIMIT 10
-      `).bind(platform).all();
+      `,
+        )
+        .bind(platform)
+        .all();
 
       // Also get general templates that might be relevant
-      const generalTemplates = await this.db.prepare(`
-        SELECT * FROM platform_templates 
+      const generalTemplates = await this.db
+        .prepare(
+          `
+        SELECT * FROM platform_templates
         WHERE platform = 'general' AND is_active = 1
         ORDER BY usage_count DESC, success_rate DESC
         LIMIT 5
-      `).bind().all();
+      `,
+        )
+        .bind()
+        .all();
 
-      const allTemplates = [...platformTemplates.results, ...generalTemplates.results];
+      const allTemplates = [
+        ...platformTemplates.results,
+        ...generalTemplates.results,
+      ];
 
       // Filter out templates similar to existing rules
-      const filteredTemplates = this._filterSimilarTemplates(allTemplates, existingRules);
+      const filteredTemplates = this._filterSimilarTemplates(
+        allTemplates,
+        existingRules,
+      );
 
-      return filteredTemplates.map(template => ({
+      return filteredTemplates.map((template) => ({
         ...template,
         keywords: template.keywords ? JSON.parse(template.keywords) : [],
-        suggestedReason: this._getSuggestionReason(template, platform, existingRules)
+        suggestedReason: this._getSuggestionReason(
+          template,
+          platform,
+          existingRules,
+        ),
       }));
     } catch (error) {
-      console.error('Error getting platform suggestions:', error);
+      console.error("Error getting platform suggestions:", error);
       return [];
     }
   }
@@ -1040,11 +1224,16 @@ class TemplateSuggestionService {
   async analyzeExistingRules(projectId) {
     try {
       // Get all rules for the project
-      const rules = await this.db.prepare(`
+      const rules = await this.db
+        .prepare(
+          `
         SELECT ar.* FROM agent_rules ar
         JOIN project_resources pr ON ar.id = pr.resource_id
         WHERE pr.project_id = ? AND pr.resource_type = 'rule' AND ar.is_active = 1
-      `).bind(projectId).all();
+      `,
+        )
+        .bind(projectId)
+        .all();
 
       const patterns = [];
 
@@ -1055,10 +1244,12 @@ class TemplateSuggestionService {
       // Analyze platform distribution
       const platformCounts = {};
       const categoryCount = {};
-      
+
       for (const rule of rules.results) {
         // Parse platform tags
-        const platformTags = rule.platform_tags ? JSON.parse(rule.platform_tags) : [];
+        const platformTags = rule.platform_tags
+          ? JSON.parse(rule.platform_tags)
+          : [];
         for (const platform of platformTags) {
           platformCounts[platform] = (platformCounts[platform] || 0) + 1;
         }
@@ -1078,40 +1269,53 @@ class TemplateSuggestionService {
 
       if (dominantPlatforms.length > 0) {
         patterns.push({
-          type: 'platform_focus',
-          description: `Project focuses on ${dominantPlatforms.map(([p]) => p).join(', ')}`,
-          platforms: dominantPlatforms.map(([platform, count]) => ({ platform, count })),
-          confidence: Math.min(dominantPlatforms[0][1] / rules.results.length, 1.0)
+          type: "platform_focus",
+          description: `Project focuses on ${dominantPlatforms.map(([p]) => p).join(", ")}`,
+          platforms: dominantPlatforms.map(([platform, count]) => ({
+            platform,
+            count,
+          })),
+          confidence: Math.min(
+            dominantPlatforms[0][1] / rules.results.length,
+            1.0,
+          ),
         });
       }
 
       // Identify missing categories
-      const commonCategories = ['security', 'performance', 'best-practices', 'integration'];
-      const missingCategories = commonCategories.filter(cat => !categoryCount[cat]);
-      
+      const commonCategories = [
+        "security",
+        "performance",
+        "best-practices",
+        "integration",
+      ];
+      const missingCategories = commonCategories.filter(
+        (cat) => !categoryCount[cat],
+      );
+
       if (missingCategories.length > 0) {
         patterns.push({
-          type: 'missing_categories',
-          description: `Missing rules for ${missingCategories.join(', ')}`,
+          type: "missing_categories",
+          description: `Missing rules for ${missingCategories.join(", ")}`,
           categories: missingCategories,
-          confidence: 0.7
+          confidence: 0.7,
         });
       }
 
       // Identify quality patterns
-      const aiEnhancedCount = rules.results.filter(r => r.ai_enhanced).length;
+      const aiEnhancedCount = rules.results.filter((r) => r.ai_enhanced).length;
       if (aiEnhancedCount < rules.results.length * 0.5) {
         patterns.push({
-          type: 'enhancement_opportunity',
-          description: 'Many rules could benefit from AI enhancement',
+          type: "enhancement_opportunity",
+          description: "Many rules could benefit from AI enhancement",
           enhancementOpportunity: rules.results.length - aiEnhancedCount,
-          confidence: 0.6
+          confidence: 0.6,
         });
       }
 
       return patterns;
     } catch (error) {
-      console.error('Error analyzing existing rules:', error);
+      console.error("Error analyzing existing rules:", error);
       return [];
     }
   }
@@ -1126,50 +1330,64 @@ class TemplateSuggestionService {
     const suggestions = [];
 
     // Suggest platform-specific templates based on patterns
-    const platformFocusPattern = patterns.find(p => p.type === 'platform_focus');
+    const platformFocusPattern = patterns.find(
+      (p) => p.type === "platform_focus",
+    );
     if (platformFocusPattern && ruleData.name) {
       const detectedPlatforms = this.platformDetectionEngine.detectPlatforms(
-        `${ruleData.name} ${ruleData.description || ''}`
+        `${ruleData.name} ${ruleData.description || ""}`,
       );
-      
+
       for (const detection of detectedPlatforms.slice(0, 2)) {
-        if (platformFocusPattern.platforms.some(p => p.platform === detection.platform)) {
+        if (
+          platformFocusPattern.platforms.some(
+            (p) => p.platform === detection.platform,
+          )
+        ) {
           suggestions.push({
-            type: 'platform_template',
+            type: "platform_template",
             title: `Use ${detection.platform} template`,
             description: `Based on your project's focus on ${detection.platform}, consider using a specialized template`,
             platform: detection.platform,
             confidence: detection.confidence * 0.8,
-            action: 'suggest_template'
+            action: "suggest_template",
           });
         }
       }
     }
 
     // Suggest missing categories
-    const missingCategoriesPattern = patterns.find(p => p.type === 'missing_categories');
+    const missingCategoriesPattern = patterns.find(
+      (p) => p.type === "missing_categories",
+    );
     if (missingCategoriesPattern) {
       for (const category of missingCategoriesPattern.categories.slice(0, 2)) {
         suggestions.push({
-          type: 'category_suggestion',
+          type: "category_suggestion",
           title: `Add ${category} rules`,
           description: `Your project is missing ${category} guidelines. Consider adding them for completeness`,
           category,
           confidence: 0.6,
-          action: 'suggest_category'
+          action: "suggest_category",
         });
       }
     }
 
     // Suggest AI enhancement
-    const enhancementPattern = patterns.find(p => p.type === 'enhancement_opportunity');
-    if (enhancementPattern && (!ruleData.ai_enhanced || ruleData.ai_enhanced === 0)) {
+    const enhancementPattern = patterns.find(
+      (p) => p.type === "enhancement_opportunity",
+    );
+    if (
+      enhancementPattern &&
+      (!ruleData.ai_enhanced || ruleData.ai_enhanced === 0)
+    ) {
       suggestions.push({
-        type: 'ai_enhancement',
-        title: 'Enhance with AI',
-        description: 'AI can help improve the structure and clarity of this rule',
+        type: "ai_enhancement",
+        title: "Enhance with AI",
+        description:
+          "AI can help improve the structure and clarity of this rule",
         confidence: 0.7,
-        action: 'enhance_with_ai'
+        action: "enhance_with_ai",
       });
     }
 
@@ -1189,9 +1407,9 @@ class TemplateSuggestionService {
       return templates;
     }
 
-    return templates.filter(template => {
+    return templates.filter((template) => {
       // Check if a similar rule already exists
-      const similarRule = existingRules.find(rule => {
+      const similarRule = existingRules.find((rule) => {
         // Check category match
         const ruleCategory = this._inferRuleCategory(rule);
         if (ruleCategory === template.category) {
@@ -1199,18 +1417,23 @@ class TemplateSuggestionService {
         }
 
         // Check platform match
-        const rulePlatforms = rule.platform_tags ? JSON.parse(rule.platform_tags) : [];
+        const rulePlatforms = rule.platform_tags
+          ? JSON.parse(rule.platform_tags)
+          : [];
         if (rulePlatforms.includes(template.platform)) {
           return true;
         }
 
         // Check content similarity (basic keyword matching)
-        const templateKeywords = template.keywords ? JSON.parse(template.keywords) : [];
-        const ruleContent = `${rule.name} ${rule.description || ''}`.toLowerCase();
-        const matchingKeywords = templateKeywords.filter(keyword => 
-          ruleContent.includes(keyword.toLowerCase())
+        const templateKeywords = template.keywords
+          ? JSON.parse(template.keywords)
+          : [];
+        const ruleContent =
+          `${rule.name} ${rule.description || ""}`.toLowerCase();
+        const matchingKeywords = templateKeywords.filter((keyword) =>
+          ruleContent.includes(keyword.toLowerCase()),
         );
-        
+
         return matchingKeywords.length >= 2;
       });
 
@@ -1225,17 +1448,54 @@ class TemplateSuggestionService {
    * @returns {string|null} - Inferred category
    */
   _inferRuleCategory(rule) {
-    const content = `${rule.name} ${rule.description || ''}`.toLowerCase();
-    
+    const content = `${rule.name} ${rule.description || ""}`.toLowerCase();
+
     const categoryKeywords = {
-      'security': ['security', 'auth', 'authentication', 'authorization', 'ssl', 'https', 'encryption', 'csrf', 'xss', 'injection'],
-      'performance': ['performance', 'optimization', 'cache', 'speed', 'fast', 'efficient', 'memory', 'cpu', 'load'],
-      'best-practices': ['best practice', 'guideline', 'standard', 'convention', 'pattern', 'clean', 'maintainable'],
-      'integration': ['api', 'integration', 'webhook', 'endpoint', 'service', 'external', 'third-party']
+      security: [
+        "security",
+        "auth",
+        "authentication",
+        "authorization",
+        "ssl",
+        "https",
+        "encryption",
+        "csrf",
+        "xss",
+        "injection",
+      ],
+      performance: [
+        "performance",
+        "optimization",
+        "cache",
+        "speed",
+        "fast",
+        "efficient",
+        "memory",
+        "cpu",
+        "load",
+      ],
+      "best-practices": [
+        "best practice",
+        "guideline",
+        "standard",
+        "convention",
+        "pattern",
+        "clean",
+        "maintainable",
+      ],
+      integration: [
+        "api",
+        "integration",
+        "webhook",
+        "endpoint",
+        "service",
+        "external",
+        "third-party",
+      ],
     };
 
     for (const [category, keywords] of Object.entries(categoryKeywords)) {
-      if (keywords.some(keyword => content.includes(keyword))) {
+      if (keywords.some((keyword) => content.includes(keyword))) {
         return category;
       }
     }
@@ -1255,19 +1515,19 @@ class TemplateSuggestionService {
     if (template.platform === platform) {
       return `Recommended for ${platform} development`;
     }
-    
-    if (template.platform === 'general') {
-      const categoryCount = existingRules.filter(rule => 
-        this._inferRuleCategory(rule) === template.category
+
+    if (template.platform === "general") {
+      const categoryCount = existingRules.filter(
+        (rule) => this._inferRuleCategory(rule) === template.category,
       ).length;
-      
+
       if (categoryCount === 0) {
         return `Essential ${template.category} guidelines missing`;
       }
       return `Additional ${template.category} best practices`;
     }
-    
-    return 'Commonly used template';
+
+    return "Commonly used template";
   }
 }
 
@@ -1290,13 +1550,13 @@ function generateSlug(name, existingSlugs = []) {
   let slug = name
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 
   // Handle empty slug
   if (!slug) {
-    slug = 'project';
+    slug = "project";
   }
 
   // Handle conflicts by appending numbers
@@ -1322,7 +1582,8 @@ class ProjectManager {
   constructor(db, errorHandler = null, transactionManager = null) {
     this.db = db;
     this.errorHandler = errorHandler || new ErrorHandler();
-    this.transactionManager = transactionManager || new TransactionManager(db, this.errorHandler);
+    this.transactionManager =
+      transactionManager || new TransactionManager(db, this.errorHandler);
   }
 
   /**
@@ -1335,57 +1596,72 @@ class ProjectManager {
       return await this.transactionManager.executeTransaction(async (db) => {
         const {
           name,
-          description = '',
-          category = '',
+          description = "",
+          category = "",
           tags = [],
-          projectInfo = '',
-          status = 'active',
-          priority = 'medium',
+          projectInfo = "",
+          status = "active",
+          priority = "medium",
           coverImage = null,
           coverImageAlt = null,
-          aiContextSummary = '',
+          aiContextSummary = "",
           includeInAiContext = 1,
           startedAt = null,
-          targetCompletion = null
+          targetCompletion = null,
         } = projectData;
 
         // Validate required fields
         if (!name || name.trim().length === 0) {
-          throw new ValidationError('Project name is required', 'name', name);
+          throw new ValidationError("Project name is required", "name", name);
         }
 
         if (name.length > 255) {
-          throw new ValidationError('Project name must be 255 characters or less', 'name', name, {
-            maxLength: 255,
-            currentLength: name.length
-          });
+          throw new ValidationError(
+            "Project name must be 255 characters or less",
+            "name",
+            name,
+            {
+              maxLength: 255,
+              currentLength: name.length,
+            },
+          );
         }
 
         // Validate status
-        const validStatuses = ['draft', 'active', 'completed', 'archived', 'on_hold'];
+        const validStatuses = [
+          "draft",
+          "active",
+          "completed",
+          "archived",
+          "on_hold",
+        ];
         if (!validStatuses.includes(status)) {
           throw new ValidationError(
-            `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
-            'status',
+            `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+            "status",
             status,
-            { validValues: validStatuses }
+            { validValues: validStatuses },
           );
         }
 
         // Validate priority
-        const validPriorities = ['low', 'medium', 'high', 'critical'];
+        const validPriorities = ["low", "medium", "high", "critical"];
         if (!validPriorities.includes(priority)) {
           throw new ValidationError(
-            `Invalid priority. Must be one of: ${validPriorities.join(', ')}`,
-            'priority',
+            `Invalid priority. Must be one of: ${validPriorities.join(", ")}`,
+            "priority",
             priority,
-            { validValues: validPriorities }
+            { validValues: validPriorities },
           );
         }
 
         // Get existing slugs to avoid conflicts
-        const existingSlugsResult = await db.prepare('SELECT slug FROM projects').all();
-        const existingSlugs = existingSlugsResult.results.map(row => row.slug);
+        const existingSlugsResult = await db
+          .prepare("SELECT slug FROM projects")
+          .all();
+        const existingSlugs = existingSlugsResult.results.map(
+          (row) => row.slug,
+        );
 
         // Generate unique slug
         const slug = generateSlug(name, existingSlugs);
@@ -1395,50 +1671,72 @@ class ProjectManager {
         const now = new Date().toISOString();
         const tagsJson = JSON.stringify(Array.isArray(tags) ? tags : []);
 
-        const result = await db.prepare(`
+        const result = await db
+          .prepare(
+            `
           INSERT INTO projects (
             id, slug, name, description, category, tags, project_info,
             status, priority, cover_image, cover_image_alt,
             ai_context_summary, include_in_ai_context,
             started_at, target_completion, created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
-          projectId, slug, name, description, category, tagsJson, projectInfo,
-          status, priority, coverImage, coverImageAlt,
-          aiContextSummary, includeInAiContext,
-          startedAt, targetCompletion, now, now
-        ).run();
-
-        if (!result.success) {
-          throw new SystemError('Failed to create project in database', 'DATABASE_ERROR', {
+        `,
+          )
+          .bind(
             projectId,
             slug,
-            name
-          });
+            name,
+            description,
+            category,
+            tagsJson,
+            projectInfo,
+            status,
+            priority,
+            coverImage,
+            coverImageAlt,
+            aiContextSummary,
+            includeInAiContext,
+            startedAt,
+            targetCompletion,
+            now,
+            now,
+          )
+          .run();
+
+        if (!result.success) {
+          throw new SystemError(
+            "Failed to create project in database",
+            "DATABASE_ERROR",
+            {
+              projectId,
+              slug,
+              name,
+            },
+          );
         }
 
         // Return the created project
         return await this.getProject(projectId);
       });
     } catch (error) {
-      if (error.message.includes('UNIQUE constraint failed: projects.slug')) {
+      if (error.message.includes("UNIQUE constraint failed: projects.slug")) {
         throw new ConflictError(
-          'A project with this name already exists',
-          'duplicate_slug',
-          { slug: generateSlug(projectData.name || '') },
-          { suggestedName: `${projectData.name} (Copy)` }
+          "A project with this name already exists",
+          "duplicate_slug",
+          { slug: generateSlug(projectData.name || "") },
+          { suggestedName: `${projectData.name} (Copy)` },
         );
       }
-      
+
       // Re-throw custom errors as-is
       if (error instanceof SystemError) {
         throw error;
       }
-      
+
       // Wrap unexpected errors
       throw this.errorHandler.handleError(error, {
-        operation: 'createProject',
-        projectData: { name: projectData.name, status: projectData.status }
+        operation: "createProject",
+        projectData: { name: projectData.name, status: projectData.status },
       });
     }
   }
@@ -1453,7 +1751,7 @@ class ProjectManager {
     // First check if project exists
     const existingProject = await this.getProject(projectId);
     if (!existingProject) {
-      throw new Error('Project not found');
+      throw new Error("Project not found");
     }
 
     const {
@@ -1470,7 +1768,7 @@ class ProjectManager {
       includeInAiContext,
       startedAt,
       targetCompletion,
-      completedAt
+      completedAt,
     } = updateData;
 
     // Build dynamic update query
@@ -1479,105 +1777,120 @@ class ProjectManager {
 
     if (name !== undefined) {
       if (!name || name.trim().length === 0) {
-        throw new Error('Project name is required');
+        throw new Error("Project name is required");
       }
       if (name.length > 255) {
-        throw new Error('Project name must be 255 characters or less');
+        throw new Error("Project name must be 255 characters or less");
       }
 
       // Check if we need to update slug
       if (name !== existingProject.name) {
-        const existingSlugsResult = await this.db.prepare('SELECT slug FROM projects WHERE id != ?').bind(projectId).all();
-        const existingSlugs = existingSlugsResult.results.map(row => row.slug);
+        const existingSlugsResult = await this.db
+          .prepare("SELECT slug FROM projects WHERE id != ?")
+          .bind(projectId)
+          .all();
+        const existingSlugs = existingSlugsResult.results.map(
+          (row) => row.slug,
+        );
         const newSlug = generateSlug(name, existingSlugs);
-        
-        updates.push('name = ?', 'slug = ?');
+
+        updates.push("name = ?", "slug = ?");
         values.push(name, newSlug);
       } else {
-        updates.push('name = ?');
+        updates.push("name = ?");
         values.push(name);
       }
     }
 
     if (description !== undefined) {
-      updates.push('description = ?');
+      updates.push("description = ?");
       values.push(description);
     }
 
     if (category !== undefined) {
-      updates.push('category = ?');
+      updates.push("category = ?");
       values.push(category);
     }
 
     if (tags !== undefined) {
-      updates.push('tags = ?');
+      updates.push("tags = ?");
       values.push(JSON.stringify(Array.isArray(tags) ? tags : []));
     }
 
     if (projectInfo !== undefined) {
-      updates.push('project_info = ?');
+      updates.push("project_info = ?");
       values.push(projectInfo);
     }
 
     if (status !== undefined) {
-      const validStatuses = ['draft', 'active', 'completed', 'archived', 'on_hold'];
+      const validStatuses = [
+        "draft",
+        "active",
+        "completed",
+        "archived",
+        "on_hold",
+      ];
       if (!validStatuses.includes(status)) {
-        throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+        throw new Error(
+          `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        );
       }
-      updates.push('status = ?');
+      updates.push("status = ?");
       values.push(status);
 
       // Auto-set completed_at when status changes to completed
-      if (status === 'completed' && existingProject.status !== 'completed') {
-        updates.push('completed_at = ?');
+      if (status === "completed" && existingProject.status !== "completed") {
+        updates.push("completed_at = ?");
         values.push(new Date().toISOString());
-      } else if (status !== 'completed') {
-        updates.push('completed_at = ?');
+      } else if (status !== "completed") {
+        updates.push("completed_at = ?");
         values.push(null);
       }
     }
 
     if (priority !== undefined) {
-      const validPriorities = ['low', 'medium', 'high', 'critical'];
+      const validPriorities = ["low", "medium", "high", "critical"];
       if (!validPriorities.includes(priority)) {
-        throw new Error(`Invalid priority. Must be one of: ${validPriorities.join(', ')}`);
+        throw new Error(
+          `Invalid priority. Must be one of: ${validPriorities.join(", ")}`,
+        );
       }
-      updates.push('priority = ?');
+      updates.push("priority = ?");
       values.push(priority);
     }
 
     if (coverImage !== undefined) {
-      updates.push('cover_image = ?');
+      updates.push("cover_image = ?");
       values.push(coverImage);
     }
 
     if (coverImageAlt !== undefined) {
-      updates.push('cover_image_alt = ?');
+      updates.push("cover_image_alt = ?");
       values.push(coverImageAlt);
     }
 
     if (aiContextSummary !== undefined) {
-      updates.push('ai_context_summary = ?');
+      updates.push("ai_context_summary = ?");
       values.push(aiContextSummary);
     }
 
     if (includeInAiContext !== undefined) {
-      updates.push('include_in_ai_context = ?');
+      updates.push("include_in_ai_context = ?");
       values.push(includeInAiContext ? 1 : 0);
     }
 
     if (startedAt !== undefined) {
-      updates.push('started_at = ?');
+      updates.push("started_at = ?");
       values.push(startedAt);
     }
 
     if (targetCompletion !== undefined) {
-      updates.push('target_completion = ?');
+      updates.push("target_completion = ?");
       values.push(targetCompletion);
     }
 
     if (completedAt !== undefined) {
-      updates.push('completed_at = ?');
+      updates.push("completed_at = ?");
       values.push(completedAt);
     }
 
@@ -1586,25 +1899,30 @@ class ProjectManager {
     }
 
     // Add updated_at timestamp
-    updates.push('updated_at = ?');
+    updates.push("updated_at = ?");
     values.push(new Date().toISOString());
 
     // Add project ID for WHERE clause
     values.push(projectId);
 
     try {
-      const result = await this.db.prepare(`
-        UPDATE projects SET ${updates.join(', ')} WHERE id = ?
-      `).bind(...values).run();
+      const result = await this.db
+        .prepare(
+          `
+        UPDATE projects SET ${updates.join(", ")} WHERE id = ?
+      `,
+        )
+        .bind(...values)
+        .run();
 
       if (!result.success) {
-        throw new Error('Failed to update project');
+        throw new Error("Failed to update project");
       }
 
       return await this.getProject(projectId);
     } catch (error) {
-      if (error.message.includes('UNIQUE constraint failed: projects.slug')) {
-        throw new Error('A project with this name already exists');
+      if (error.message.includes("UNIQUE constraint failed: projects.slug")) {
+        throw new Error("A project with this name already exists");
       }
       throw error;
     }
@@ -1621,16 +1939,21 @@ class ProjectManager {
         // Check if project exists
         const existingProject = await this.getProject(projectId);
         if (!existingProject) {
-          throw new ResourceNotFoundError('project', projectId);
+          throw new ResourceNotFoundError("project", projectId);
         }
 
         // Get all resource assignments for this project
-        const resourceAssignments = await db.prepare(`
+        const resourceAssignments = await db
+          .prepare(
+            `
           SELECT resource_type, resource_id, COUNT(*) as assignment_count
-          FROM project_resources 
+          FROM project_resources
           WHERE project_id = ?
           GROUP BY resource_type, resource_id
-        `).bind(projectId).all();
+        `,
+          )
+          .bind(projectId)
+          .all();
 
         const cleanupSummary = {
           projectId,
@@ -1638,58 +1961,78 @@ class ProjectManager {
           resourcesUnassigned: 0,
           sharedResourcesPreserved: 0,
           exportHistoryCleared: 0,
-          warnings: []
+          warnings: [],
         };
 
         // Check for shared resources (assigned to multiple projects)
         for (const assignment of resourceAssignments.results) {
           const { resource_type, resource_id } = assignment;
-          
+
           // Count how many projects use this resource
-          const usageCount = await db.prepare(`
+          const usageCount = await db
+            .prepare(
+              `
             SELECT COUNT(DISTINCT project_id) as project_count
-            FROM project_resources 
+            FROM project_resources
             WHERE resource_type = ? AND resource_id = ?
-          `).bind(resource_type, resource_id).first();
+          `,
+            )
+            .bind(resource_type, resource_id)
+            .first();
 
           if (usageCount.project_count > 1) {
             cleanupSummary.sharedResourcesPreserved++;
             cleanupSummary.warnings.push(
-              `${resource_type} '${resource_id}' is shared with other projects and will be preserved`
+              `${resource_type} '${resource_id}' is shared with other projects and will be preserved`,
             );
           }
         }
 
         // Delete project resource assignments (this preserves the actual resources)
-        const resourceDeletionResult = await db.prepare(
-          'DELETE FROM project_resources WHERE project_id = ?'
-        ).bind(projectId).run();
+        const resourceDeletionResult = await db
+          .prepare("DELETE FROM project_resources WHERE project_id = ?")
+          .bind(projectId)
+          .run();
 
-        cleanupSummary.resourcesUnassigned = resourceDeletionResult.meta?.changes || resourceDeletionResult.changes || 0;
+        cleanupSummary.resourcesUnassigned =
+          resourceDeletionResult.meta?.changes ||
+          resourceDeletionResult.changes ||
+          0;
 
         // Clean up export history for this project
-        const exportHistoryResult = await db.prepare(
-          'DELETE FROM export_history WHERE project_id = ?'
-        ).bind(projectId).run();
+        const exportHistoryResult = await db
+          .prepare("DELETE FROM export_history WHERE project_id = ?")
+          .bind(projectId)
+          .run();
 
-        cleanupSummary.exportHistoryCleared = exportHistoryResult.meta?.changes || exportHistoryResult.changes || 0;
+        cleanupSummary.exportHistoryCleared =
+          exportHistoryResult.meta?.changes || exportHistoryResult.changes || 0;
 
         // Finally, delete the project itself
-        const projectDeletionResult = await db.prepare(
-          'DELETE FROM projects WHERE id = ?'
-        ).bind(projectId).run();
+        const projectDeletionResult = await db
+          .prepare("DELETE FROM projects WHERE id = ?")
+          .bind(projectId)
+          .run();
 
-        if (!projectDeletionResult.success || (projectDeletionResult.meta?.changes || projectDeletionResult.changes) === 0) {
-          throw new SystemError('Failed to delete project from database', 'DATABASE_ERROR', {
-            projectId,
-            projectName: existingProject.name
-          });
+        if (
+          !projectDeletionResult.success ||
+          (projectDeletionResult.meta?.changes ||
+            projectDeletionResult.changes) === 0
+        ) {
+          throw new SystemError(
+            "Failed to delete project from database",
+            "DATABASE_ERROR",
+            {
+              projectId,
+              projectName: existingProject.name,
+            },
+          );
         }
 
         return {
           success: true,
           cleanup: cleanupSummary,
-          message: `Project '${existingProject.name}' deleted successfully`
+          message: `Project '${existingProject.name}' deleted successfully`,
         };
       });
     } catch (error) {
@@ -1697,16 +2040,16 @@ class ProjectManager {
       if (error instanceof SystemError) {
         throw error;
       }
-      
+
       // Wrap unexpected errors
       const errorResponse = this.errorHandler.handleError(error, {
-        operation: 'deleteProject',
-        projectId
+        operation: "deleteProject",
+        projectId,
       });
       throw new SystemError(
         errorResponse.error.message,
         errorResponse.error.code,
-        { projectId, originalError: error.message }
+        { projectId, originalError: error.message },
       );
     }
   }
@@ -1718,8 +2061,11 @@ class ProjectManager {
    */
   async getProject(projectId) {
     try {
-      const result = await this.db.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
-      
+      const result = await this.db
+        .prepare("SELECT * FROM projects WHERE id = ?")
+        .bind(projectId)
+        .first();
+
       if (!result) {
         return null;
       }
@@ -1728,7 +2074,7 @@ class ProjectManager {
       return {
         ...result,
         tags: result.tags ? JSON.parse(result.tags) : [],
-        includeInAiContext: Boolean(result.include_in_ai_context)
+        includeInAiContext: Boolean(result.include_in_ai_context),
       };
     } catch (error) {
       throw new Error(`Failed to get project: ${error.message}`);
@@ -1742,8 +2088,11 @@ class ProjectManager {
    */
   async getProjectBySlug(slug) {
     try {
-      const result = await this.db.prepare('SELECT * FROM projects WHERE slug = ?').bind(slug).first();
-      
+      const result = await this.db
+        .prepare("SELECT * FROM projects WHERE slug = ?")
+        .bind(slug)
+        .first();
+
       if (!result) {
         return null;
       }
@@ -1752,7 +2101,7 @@ class ProjectManager {
       return {
         ...result,
         tags: result.tags ? JSON.parse(result.tags) : [],
-        includeInAiContext: Boolean(result.include_in_ai_context)
+        includeInAiContext: Boolean(result.include_in_ai_context),
       };
     } catch (error) {
       throw new Error(`Failed to get project by slug: ${error.message}`);
@@ -1771,10 +2120,10 @@ class ProjectManager {
       priority = null,
       includeInAiContext = null,
       search = null,
-      sortBy = 'updated_at',
-      sortOrder = 'DESC',
+      sortBy = "updated_at",
+      sortOrder = "DESC",
       limit = 50,
-      offset = 0
+      offset = 0,
     } = options;
 
     try {
@@ -1783,82 +2132,116 @@ class ProjectManager {
       const values = [];
 
       if (status) {
-        conditions.push('status = ?');
+        conditions.push("status = ?");
         values.push(status);
       }
 
       if (category) {
-        conditions.push('category = ?');
+        conditions.push("category = ?");
         values.push(category);
       }
 
       if (priority) {
-        conditions.push('priority = ?');
+        conditions.push("priority = ?");
         values.push(priority);
       }
 
       if (includeInAiContext !== null) {
-        conditions.push('include_in_ai_context = ?');
+        conditions.push("include_in_ai_context = ?");
         values.push(includeInAiContext ? 1 : 0);
       }
 
       if (search) {
-        conditions.push('(name LIKE ? OR description LIKE ? OR ai_context_summary LIKE ?)');
+        conditions.push(
+          "(name LIKE ? OR description LIKE ? OR ai_context_summary LIKE ?)",
+        );
         const searchPattern = `%${search}%`;
         values.push(searchPattern, searchPattern, searchPattern);
       }
 
-      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+      const whereClause =
+        conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
       // Validate sort parameters
-      const validSortFields = ['name', 'created_at', 'updated_at', 'status', 'priority', 'category'];
-      const validSortOrders = ['ASC', 'DESC'];
-      
-      const safeSortBy = validSortFields.includes(sortBy) ? sortBy : 'updated_at';
-      const safeSortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+      const validSortFields = [
+        "name",
+        "created_at",
+        "updated_at",
+        "status",
+        "priority",
+        "category",
+      ];
+      const validSortOrders = ["ASC", "DESC"];
+
+      const safeSortBy = validSortFields.includes(sortBy)
+        ? sortBy
+        : "updated_at";
+      const safeSortOrder = validSortOrders.includes(sortOrder.toUpperCase())
+        ? sortOrder.toUpperCase()
+        : "DESC";
 
       // Get total count
       const countQuery = `SELECT COUNT(*) as total FROM projects ${whereClause}`;
-      const countResult = await this.db.prepare(countQuery).bind(...values).first();
+      const countResult = await this.db
+        .prepare(countQuery)
+        .bind(...values)
+        .first();
       const total = countResult.total;
 
       // Get projects
       const projectsQuery = `
-        SELECT * FROM projects 
+        SELECT * FROM projects
         ${whereClause}
         ORDER BY ${safeSortBy} ${safeSortOrder}
         LIMIT ? OFFSET ?
       `;
-      
+
       values.push(limit, offset);
-      const projectsResult = await this.db.prepare(projectsQuery).bind(...values).all();
+      const projectsResult = await this.db
+        .prepare(projectsQuery)
+        .bind(...values)
+        .all();
 
       // Parse JSON fields for each project with error handling
-      const projects = projectsResult.results.map(project => {
+      const projects = projectsResult.results.map((project) => {
         let parsedTags = [];
-        
+
         try {
           if (project.tags) {
             // Handle both JSON array and comma-separated string formats
-            if (project.tags.startsWith('[') && project.tags.endsWith(']')) {
+            if (project.tags.startsWith("[") && project.tags.endsWith("]")) {
               parsedTags = JSON.parse(project.tags);
-            } else if (typeof project.tags === 'string' && project.tags.trim()) {
+            } else if (
+              typeof project.tags === "string" &&
+              project.tags.trim()
+            ) {
               // Handle comma-separated string format
-              parsedTags = project.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              parsedTags = project.tags
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter((tag) => tag);
             }
           }
         } catch (error) {
-          console.error('Error parsing tags for project', project.id, ':', error);
+          console.error(
+            "Error parsing tags for project",
+            project.id,
+            ":",
+            error,
+          );
           // Fallback: treat as comma-separated string
-          if (typeof project.tags === 'string' && project.tags.trim()) {
-            parsedTags = project.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+          if (typeof project.tags === "string" && project.tags.trim()) {
+            parsedTags = project.tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter((tag) => tag);
           }
         }
-        
+
         return {
           ...project,
           tags: parsedTags,
-          includeInAiContext: Boolean(project.include_in_ai_context)
+          includeInAiContext: Boolean(project.include_in_ai_context),
         };
       });
 
@@ -1868,8 +2251,8 @@ class ProjectManager {
           total,
           limit,
           offset,
-          hasMore: offset + limit < total
-        }
+          hasMore: offset + limit < total,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to list projects: ${error.message}`);
@@ -1883,7 +2266,7 @@ class ProjectManager {
   async getProjectStats() {
     try {
       const statsQuery = `
-        SELECT 
+        SELECT
           COUNT(*) as total,
           COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
           COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
@@ -1912,15 +2295,15 @@ class ProjectManager {
   async importResources(projectId, resourceImports, options = {}) {
     const {
       resolveDependencies = true,
-      conflictResolution = 'skip', // 'skip', 'overwrite', 'rename'
+      conflictResolution = "skip", // 'skip', 'overwrite', 'rename'
       assignedBy = null,
-      importReason = 'bulk_import'
+      importReason = "bulk_import",
     } = options;
 
     // Validate project exists
     const project = await this.getProject(projectId);
     if (!project) {
-      throw new Error('Target project not found');
+      throw new Error("Target project not found");
     }
 
     const results = {
@@ -1928,47 +2311,61 @@ class ProjectManager {
       failed: [],
       skipped: [],
       dependencies: [],
-      conflicts: []
+      conflicts: [],
     };
 
     try {
       // Process each resource import
       for (const resourceImport of resourceImports) {
-        const { resource_type, resource_id, config_overrides = null } = resourceImport;
+        const {
+          resource_type,
+          resource_id,
+          config_overrides = null,
+        } = resourceImport;
 
         try {
           // Check if resource already assigned
-          const existingAssignment = await this.db.prepare(`
-            SELECT id FROM project_resources 
+          const existingAssignment = await this.db
+            .prepare(
+              `
+            SELECT id FROM project_resources
             WHERE project_id = ? AND resource_type = ? AND resource_id = ?
-          `).bind(projectId, resource_type, resource_id).first();
+          `,
+            )
+            .bind(projectId, resource_type, resource_id)
+            .first();
 
           if (existingAssignment) {
-            if (conflictResolution === 'skip') {
+            if (conflictResolution === "skip") {
               results.skipped.push({
                 resource_type,
                 resource_id,
-                reason: 'already_assigned'
+                reason: "already_assigned",
               });
               continue;
-            } else if (conflictResolution === 'overwrite') {
+            } else if (conflictResolution === "overwrite") {
               // Update existing assignment
-              await this.db.prepare(`
-                UPDATE project_resources 
+              await this.db
+                .prepare(
+                  `
+                UPDATE project_resources
                 SET config_overrides = ?, assignment_reason = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE project_id = ? AND resource_type = ? AND resource_id = ?
-              `).bind(
-                config_overrides ? JSON.stringify(config_overrides) : null,
-                importReason,
-                projectId,
-                resource_type,
-                resource_id
-              ).run();
+              `,
+                )
+                .bind(
+                  config_overrides ? JSON.stringify(config_overrides) : null,
+                  importReason,
+                  projectId,
+                  resource_type,
+                  resource_id,
+                )
+                .run();
 
               results.successful.push({
                 resource_type,
                 resource_id,
-                action: 'updated'
+                action: "updated",
               });
               continue;
             }
@@ -1980,40 +2377,47 @@ class ProjectManager {
           // Get dependencies if requested
           let dependencies = [];
           if (resolveDependencies) {
-            dependencies = await this.getResourceDependencies(resource_type, resource_id);
+            dependencies = await this.getResourceDependencies(
+              resource_type,
+              resource_id,
+            );
             results.dependencies.push(...dependencies);
           }
 
           // Create new assignment
           const assignmentId = generateId();
-          await this.db.prepare(`
+          await this.db
+            .prepare(
+              `
             INSERT INTO project_resources (
-              id, project_id, resource_type, resource_id, 
+              id, project_id, resource_type, resource_id,
               config_overrides, assigned_by, assignment_reason
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
-          `).bind(
-            assignmentId,
-            projectId,
-            resource_type,
-            resource_id,
-            config_overrides ? JSON.stringify(config_overrides) : null,
-            assignedBy,
-            importReason
-          ).run();
+          `,
+            )
+            .bind(
+              assignmentId,
+              projectId,
+              resource_type,
+              resource_id,
+              config_overrides ? JSON.stringify(config_overrides) : null,
+              assignedBy,
+              importReason,
+            )
+            .run();
 
           results.successful.push({
             resource_type,
             resource_id,
             assignment_id: assignmentId,
-            action: 'imported',
-            dependencies: dependencies.length
+            action: "imported",
+            dependencies: dependencies.length,
           });
-
         } catch (error) {
           results.failed.push({
             resource_type,
             resource_id,
-            error: error.message
+            error: error.message,
           });
         }
       }
@@ -2025,12 +2429,11 @@ class ProjectManager {
           successful: results.successful.length,
           failed: results.failed.length,
           skipped: results.skipped.length,
-          dependencies_found: results.dependencies.length
+          dependencies_found: results.dependencies.length,
         },
         results,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       throw new Error(`Import operation failed: ${error.message}`);
     }
@@ -2045,26 +2448,34 @@ class ProjectManager {
   async getResourceDependencies(resourceType, resourceId) {
     try {
       // Get direct dependencies from resource_dependencies table
-      const directDeps = await this.db.prepare(`
+      const directDeps = await this.db
+        .prepare(
+          `
         SELECT target_resource_type, target_resource_id, dependency_type, dependency_reason, is_critical
-        FROM resource_dependencies 
+        FROM resource_dependencies
         WHERE source_resource_type = ? AND source_resource_id = ?
-      `).bind(resourceType, resourceId).all();
+      `,
+        )
+        .bind(resourceType, resourceId)
+        .all();
 
       const dependencies = [];
 
       for (const dep of directDeps.results) {
         // Verify the dependency resource still exists
         try {
-          await this._verifyResourceExists(dep.target_resource_type, dep.target_resource_id);
-          
+          await this._verifyResourceExists(
+            dep.target_resource_type,
+            dep.target_resource_id,
+          );
+
           dependencies.push({
             resource_type: dep.target_resource_type,
             resource_id: dep.target_resource_id,
             dependency_type: dep.dependency_type,
             dependency_reason: dep.dependency_reason,
             is_critical: Boolean(dep.is_critical),
-            exists: true
+            exists: true,
           });
         } catch (error) {
           dependencies.push({
@@ -2074,18 +2485,21 @@ class ProjectManager {
             dependency_reason: dep.dependency_reason,
             is_critical: Boolean(dep.is_critical),
             exists: false,
-            error: error.message
+            error: error.message,
           });
         }
       }
 
       // Get implicit dependencies based on resource content analysis
-      const implicitDeps = await this._analyzeImplicitDependencies(resourceType, resourceId);
+      const implicitDeps = await this._analyzeImplicitDependencies(
+        resourceType,
+        resourceId,
+      );
       dependencies.push(...implicitDeps);
 
       return dependencies;
     } catch (error) {
-      console.error('Error getting resource dependencies:', error);
+      console.error("Error getting resource dependencies:", error);
       return [];
     }
   }
@@ -2108,15 +2522,15 @@ class ProjectManager {
       compatibility: {
         overall_score: 0,
         warnings: [],
-        recommendations: []
+        recommendations: [],
       },
       summary: {
         total_resources: resourceImports.length,
         new_assignments: 0,
         existing_assignments: 0,
         missing_resources: 0,
-        critical_dependencies: 0
-      }
+        critical_dependencies: 0,
+      },
     };
 
     try {
@@ -2129,7 +2543,7 @@ class ProjectManager {
           already_assigned: false,
           dependencies: [],
           compatibility_score: 0,
-          warnings: []
+          warnings: [],
         };
 
         try {
@@ -2138,10 +2552,15 @@ class ProjectManager {
           resourcePreview.exists = true;
 
           // Check if already assigned
-          const existing = await this.db.prepare(`
-            SELECT id FROM project_resources 
+          const existing = await this.db
+            .prepare(
+              `
+            SELECT id FROM project_resources
             WHERE project_id = ? AND resource_type = ? AND resource_id = ?
-          `).bind(projectId, resource_type, resource_id).first();
+          `,
+            )
+            .bind(projectId, resource_type, resource_id)
+            .first();
 
           if (existing) {
             resourcePreview.already_assigned = true;
@@ -2149,8 +2568,8 @@ class ProjectManager {
             preview.conflicts.push({
               resource_type,
               resource_id,
-              conflict_type: 'already_assigned',
-              resolution_options: ['skip', 'overwrite']
+              conflict_type: "already_assigned",
+              resolution_options: ["skip", "overwrite"],
             });
           } else {
             preview.summary.new_assignments++;
@@ -2158,17 +2577,20 @@ class ProjectManager {
 
           // Get dependencies if requested
           if (includeDependencies) {
-            const deps = await this.getResourceDependencies(resource_type, resource_id);
+            const deps = await this.getResourceDependencies(
+              resource_type,
+              resource_id,
+            );
             resourcePreview.dependencies = deps;
             preview.dependencies.push(...deps);
-            
-            const criticalDeps = deps.filter(d => d.is_critical && !d.exists);
+
+            const criticalDeps = deps.filter((d) => d.is_critical && !d.exists);
             preview.summary.critical_dependencies += criticalDeps.length;
           }
 
           // Basic compatibility scoring
-          resourcePreview.compatibility_score = this._calculateCompatibilityScore(resourcePreview);
-
+          resourcePreview.compatibility_score =
+            this._calculateCompatibilityScore(resourcePreview);
         } catch (error) {
           resourcePreview.exists = false;
           resourcePreview.error = error.message;
@@ -2180,30 +2602,42 @@ class ProjectManager {
       }
 
       // Calculate overall compatibility
-      const validResources = preview.resources.filter(r => r.exists);
+      const validResources = preview.resources.filter((r) => r.exists);
       if (validResources.length > 0) {
-        preview.compatibility.overall_score = 
-          validResources.reduce((sum, r) => sum + r.compatibility_score, 0) / validResources.length;
+        preview.compatibility.overall_score =
+          validResources.reduce((sum, r) => sum + r.compatibility_score, 0) /
+          validResources.length;
       }
 
       // Add recommendations
       if (preview.conflicts.length > 0) {
-        preview.compatibility.warnings.push(`${preview.conflicts.length} resources are already assigned to this project`);
-        preview.compatibility.recommendations.push('Consider using conflict resolution strategy');
+        preview.compatibility.warnings.push(
+          `${preview.conflicts.length} resources are already assigned to this project`,
+        );
+        preview.compatibility.recommendations.push(
+          "Consider using conflict resolution strategy",
+        );
       }
 
       if (preview.summary.missing_resources > 0) {
-        preview.compatibility.warnings.push(`${preview.summary.missing_resources} resources not found`);
-        preview.compatibility.recommendations.push('Verify resource IDs and ensure resources are active');
+        preview.compatibility.warnings.push(
+          `${preview.summary.missing_resources} resources not found`,
+        );
+        preview.compatibility.recommendations.push(
+          "Verify resource IDs and ensure resources are active",
+        );
       }
 
       if (preview.summary.critical_dependencies > 0) {
-        preview.compatibility.warnings.push(`${preview.summary.critical_dependencies} critical dependencies are missing`);
-        preview.compatibility.recommendations.push('Import missing dependencies first');
+        preview.compatibility.warnings.push(
+          `${preview.summary.critical_dependencies} critical dependencies are missing`,
+        );
+        preview.compatibility.recommendations.push(
+          "Import missing dependencies first",
+        );
       }
 
       return preview;
-
     } catch (error) {
       throw new Error(`Import preview failed: ${error.message}`);
     }
@@ -2217,27 +2651,28 @@ class ProjectManager {
    */
   async _verifyResourceExists(resourceType, resourceId) {
     let table, condition;
-    
+
     switch (resourceType) {
-      case 'agent':
-        table = 'agents';
-        condition = 'is_active = 1';
+      case "agent":
+        table = "agents";
+        condition = "is_active = 1";
         break;
-      case 'rule':
-        table = 'agent_rules';
-        condition = 'is_active = 1';
+      case "rule":
+        table = "agent_rules";
+        condition = "is_active = 1";
         break;
-      case 'hook':
-        table = 'hooks';
-        condition = 'is_enabled = 1';
+      case "hook":
+        table = "hooks";
+        condition = "is_enabled = 1";
         break;
       default:
         throw new Error(`Invalid resource type: ${resourceType}`);
     }
 
-    const resource = await this.db.prepare(
-      `SELECT id FROM ${table} WHERE id = ? AND ${condition}`
-    ).bind(resourceId).first();
+    const resource = await this.db
+      .prepare(`SELECT id FROM ${table} WHERE id = ? AND ${condition}`)
+      .bind(resourceId)
+      .first();
 
     if (!resource) {
       throw new Error(`${resourceType} not found or not active`);
@@ -2257,30 +2692,34 @@ class ProjectManager {
     // - Agent system prompts for references to rules or other agents
     // - Rule content for references to other rules or hooks
     // - Hook commands for dependencies on other resources
-    
+
     try {
       const implicitDeps = [];
-      
+
       // Basic analysis based on resource type
-      if (resourceType === 'agent') {
+      if (resourceType === "agent") {
         // Check if agent references any rules in its system prompt
-        const agent = await this.db.prepare('SELECT system_prompt FROM agents WHERE id = ?')
-          .bind(resourceId).first();
-        
+        const agent = await this.db
+          .prepare("SELECT system_prompt FROM agents WHERE id = ?")
+          .bind(resourceId)
+          .first();
+
         if (agent && agent.system_prompt) {
           // Simple pattern matching for rule references
-          const ruleMatches = agent.system_prompt.match(/rule[:\s]+([a-zA-Z0-9-_]+)/gi);
+          const ruleMatches = agent.system_prompt.match(
+            /rule[:\s]+([a-zA-Z0-9-_]+)/gi,
+          );
           if (ruleMatches) {
             for (const match of ruleMatches) {
               const ruleId = match.split(/[:\s]+/)[1];
               if (ruleId) {
                 implicitDeps.push({
-                  resource_type: 'rule',
+                  resource_type: "rule",
                   resource_id: ruleId,
-                  dependency_type: 'references',
-                  dependency_reason: 'Referenced in agent system prompt',
+                  dependency_type: "references",
+                  dependency_reason: "Referenced in agent system prompt",
                   is_critical: false,
-                  exists: true // Will be verified by caller
+                  exists: true, // Will be verified by caller
                 });
               }
             }
@@ -2290,7 +2729,7 @@ class ProjectManager {
 
       return implicitDeps;
     } catch (error) {
-      console.error('Error analyzing implicit dependencies:', error);
+      console.error("Error analyzing implicit dependencies:", error);
       return [];
     }
   }
@@ -2313,7 +2752,9 @@ class ProjectManager {
     }
 
     // Reduce score for missing critical dependencies
-    const criticalMissing = resourcePreview.dependencies.filter(d => d.is_critical && !d.exists);
+    const criticalMissing = resourcePreview.dependencies.filter(
+      (d) => d.is_critical && !d.exists,
+    );
     score -= criticalMissing.length * 0.1;
 
     return Math.max(0, Math.min(1, score));
@@ -2332,7 +2773,8 @@ class ResourceManager {
   constructor(db, errorHandler = null, transactionManager = null) {
     this.db = db;
     this.errorHandler = errorHandler || new ErrorHandler();
-    this.transactionManager = transactionManager || new TransactionManager(db, this.errorHandler);
+    this.transactionManager =
+      transactionManager || new TransactionManager(db, this.errorHandler);
   }
 
   /**
@@ -2351,79 +2793,106 @@ class ResourceManager {
           assignmentOrder = 0,
           configOverrides = null,
           assignedBy = null,
-          assignmentReason = null
+          assignmentReason = null,
         } = options;
 
         // Validate resource type
-        const validTypes = ['agent', 'rule', 'hook'];
+        const validTypes = ["agent", "rule", "hook"];
         if (!validTypes.includes(resourceType)) {
           throw new ValidationError(
-            `Invalid resource type. Must be one of: ${validTypes.join(', ')}`,
-            'resourceType',
+            `Invalid resource type. Must be one of: ${validTypes.join(", ")}`,
+            "resourceType",
             resourceType,
-            { validValues: validTypes }
+            { validValues: validTypes },
           );
         }
 
         // Verify project exists
-        const project = await db.prepare('SELECT id FROM projects WHERE id = ?').bind(projectId).first();
+        const project = await db
+          .prepare("SELECT id FROM projects WHERE id = ?")
+          .bind(projectId)
+          .first();
         if (!project) {
-          throw new ResourceNotFoundError('project', projectId);
+          throw new ResourceNotFoundError("project", projectId);
         }
 
         // Verify resource exists based on type
         await this._verifyResourceExists(resourceType, resourceId, db);
 
         // Check for existing assignment
-        const existingAssignment = await db.prepare(`
-          SELECT id FROM project_resources 
+        const existingAssignment = await db
+          .prepare(
+            `
+          SELECT id FROM project_resources
           WHERE project_id = ? AND resource_type = ? AND resource_id = ?
-        `).bind(projectId, resourceType, resourceId).first();
+        `,
+          )
+          .bind(projectId, resourceType, resourceId)
+          .first();
 
         if (existingAssignment) {
           throw new ConflictError(
-            'Resource is already assigned to this project',
-            'duplicate_assignment',
+            "Resource is already assigned to this project",
+            "duplicate_assignment",
             existingAssignment,
             {
               projectId,
               resourceType,
               resourceId,
-              existingAssignmentId: existingAssignment.id
-            }
+              existingAssignmentId: existingAssignment.id,
+            },
           );
         }
 
         // If setting as primary, clear other primary flags for this resource type
         if (isPrimary) {
-          const clearPrimaryResult = await db.prepare(
-            'UPDATE project_resources SET is_primary = 0 WHERE project_id = ? AND resource_type = ?'
-          ).bind(projectId, resourceType).run();
+          const clearPrimaryResult = await db
+            .prepare(
+              "UPDATE project_resources SET is_primary = 0 WHERE project_id = ? AND resource_type = ?",
+            )
+            .bind(projectId, resourceType)
+            .run();
 
           // Log the update propagation
-          if (clearPrimaryResult.meta?.changes > 0 || clearPrimaryResult.changes > 0) {
-            console.log(`Cleared primary flag for ${clearPrimaryResult.meta?.changes || clearPrimaryResult.changes} existing ${resourceType}(s) in project ${projectId}`);
+          if (
+            clearPrimaryResult.meta?.changes > 0 ||
+            clearPrimaryResult.changes > 0
+          ) {
+            console.log(
+              `Cleared primary flag for ${clearPrimaryResult.meta?.changes || clearPrimaryResult.changes} existing ${resourceType}(s) in project ${projectId}`,
+            );
           }
         }
 
         const assignmentId = generateId();
-        const result = await db.prepare(`
+        const result = await db
+          .prepare(
+            `
           INSERT INTO project_resources (
-            id, project_id, resource_type, resource_id, is_primary, 
+            id, project_id, resource_type, resource_id, is_primary,
             assignment_order, config_overrides, assigned_by, assignment_reason
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
-          assignmentId, projectId, resourceType, resourceId, isPrimary ? 1 : 0,
-          assignmentOrder, configOverrides ? JSON.stringify(configOverrides) : null,
-          assignedBy, assignmentReason
-        ).run();
-
-        if (!result.success) {
-          throw new SystemError('Failed to assign resource', 'DATABASE_ERROR', {
+        `,
+          )
+          .bind(
             assignmentId,
             projectId,
             resourceType,
-            resourceId
+            resourceId,
+            isPrimary ? 1 : 0,
+            assignmentOrder,
+            configOverrides ? JSON.stringify(configOverrides) : null,
+            assignedBy,
+            assignmentReason,
+          )
+          .run();
+
+        if (!result.success) {
+          throw new SystemError("Failed to assign resource", "DATABASE_ERROR", {
+            assignmentId,
+            projectId,
+            resourceType,
+            resourceId,
           });
         }
 
@@ -2437,18 +2906,18 @@ class ResourceManager {
       if (error instanceof SystemError) {
         throw error;
       }
-      
+
       // Wrap unexpected errors
       const errorResponse = this.errorHandler.handleError(error, {
-        operation: 'assignResource',
+        operation: "assignResource",
         projectId,
         resourceType,
-        resourceId
+        resourceId,
       });
       throw new SystemError(
         errorResponse.error.message,
         errorResponse.error.code,
-        { projectId, resourceType, resourceId, originalError: error.message }
+        { projectId, resourceType, resourceId, originalError: error.message },
       );
     }
   }
@@ -2461,10 +2930,15 @@ class ResourceManager {
    * @returns {boolean} - Success status
    */
   async unassignResource(projectId, resourceType, resourceId) {
-    const result = await this.db.prepare(`
-      DELETE FROM project_resources 
+    const result = await this.db
+      .prepare(
+        `
+      DELETE FROM project_resources
       WHERE project_id = ? AND resource_type = ? AND resource_id = ?
-    `).bind(projectId, resourceType, resourceId).run();
+    `,
+      )
+      .bind(projectId, resourceType, resourceId)
+      .run();
 
     return result.success && (result.meta?.changes > 0 || result.changes > 0);
   }
@@ -2476,56 +2950,73 @@ class ResourceManager {
    * @returns {Array} - Available resources
    */
   async getAvailableResources(projectId, resourceType = null) {
-    const validTypes = ['agent', 'rule', 'hook'];
-    
+    const validTypes = ["agent", "rule", "hook"];
+
     if (resourceType && !validTypes.includes(resourceType)) {
-      throw new Error(`Invalid resource type. Must be one of: ${validTypes.join(', ')}`);
+      throw new Error(
+        `Invalid resource type. Must be one of: ${validTypes.join(", ")}`,
+      );
     }
 
     const resources = [];
 
     // Get agents if requested or no specific type
-    if (!resourceType || resourceType === 'agent') {
-      const agents = await this.db.prepare(`
-        SELECT 'agent' as resource_type, a.id as resource_id, a.name, a.role, a.description, 
+    if (!resourceType || resourceType === "agent") {
+      const agents = await this.db
+        .prepare(
+          `
+        SELECT 'agent' as resource_type, a.id as resource_id, a.name, a.role, a.description,
                CASE WHEN pr.resource_id IS NOT NULL THEN 1 ELSE 0 END as is_assigned
         FROM agents a
-        LEFT JOIN project_resources pr ON pr.resource_type = 'agent' 
+        LEFT JOIN project_resources pr ON pr.resource_type = 'agent'
           AND pr.resource_id = a.id AND pr.project_id = ?
         WHERE a.is_active = 1
         ORDER BY a.name
-      `).bind(projectId).all();
-      
+      `,
+        )
+        .bind(projectId)
+        .all();
+
       resources.push(...agents.results);
     }
 
     // Get rules if requested or no specific type
-    if (!resourceType || resourceType === 'rule') {
-      const rules = await this.db.prepare(`
+    if (!resourceType || resourceType === "rule") {
+      const rules = await this.db
+        .prepare(
+          `
         SELECT 'rule' as resource_type, ar.id as resource_id, ar.name, ar.description, ar.category,
                CASE WHEN pr.resource_id IS NOT NULL THEN 1 ELSE 0 END as is_assigned
         FROM agent_rules ar
-        LEFT JOIN project_resources pr ON pr.resource_type = 'rule' 
+        LEFT JOIN project_resources pr ON pr.resource_type = 'rule'
           AND pr.resource_id = ar.id AND pr.project_id = ?
         WHERE ar.is_active = 1
         ORDER BY ar.name
-      `).bind(projectId).all();
-      
+      `,
+        )
+        .bind(projectId)
+        .all();
+
       resources.push(...rules.results);
     }
 
     // Get hooks if requested or no specific type
-    if (!resourceType || resourceType === 'hook') {
-      const hooks = await this.db.prepare(`
+    if (!resourceType || resourceType === "hook") {
+      const hooks = await this.db
+        .prepare(
+          `
         SELECT 'hook' as resource_type, h.id as resource_id, h.name, h.description, h.hook_type,
                CASE WHEN pr.resource_id IS NOT NULL THEN 1 ELSE 0 END as is_assigned
         FROM hooks h
-        LEFT JOIN project_resources pr ON pr.resource_type = 'hook' 
+        LEFT JOIN project_resources pr ON pr.resource_type = 'hook'
           AND pr.resource_id = h.id AND pr.project_id = ?
         WHERE h.is_enabled = 1
         ORDER BY h.name
-      `).bind(projectId).all();
-      
+      `,
+        )
+        .bind(projectId)
+        .all();
+
       resources.push(...hooks.results);
     }
 
@@ -2539,16 +3030,18 @@ class ResourceManager {
    * @returns {Array} - Assigned resources with details
    */
   async getProjectResources(projectId, resourceType = null) {
-    let whereClause = 'WHERE pr.project_id = ?';
+    let whereClause = "WHERE pr.project_id = ?";
     const params = [projectId];
 
     if (resourceType) {
-      whereClause += ' AND pr.resource_type = ?';
+      whereClause += " AND pr.resource_type = ?";
       params.push(resourceType);
     }
 
-    const assignments = await this.db.prepare(`
-      SELECT pr.*, 
+    const assignments = await this.db
+      .prepare(
+        `
+      SELECT pr.*,
              CASE pr.resource_type
                WHEN 'agent' THEN a.name
                WHEN 'rule' THEN ar.name
@@ -2570,12 +3063,17 @@ class ResourceManager {
       LEFT JOIN hooks h ON pr.resource_type = 'hook' AND pr.resource_id = h.id
       ${whereClause}
       ORDER BY pr.resource_type, pr.assignment_order, pr.created_at
-    `).bind(...params).all();
+    `,
+      )
+      .bind(...params)
+      .all();
 
-    return assignments.results.map(assignment => ({
+    return assignments.results.map((assignment) => ({
       ...assignment,
-      config_overrides: assignment.config_overrides ? JSON.parse(assignment.config_overrides) : null,
-      is_primary: Boolean(assignment.is_primary)
+      config_overrides: assignment.config_overrides
+        ? JSON.parse(assignment.config_overrides)
+        : null,
+      is_primary: Boolean(assignment.is_primary),
     }));
   }
 
@@ -2585,8 +3083,10 @@ class ResourceManager {
    * @returns {Object|null} - Assignment details
    */
   async getResourceAssignment(assignmentId) {
-    const assignment = await this.db.prepare(`
-      SELECT pr.*, 
+    const assignment = await this.db
+      .prepare(
+        `
+      SELECT pr.*,
              CASE pr.resource_type
                WHEN 'agent' THEN a.name
                WHEN 'rule' THEN ar.name
@@ -2602,7 +3102,10 @@ class ResourceManager {
       LEFT JOIN agent_rules ar ON pr.resource_type = 'rule' AND pr.resource_id = ar.id
       LEFT JOIN hooks h ON pr.resource_type = 'hook' AND pr.resource_id = h.id
       WHERE pr.id = ?
-    `).bind(assignmentId).first();
+    `,
+      )
+      .bind(assignmentId)
+      .first();
 
     if (!assignment) {
       return null;
@@ -2610,8 +3113,10 @@ class ResourceManager {
 
     return {
       ...assignment,
-      config_overrides: assignment.config_overrides ? JSON.parse(assignment.config_overrides) : null,
-      is_primary: Boolean(assignment.is_primary)
+      config_overrides: assignment.config_overrides
+        ? JSON.parse(assignment.config_overrides)
+        : null,
+      is_primary: Boolean(assignment.is_primary),
     };
   }
 
@@ -2622,45 +3127,44 @@ class ResourceManager {
    * @returns {Object} - Updated assignment
    */
   async updateResourceAssignment(assignmentId, updates) {
-    const {
-      isPrimary,
-      assignmentOrder,
-      configOverrides,
-      assignmentReason
-    } = updates;
+    const { isPrimary, assignmentOrder, configOverrides, assignmentReason } =
+      updates;
 
     const existing = await this.getResourceAssignment(assignmentId);
     if (!existing) {
-      throw new Error('Resource assignment not found');
+      throw new Error("Resource assignment not found");
     }
 
     // If setting as primary, clear other primary flags for this resource type
     if (isPrimary) {
-      await this.db.prepare(
-        'UPDATE project_resources SET is_primary = 0 WHERE project_id = ? AND resource_type = ? AND id != ?'
-      ).bind(existing.project_id, existing.resource_type, assignmentId).run();
+      await this.db
+        .prepare(
+          "UPDATE project_resources SET is_primary = 0 WHERE project_id = ? AND resource_type = ? AND id != ?",
+        )
+        .bind(existing.project_id, existing.resource_type, assignmentId)
+        .run();
     }
 
     const updateFields = [];
     const values = [];
 
     if (isPrimary !== undefined) {
-      updateFields.push('is_primary = ?');
+      updateFields.push("is_primary = ?");
       values.push(isPrimary ? 1 : 0);
     }
 
     if (assignmentOrder !== undefined) {
-      updateFields.push('assignment_order = ?');
+      updateFields.push("assignment_order = ?");
       values.push(assignmentOrder);
     }
 
     if (configOverrides !== undefined) {
-      updateFields.push('config_overrides = ?');
+      updateFields.push("config_overrides = ?");
       values.push(configOverrides ? JSON.stringify(configOverrides) : null);
     }
 
     if (assignmentReason !== undefined) {
-      updateFields.push('assignment_reason = ?');
+      updateFields.push("assignment_reason = ?");
       values.push(assignmentReason);
     }
 
@@ -2670,9 +3174,14 @@ class ResourceManager {
 
     values.push(assignmentId);
 
-    await this.db.prepare(`
-      UPDATE project_resources SET ${updateFields.join(', ')} WHERE id = ?
-    `).bind(...values).run();
+    await this.db
+      .prepare(
+        `
+      UPDATE project_resources SET ${updateFields.join(", ")} WHERE id = ?
+    `,
+      )
+      .bind(...values)
+      .run();
 
     return await this.getResourceAssignment(assignmentId);
   }
@@ -2687,33 +3196,38 @@ class ResourceManager {
   async _verifyResourceExists(resourceType, resourceId, db = null) {
     const database = db || this.db;
     let table, condition;
-    
+
     switch (resourceType) {
-      case 'agent':
-        table = 'agents';
-        condition = 'is_active = 1';
+      case "agent":
+        table = "agents";
+        condition = "is_active = 1";
         break;
-      case 'rule':
-        table = 'agent_rules';
-        condition = 'is_active = 1';
+      case "rule":
+        table = "agent_rules";
+        condition = "is_active = 1";
         break;
-      case 'hook':
-        table = 'hooks';
-        condition = 'is_enabled = 1';
+      case "hook":
+        table = "hooks";
+        condition = "is_enabled = 1";
         break;
       default:
-        throw new ValidationError(`Invalid resource type: ${resourceType}`, 'resourceType', resourceType);
+        throw new ValidationError(
+          `Invalid resource type: ${resourceType}`,
+          "resourceType",
+          resourceType,
+        );
     }
 
-    const resource = await database.prepare(
-      `SELECT id FROM ${table} WHERE id = ? AND ${condition}`
-    ).bind(resourceId).first();
+    const resource = await database
+      .prepare(`SELECT id FROM ${table} WHERE id = ? AND ${condition}`)
+      .bind(resourceId)
+      .first();
 
     if (!resource) {
       throw new ResourceNotFoundError(resourceType, resourceId, {
         table,
         condition,
-        suggestion: `Verify the ${resourceType} ID and ensure it is active/enabled`
+        suggestion: `Verify the ${resourceType} ID and ensure it is active/enabled`,
       });
     }
   }
@@ -2727,32 +3241,49 @@ class ResourceManager {
    */
   async _propagateResourceUpdates(resourceType, resourceId, db = null) {
     const database = db || this.db;
-    
+
     try {
       // Get all projects that use this resource
-      const affectedProjects = await database.prepare(`
+      const affectedProjects = await database
+        .prepare(
+          `
         SELECT DISTINCT project_id, COUNT(*) as assignment_count
-        FROM project_resources 
+        FROM project_resources
         WHERE resource_type = ? AND resource_id = ?
         GROUP BY project_id
-      `).bind(resourceType, resourceId).all();
+      `,
+        )
+        .bind(resourceType, resourceId)
+        .all();
 
       if (affectedProjects.results.length > 1) {
         // Resource is shared across multiple projects
-        console.log(`Resource ${resourceType}:${resourceId} is now shared across ${affectedProjects.results.length} projects`);
-        
-        // Update the updated_at timestamp for all affected project assignments
-        const updateResult = await database.prepare(`
-          UPDATE project_resources 
-          SET updated_at = CURRENT_TIMESTAMP 
-          WHERE resource_type = ? AND resource_id = ?
-        `).bind(resourceType, resourceId).run();
+        console.log(
+          `Resource ${resourceType}:${resourceId} is now shared across ${affectedProjects.results.length} projects`,
+        );
 
-        console.log(`Updated ${updateResult.meta?.changes || updateResult.changes || 0} project assignments for resource propagation`);
+        // Update the updated_at timestamp for all affected project assignments
+        const updateResult = await database
+          .prepare(
+            `
+          UPDATE project_resources
+          SET updated_at = CURRENT_TIMESTAMP
+          WHERE resource_type = ? AND resource_id = ?
+        `,
+          )
+          .bind(resourceType, resourceId)
+          .run();
+
+        console.log(
+          `Updated ${updateResult.meta?.changes || updateResult.changes || 0} project assignments for resource propagation`,
+        );
       }
     } catch (error) {
       // Log the error but don't fail the main operation
-      console.warn(`Failed to propagate resource updates for ${resourceType}:${resourceId}:`, error.message);
+      console.warn(
+        `Failed to propagate resource updates for ${resourceType}:${resourceId}:`,
+        error.message,
+      );
     }
   }
 }
@@ -2778,30 +3309,43 @@ class AIEnhancementEngine {
    * @param {Object} resourceData - Partial resource data for enhancement
    * @returns {Object} - Enhanced resource suggestions
    */
-  async enhanceResourceCreation(resourceType, projectContext, resourceData = {}) {
+  async enhanceResourceCreation(
+    resourceType,
+    projectContext,
+    resourceData = {},
+  ) {
     if (!this.ai) {
-      throw new Error('AI service not available');
+      throw new Error("AI service not available");
     }
 
-    const validTypes = ['agent', 'rule', 'hook'];
+    const validTypes = ["agent", "rule", "hook"];
     if (!validTypes.includes(resourceType)) {
-      throw new Error(`Invalid resource type. Must be one of: ${validTypes.join(', ')}`);
+      throw new Error(
+        `Invalid resource type. Must be one of: ${validTypes.join(", ")}`,
+      );
     }
 
     try {
-      const contextPrompt = await this.buildContextPrompt(projectContext, resourceType);
-      const enhancementPrompt = this._buildEnhancementPrompt(resourceType, resourceData, contextPrompt);
+      const contextPrompt = await this.buildContextPrompt(
+        projectContext,
+        resourceType,
+      );
+      const enhancementPrompt = this._buildEnhancementPrompt(
+        resourceType,
+        resourceData,
+        contextPrompt,
+      );
 
       const response = await this.ai.run("@cf/meta/llama-3.1-8b-instruct", {
         messages: [
           {
             role: "system",
-            content: this._getSystemPrompt(resourceType)
+            content: this._getSystemPrompt(resourceType),
           },
           {
             role: "user",
-            content: enhancementPrompt
-          }
+            content: enhancementPrompt,
+          },
         ],
         max_tokens: 2048,
         temperature: 0.3,
@@ -2827,15 +3371,20 @@ class AIEnhancementEngine {
 
     try {
       // Get project details
-      const project = await this.db.prepare('SELECT * FROM projects WHERE id = ?')
-        .bind(projectContext.projectId).first();
+      const project = await this.db
+        .prepare("SELECT * FROM projects WHERE id = ?")
+        .bind(projectContext.projectId)
+        .first();
 
       if (!project) {
         return "Project not found.";
       }
 
       // Get existing resources of the same type
-      const existingResources = await this._getExistingResources(projectContext.projectId, resourceType);
+      const existingResources = await this._getExistingResources(
+        projectContext.projectId,
+        resourceType,
+      );
 
       // Build context string
       let context = `Project: ${project.name}\n`;
@@ -2852,13 +3401,13 @@ class AIEnhancementEngine {
       if (existingResources.length > 0) {
         context += `\nExisting ${resourceType}s in project:\n`;
         existingResources.forEach((resource, index) => {
-          context += `${index + 1}. ${resource.name || resource.title}: ${resource.description || 'No description'}\n`;
+          context += `${index + 1}. ${resource.name || resource.title}: ${resource.description || "No description"}\n`;
         });
       }
 
       return context;
     } catch (error) {
-      console.error('Error building context prompt:', error);
+      console.error("Error building context prompt:", error);
       return `Project ID: ${projectContext.projectId} (context unavailable)`;
     }
   }
@@ -2870,30 +3419,42 @@ class AIEnhancementEngine {
    * @param {Object} projectContext - Project context
    * @returns {Object} - Compatibility validation result
    */
-  async validateResourceCompatibility(resourceType, resourceData, projectContext) {
+  async validateResourceCompatibility(
+    resourceType,
+    resourceData,
+    projectContext,
+  ) {
     if (!this.ai) {
       return {
         isCompatible: true,
         confidence: 0.5,
-        warnings: ['AI validation unavailable'],
-        suggestions: []
+        warnings: ["AI validation unavailable"],
+        suggestions: [],
       };
     }
 
     try {
-      const contextPrompt = await this.buildContextPrompt(projectContext, resourceType);
-      const validationPrompt = this._buildValidationPrompt(resourceType, resourceData, contextPrompt);
+      const contextPrompt = await this.buildContextPrompt(
+        projectContext,
+        resourceType,
+      );
+      const validationPrompt = this._buildValidationPrompt(
+        resourceType,
+        resourceData,
+        contextPrompt,
+      );
 
       const response = await this.ai.run("@cf/meta/llama-3.1-8b-instruct", {
         messages: [
           {
             role: "system",
-            content: "You are an expert at validating Claude Code project resources for compatibility and best practices. Analyze the resource and provide compatibility assessment."
+            content:
+              "You are an expert at validating Claude Code project resources for compatibility and best practices. Analyze the resource and provide compatibility assessment.",
           },
           {
             role: "user",
-            content: validationPrompt
-          }
+            content: validationPrompt,
+          },
         ],
         max_tokens: 1024,
         temperature: 0.2,
@@ -2901,12 +3462,12 @@ class AIEnhancementEngine {
 
       return this._parseValidationResponse(response.response);
     } catch (error) {
-      console.error('AI validation failed:', error);
+      console.error("AI validation failed:", error);
       return {
         isCompatible: true,
         confidence: 0.3,
-        warnings: ['AI validation failed'],
-        suggestions: []
+        warnings: ["AI validation failed"],
+        suggestions: [],
       };
     }
   }
@@ -2918,32 +3479,32 @@ class AIEnhancementEngine {
   async _getExistingResources(projectId, resourceType) {
     try {
       let query, table;
-      
+
       switch (resourceType) {
-        case 'agent':
-          table = 'agents';
+        case "agent":
+          table = "agents";
           query = `
-            SELECT a.name, a.description, a.role 
+            SELECT a.name, a.description, a.role
             FROM agents a
-            JOIN project_resources pr ON pr.resource_id = a.id 
+            JOIN project_resources pr ON pr.resource_id = a.id
             WHERE pr.project_id = ? AND pr.resource_type = 'agent' AND a.is_active = 1
           `;
           break;
-        case 'rule':
-          table = 'agent_rules';
+        case "rule":
+          table = "agent_rules";
           query = `
-            SELECT ar.name, ar.description, ar.category 
+            SELECT ar.name, ar.description, ar.category
             FROM agent_rules ar
-            JOIN project_resources pr ON pr.resource_id = ar.id 
+            JOIN project_resources pr ON pr.resource_id = ar.id
             WHERE pr.project_id = ? AND pr.resource_type = 'rule' AND ar.is_active = 1
           `;
           break;
-        case 'hook':
-          table = 'hooks';
+        case "hook":
+          table = "hooks";
           query = `
-            SELECT h.name, h.description, h.hook_type 
+            SELECT h.name, h.description, h.hook_type
             FROM hooks h
-            JOIN project_resources pr ON pr.resource_id = h.id 
+            JOIN project_resources pr ON pr.resource_id = h.id
             WHERE pr.project_id = ? AND pr.resource_type = 'hook' AND h.is_enabled = 1
           `;
           break;
@@ -2954,7 +3515,7 @@ class AIEnhancementEngine {
       const result = await this.db.prepare(query).bind(projectId).all();
       return result.results || [];
     } catch (error) {
-      console.error('Error getting existing resources:', error);
+      console.error("Error getting existing resources:", error);
       return [];
     }
   }
@@ -2965,19 +3526,30 @@ class AIEnhancementEngine {
    */
   _buildEnhancementPrompt(resourceType, resourceData, contextPrompt) {
     const basePrompt = `Project Context:\n${contextPrompt}\n\n`;
-    
+
     switch (resourceType) {
-      case 'agent':
-        return basePrompt + `Suggest an AI agent for this project. ${resourceData.name ? `Name: ${resourceData.name}` : ''} ${resourceData.role ? `Role: ${resourceData.role}` : ''}\n\nProvide suggestions for name, role, description, and system prompt that would be helpful for this project context.`;
-      
-      case 'rule':
-        return basePrompt + `Suggest a development rule for this project. ${resourceData.name ? `Name: ${resourceData.name}` : ''} ${resourceData.category ? `Category: ${resourceData.category}` : ''}\n\nProvide suggestions for name, description, and rule content that would be valuable for this project.`;
-      
-      case 'hook':
-        return basePrompt + `Suggest an automation hook for this project. ${resourceData.name ? `Name: ${resourceData.name}` : ''} ${resourceData.hook_type ? `Type: ${resourceData.hook_type}` : ''}\n\nProvide suggestions for name, description, hook type, and command that would be useful for this project workflow.`;
-      
+      case "agent":
+        return (
+          basePrompt +
+          `Suggest an AI agent for this project. ${resourceData.name ? `Name: ${resourceData.name}` : ""} ${resourceData.role ? `Role: ${resourceData.role}` : ""}\n\nProvide suggestions for name, role, description, and system prompt that would be helpful for this project context.`
+        );
+
+      case "rule":
+        return (
+          basePrompt +
+          `Suggest a development rule for this project. ${resourceData.name ? `Name: ${resourceData.name}` : ""} ${resourceData.category ? `Category: ${resourceData.category}` : ""}\n\nProvide suggestions for name, description, and rule content that would be valuable for this project.`
+        );
+
+      case "hook":
+        return (
+          basePrompt +
+          `Suggest an automation hook for this project. ${resourceData.name ? `Name: ${resourceData.name}` : ""} ${resourceData.hook_type ? `Type: ${resourceData.hook_type}` : ""}\n\nProvide suggestions for name, description, hook type, and command that would be useful for this project workflow.`
+        );
+
       default:
-        return basePrompt + `Suggest a ${resourceType} for this project context.`;
+        return (
+          basePrompt + `Suggest a ${resourceType} for this project context.`
+        );
     }
   }
 
@@ -2986,14 +3558,20 @@ class AIEnhancementEngine {
    * @private
    */
   _buildValidationPrompt(resourceType, resourceData, contextPrompt) {
-    return 'Project Context:\n' + contextPrompt + '\n\nResource to validate:\nType: ' + resourceType + 
-           '\nData: ' + JSON.stringify(resourceData, null, 2) + 
-           '\n\nAnalyze this resource for compatibility with the project context. Consider:\n' +
-           '1. Does it fit the project\'s purpose?\n' +
-           '2. Does it conflict with existing resources?\n' +
-           '3. Are there any best practice violations?\n' +
-           '4. What improvements could be made?\n\n' +
-           'Respond with JSON format: {"isCompatible": true/false, "confidence": number between 0 and 1, "warnings": array of strings, "suggestions": array of strings}';
+    return (
+      "Project Context:\n" +
+      contextPrompt +
+      "\n\nResource to validate:\nType: " +
+      resourceType +
+      "\nData: " +
+      JSON.stringify(resourceData, null, 2) +
+      "\n\nAnalyze this resource for compatibility with the project context. Consider:\n" +
+      "1. Does it fit the project's purpose?\n" +
+      "2. Does it conflict with existing resources?\n" +
+      "3. Are there any best practice violations?\n" +
+      "4. What improvements could be made?\n\n" +
+      'Respond with JSON format: {"isCompatible": true/false, "confidence": number between 0 and 1, "warnings": array of strings, "suggestions": array of strings}'
+    );
   }
 
   /**
@@ -3001,18 +3579,28 @@ class AIEnhancementEngine {
    * @private
    */
   _getSystemPrompt(resourceType) {
-    const basePrompt = "You are an expert Claude Code project consultant. Provide practical, actionable suggestions based on the project context.";
-    
+    const basePrompt =
+      "You are an expert Claude Code project consultant. Provide practical, actionable suggestions based on the project context.";
+
     switch (resourceType) {
-      case 'agent':
-        return basePrompt + " Focus on creating AI agents that are well-suited for the project's development needs. Consider the project's technology stack, goals, and existing agents.";
-      
-      case 'rule':
-        return basePrompt + " Focus on development rules that improve code quality, consistency, and team productivity. Consider the project's technology stack and existing rules.";
-      
-      case 'hook':
-        return basePrompt + " Focus on automation hooks that streamline development workflows. Consider the project's toolchain and existing automation.";
-      
+      case "agent":
+        return (
+          basePrompt +
+          " Focus on creating AI agents that are well-suited for the project's development needs. Consider the project's technology stack, goals, and existing agents."
+        );
+
+      case "rule":
+        return (
+          basePrompt +
+          " Focus on development rules that improve code quality, consistency, and team productivity. Consider the project's technology stack and existing rules."
+        );
+
+      case "hook":
+        return (
+          basePrompt +
+          " Focus on automation hooks that streamline development workflows. Consider the project's toolchain and existing automation."
+        );
+
       default:
         return basePrompt;
     }
@@ -3031,7 +3619,7 @@ class AIEnhancementEngine {
         return {
           suggestions: parsed,
           confidence: 0.8,
-          source: 'ai'
+          source: "ai",
         };
       }
     } catch (error) {
@@ -3042,7 +3630,7 @@ class AIEnhancementEngine {
     return {
       suggestions: this._extractTextSuggestions(response, resourceType),
       confidence: 0.6,
-      source: 'ai_text'
+      source: "ai_text",
     };
   }
 
@@ -3063,8 +3651,8 @@ class AIEnhancementEngine {
     return {
       isCompatible: true,
       confidence: 0.5,
-      warnings: ['Could not parse AI validation response'],
-      suggestions: []
+      warnings: ["Could not parse AI validation response"],
+      suggestions: [],
     };
   }
 
@@ -3074,20 +3662,26 @@ class AIEnhancementEngine {
    */
   _extractTextSuggestions(response, resourceType) {
     const suggestions = {};
-    
+
     // Basic text parsing for common patterns
-    const lines = response.split('\n');
-    
+    const lines = response.split("\n");
+
     for (const line of lines) {
       const trimmed = line.trim();
-      if (trimmed.toLowerCase().includes('name:')) {
-        suggestions.name = trimmed.split(':')[1]?.trim();
-      } else if (trimmed.toLowerCase().includes('description:')) {
-        suggestions.description = trimmed.split(':')[1]?.trim();
-      } else if (resourceType === 'agent' && trimmed.toLowerCase().includes('role:')) {
-        suggestions.role = trimmed.split(':')[1]?.trim();
-      } else if (resourceType === 'rule' && trimmed.toLowerCase().includes('category:')) {
-        suggestions.category = trimmed.split(':')[1]?.trim();
+      if (trimmed.toLowerCase().includes("name:")) {
+        suggestions.name = trimmed.split(":")[1]?.trim();
+      } else if (trimmed.toLowerCase().includes("description:")) {
+        suggestions.description = trimmed.split(":")[1]?.trim();
+      } else if (
+        resourceType === "agent" &&
+        trimmed.toLowerCase().includes("role:")
+      ) {
+        suggestions.role = trimmed.split(":")[1]?.trim();
+      } else if (
+        resourceType === "rule" &&
+        trimmed.toLowerCase().includes("category:")
+      ) {
+        suggestions.category = trimmed.split(":")[1]?.trim();
       }
     }
 
@@ -3101,29 +3695,30 @@ class AIEnhancementEngine {
   _getFallbackSuggestions(resourceType, resourceData) {
     const fallbacks = {
       agent: {
-        name: resourceData.name || 'Project Assistant',
-        role: resourceData.role || 'Development Assistant',
-        description: 'AI assistant for project development tasks',
-        system_prompt: 'You are a helpful development assistant for this project.'
+        name: resourceData.name || "Project Assistant",
+        role: resourceData.role || "Development Assistant",
+        description: "AI assistant for project development tasks",
+        system_prompt:
+          "You are a helpful development assistant for this project.",
       },
       rule: {
-        name: resourceData.name || 'Code Quality Rule',
-        description: 'Maintain code quality and consistency',
-        rule_content: 'Follow established coding standards and best practices.',
-        category: resourceData.category || 'general'
+        name: resourceData.name || "Code Quality Rule",
+        description: "Maintain code quality and consistency",
+        rule_content: "Follow established coding standards and best practices.",
+        category: resourceData.category || "general",
       },
       hook: {
-        name: resourceData.name || 'Development Hook',
-        description: 'Automation hook for development workflow',
-        hook_type: resourceData.hook_type || 'PreToolUse',
-        command: 'echo "Hook executed"'
-      }
+        name: resourceData.name || "Development Hook",
+        description: "Automation hook for development workflow",
+        hook_type: resourceData.hook_type || "PreToolUse",
+        command: 'echo "Hook executed"',
+      },
     };
 
     return {
       suggestions: fallbacks[resourceType] || {},
       confidence: 0.3,
-      source: 'fallback'
+      source: "fallback",
     };
   }
 }
@@ -3154,13 +3749,13 @@ class ClaudeCodeExporter {
       includeHooks = true,
       includeProjectSettings = true,
       includeClaudeMD = true,
-      format = 'files' // 'files' or 'zip'
+      format = "files", // 'files' or 'zip'
     } = options;
 
     // Get project details
     const project = await this._getProjectDetails(projectId);
     if (!project) {
-      throw new Error('Project not found');
+      throw new Error("Project not found");
     }
 
     // Get all assigned resources
@@ -3168,15 +3763,20 @@ class ClaudeCodeExporter {
 
     // Validate required components using comprehensive validation
     const validator = new ProjectValidator(this.db);
-    const validationResult = await validator.validateExportRequirements(project, resources);
-    
+    const validationResult = await validator.validateExportRequirements(
+      project,
+      resources,
+    );
+
     if (!validationResult.isValid) {
-      throw new Error(`Export validation failed: ${validationResult.errors.join(', ')}`);
+      throw new Error(
+        `Export validation failed: ${validationResult.errors.join(", ")}`,
+      );
     }
-    
+
     // Log warnings for user awareness
     if (validationResult.warnings.length > 0) {
-      console.warn('Export validation warnings:', validationResult.warnings);
+      console.warn("Export validation warnings:", validationResult.warnings);
     }
 
     const structure = {
@@ -3193,27 +3793,33 @@ class ClaudeCodeExporter {
           rules: includeRules,
           hooks: includeHooks,
           projectSettings: includeProjectSettings,
-          claudeMD: includeClaudeMD
-        }
-      }
+          claudeMD: includeClaudeMD,
+        },
+      },
     };
 
     try {
       // Generate CLAUDE.md file
       if (includeClaudeMD) {
-        structure.files['CLAUDE.md'] = await this.generateClaudeMD(project, resources);
+        structure.files["CLAUDE.md"] = await this.generateClaudeMD(
+          project,
+          resources,
+        );
         structure.metadata.totalFiles++;
       }
 
       // Generate .claude/project_settings.json
       if (includeProjectSettings) {
-        structure.files['.claude/project_settings.json'] = await this.generateProjectSettings(project, resources);
+        structure.files[".claude/project_settings.json"] =
+          await this.generateProjectSettings(project, resources);
         structure.metadata.totalFiles++;
       }
 
       // Generate individual agent files
       if (includeAgents) {
-        const agentFiles = await this.generateAgentFiles(resources.agents || []);
+        const agentFiles = await this.generateAgentFiles(
+          resources.agents || [],
+        );
         Object.assign(structure.files, agentFiles);
         structure.metadata.totalFiles += Object.keys(agentFiles).length;
       }
@@ -3222,7 +3828,7 @@ class ClaudeCodeExporter {
       if (includeRules) {
         const rulesFile = await this.generateRulesFile(resources.rules || []);
         if (rulesFile) {
-          structure.files['.claude/rules.md'] = rulesFile;
+          structure.files[".claude/rules.md"] = rulesFile;
           structure.metadata.totalFiles++;
         }
       }
@@ -3235,7 +3841,6 @@ class ClaudeCodeExporter {
       }
 
       return structure;
-
     } catch (error) {
       throw new Error(`Export generation failed: ${error.message}`);
     }
@@ -3271,7 +3876,7 @@ class ClaudeCodeExporter {
       content += `- **Category**: ${project.category}\n`;
     }
     if (project.tags && project.tags.length > 0) {
-      content += `- **Tags**: ${project.tags.join(', ')}\n`;
+      content += `- **Tags**: ${project.tags.join(", ")}\n`;
     }
     content += `- **Created**: ${new Date(project.created_at).toLocaleDateString()}\n`;
     content += `- **Last Updated**: ${new Date(project.updated_at).toLocaleDateString()}\n\n`;
@@ -3284,9 +3889,9 @@ class ClaudeCodeExporter {
     // Agents section
     if (agents.length > 0) {
       content += `## Agents\n\n`;
-      content += `This project includes ${agents.length} specialized agent${agents.length > 1 ? 's' : ''}:\n\n`;
-      
-      agents.forEach(agent => {
+      content += `This project includes ${agents.length} specialized agent${agents.length > 1 ? "s" : ""}:\n\n`;
+
+      agents.forEach((agent) => {
         content += `### ${agent.name}\n`;
         if (agent.role) {
           content += `**Role**: ${agent.role}\n\n`;
@@ -3303,9 +3908,9 @@ class ClaudeCodeExporter {
     // Rules section
     if (rules.length > 0) {
       content += `## Development Rules\n\n`;
-      content += `This project follows ${rules.length} development rule${rules.length > 1 ? 's' : ''}:\n\n`;
-      
-      rules.forEach(rule => {
+      content += `This project follows ${rules.length} development rule${rules.length > 1 ? "s" : ""}:\n\n`;
+
+      rules.forEach((rule) => {
         content += `### ${rule.name}\n`;
         if (rule.category) {
           content += `**Category**: ${rule.category}\n\n`;
@@ -3319,9 +3924,9 @@ class ClaudeCodeExporter {
     // Hooks section
     if (hooks.length > 0) {
       content += `## Automation Hooks\n\n`;
-      content += `This project includes ${hooks.length} automation hook${hooks.length > 1 ? 's' : ''}:\n\n`;
-      
-      hooks.forEach(hook => {
+      content += `This project includes ${hooks.length} automation hook${hooks.length > 1 ? "s" : ""}:\n\n`;
+
+      hooks.forEach((hook) => {
         content += `### ${hook.name}\n`;
         content += `**Type**: ${hook.hook_type}\n\n`;
         if (hook.description) {
@@ -3336,7 +3941,7 @@ class ClaudeCodeExporter {
     content += `2. Open the project in Claude Code\n`;
     content += `3. The agents, rules, and hooks will be automatically loaded\n`;
     if (agents.length > 0) {
-      const primaryAgent = agents.find(a => a.is_primary);
+      const primaryAgent = agents.find((a) => a.is_primary);
       if (primaryAgent) {
         content += `4. Start with the primary agent: **${primaryAgent.name}**\n`;
       }
@@ -3374,37 +3979,39 @@ class ClaudeCodeExporter {
 
     const settings = {
       name: project.name,
-      description: project.description || '',
-      version: '1.0.0',
-      
+      description: project.description || "",
+      version: "1.0.0",
+
       // Agent configuration
-      agents: agents.map(agent => ({
+      agents: agents.map((agent) => ({
         id: agent.resource_id,
         name: agent.name,
-        role: agent.role || '',
+        role: agent.role || "",
         isPrimary: Boolean(agent.is_primary),
         file: `.claude/agents/${this._sanitizeFilename(agent.name)}.md`,
-        config: agent.config_overrides ? JSON.parse(agent.config_overrides) : {}
+        config: agent.config_overrides
+          ? JSON.parse(agent.config_overrides)
+          : {},
       })),
 
       // Rules configuration
       rules: {
         enabled: rules.length > 0,
-        file: rules.length > 0 ? '.claude/rules.md' : null,
-        categories: [...new Set(rules.map(r => r.category).filter(Boolean))]
+        file: rules.length > 0 ? ".claude/rules.md" : null,
+        categories: [...new Set(rules.map((r) => r.category).filter(Boolean))],
       },
 
       // Hooks configuration
-      hooks: hooks.map(hook => ({
+      hooks: hooks.map((hook) => ({
         id: hook.resource_id,
         name: hook.name,
         type: hook.hook_type,
         enabled: Boolean(hook.is_enabled),
-        command: hook.command || '',
+        command: hook.command || "",
         workingDirectory: hook.working_directory || null,
         timeout: hook.timeout_ms || 60000,
         toolMatcher: hook.tool_matcher ? JSON.parse(hook.tool_matcher) : null,
-        sortOrder: hook.sort_order || 0
+        sortOrder: hook.sort_order || 0,
       })),
 
       // Project metadata
@@ -3417,14 +4024,14 @@ class ClaudeCodeExporter {
         tags: project.tags || [],
         createdAt: project.created_at,
         updatedAt: project.updated_at,
-        exportedAt: new Date().toISOString()
+        exportedAt: new Date().toISOString(),
       },
 
       // AI context
       aiContext: {
-        summary: project.ai_context_summary || '',
-        includeInContext: Boolean(project.include_in_ai_context)
-      }
+        summary: project.ai_context_summary || "",
+        includeInContext: Boolean(project.include_in_ai_context),
+      },
     };
 
     return JSON.stringify(settings, null, 2);
@@ -3441,8 +4048,10 @@ class ClaudeCodeExporter {
     for (const agentResource of agents) {
       try {
         // Get full agent details
-        const agent = await this.db.prepare('SELECT * FROM agents WHERE id = ?')
-          .bind(agentResource.resource_id).first();
+        const agent = await this.db
+          .prepare("SELECT * FROM agents WHERE id = ?")
+          .bind(agentResource.resource_id)
+          .first();
 
         if (!agent) {
           console.warn(`Agent ${agentResource.resource_id} not found`);
@@ -3450,9 +4059,9 @@ class ClaudeCodeExporter {
         }
 
         const filename = `.claude/agents/${this._sanitizeFilename(agent.name)}.md`;
-        
+
         let content = `# ${agent.name}\n\n`;
-        
+
         if (agent.role) {
           content += `**Role**: ${agent.role}\n\n`;
         }
@@ -3482,9 +4091,11 @@ class ClaudeCodeExporter {
         }
 
         files[filename] = content;
-
       } catch (error) {
-        console.error(`Error generating agent file for ${agentResource.resource_id}:`, error);
+        console.error(
+          `Error generating agent file for ${agentResource.resource_id}:`,
+          error,
+        );
       }
     }
 
@@ -3510,12 +4121,14 @@ class ClaudeCodeExporter {
 
     for (const ruleResource of rules) {
       try {
-        const rule = await this.db.prepare('SELECT * FROM agent_rules WHERE id = ?')
-          .bind(ruleResource.resource_id).first();
+        const rule = await this.db
+          .prepare("SELECT * FROM agent_rules WHERE id = ?")
+          .bind(ruleResource.resource_id)
+          .first();
 
         if (rule) {
           rulesWithDetails.push(rule);
-          const category = rule.category || 'General';
+          const category = rule.category || "General";
           if (!rulesByCategory[category]) {
             rulesByCategory[category] = [];
           }
@@ -3528,15 +4141,17 @@ class ClaudeCodeExporter {
 
     // Generate content by category
     const categories = Object.keys(rulesByCategory).sort();
-    
+
     for (const category of categories) {
       content += `## ${category}\n\n`;
-      
-      const categoryRules = rulesByCategory[category].sort((a, b) => (b.priority || 0) - (a.priority || 0));
-      
+
+      const categoryRules = rulesByCategory[category].sort(
+        (a, b) => (b.priority || 0) - (a.priority || 0),
+      );
+
       for (const rule of categoryRules) {
         content += `### ${rule.name}\n\n`;
-        
+
         if (rule.description) {
           content += `${rule.description}\n\n`;
         }
@@ -3552,7 +4167,7 @@ class ClaudeCodeExporter {
     }
 
     content += `---\n\n`;
-    content += `*Generated from ${rulesWithDetails.length} rule${rulesWithDetails.length > 1 ? 's' : ''} on ${new Date().toLocaleDateString()}*\n`;
+    content += `*Generated from ${rulesWithDetails.length} rule${rulesWithDetails.length > 1 ? "s" : ""} on ${new Date().toLocaleDateString()}*\n`;
 
     return content;
   }
@@ -3571,13 +4186,15 @@ class ClaudeCodeExporter {
 
     // Generate hooks configuration file
     const hooksConfig = {
-      hooks: []
+      hooks: [],
     };
 
     for (const hookResource of hooks) {
       try {
-        const hook = await this.db.prepare('SELECT * FROM hooks WHERE id = ?')
-          .bind(hookResource.resource_id).first();
+        const hook = await this.db
+          .prepare("SELECT * FROM hooks WHERE id = ?")
+          .bind(hookResource.resource_id)
+          .first();
 
         if (!hook) {
           console.warn(`Hook ${hookResource.resource_id} not found`);
@@ -3586,13 +4203,13 @@ class ClaudeCodeExporter {
 
         const hookConfig = {
           name: hook.name,
-          description: hook.description || '',
+          description: hook.description || "",
           type: hook.hook_type,
           enabled: Boolean(hook.is_enabled),
           command: hook.command,
           workingDirectory: hook.working_directory || null,
           timeout: hook.timeout_ms || 60000,
-          sortOrder: hook.sort_order || 0
+          sortOrder: hook.sort_order || 0,
         };
 
         if (hook.tool_matcher) {
@@ -3604,7 +4221,6 @@ class ClaudeCodeExporter {
         }
 
         hooksConfig.hooks.push(hookConfig);
-
       } catch (error) {
         console.error(`Error loading hook ${hookResource.resource_id}:`, error);
       }
@@ -3614,16 +4230,16 @@ class ClaudeCodeExporter {
     hooksConfig.hooks.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     // Generate hooks.json file
-    files['.claude/hooks.json'] = JSON.stringify(hooksConfig, null, 2);
+    files[".claude/hooks.json"] = JSON.stringify(hooksConfig, null, 2);
 
     // Generate individual hook documentation
     let hooksDoc = `# Project Hooks\n\n`;
-    hooksDoc += `This project includes ${hooksConfig.hooks.length} automation hook${hooksConfig.hooks.length > 1 ? 's' : ''}.\n\n`;
+    hooksDoc += `This project includes ${hooksConfig.hooks.length} automation hook${hooksConfig.hooks.length > 1 ? "s" : ""}.\n\n`;
 
     for (const hook of hooksConfig.hooks) {
       hooksDoc += `## ${hook.name}\n\n`;
       hooksDoc += `**Type**: ${hook.type}\n\n`;
-      
+
       if (hook.description) {
         hooksDoc += `${hook.description}\n\n`;
       }
@@ -3639,10 +4255,10 @@ class ClaudeCodeExporter {
       }
 
       hooksDoc += `**Timeout**: ${hook.timeout}ms\n\n`;
-      hooksDoc += `**Enabled**: ${hook.enabled ? 'Yes' : 'No'}\n\n`;
+      hooksDoc += `**Enabled**: ${hook.enabled ? "Yes" : "No"}\n\n`;
     }
 
-    files['.claude/hooks.md'] = hooksDoc;
+    files[".claude/hooks.md"] = hooksDoc;
 
     return files;
   }
@@ -3653,15 +4269,18 @@ class ClaudeCodeExporter {
    */
   async _getProjectDetails(projectId) {
     try {
-      const project = await this.db.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
-      
+      const project = await this.db
+        .prepare("SELECT * FROM projects WHERE id = ?")
+        .bind(projectId)
+        .first();
+
       if (!project) {
         return null;
       }
 
       return {
         ...project,
-        tags: project.tags ? JSON.parse(project.tags) : []
+        tags: project.tags ? JSON.parse(project.tags) : [],
       };
     } catch (error) {
       throw new Error(`Failed to get project details: ${error.message}`);
@@ -3675,8 +4294,10 @@ class ClaudeCodeExporter {
   async _getProjectResources(projectId) {
     try {
       // Get all resource assignments
-      const assignments = await this.db.prepare(`
-        SELECT pr.*, 
+      const assignments = await this.db
+        .prepare(
+          `
+        SELECT pr.*,
                CASE pr.resource_type
                  WHEN 'agent' THEN a.name
                  WHEN 'rule' THEN ar.name
@@ -3698,29 +4319,34 @@ class ClaudeCodeExporter {
         LEFT JOIN hooks h ON pr.resource_type = 'hook' AND pr.resource_id = h.id
         WHERE pr.project_id = ?
         ORDER BY pr.resource_type, pr.assignment_order, pr.created_at
-      `).bind(projectId).all();
+      `,
+        )
+        .bind(projectId)
+        .all();
 
       const resources = {
         agents: [],
         rules: [],
-        hooks: []
+        hooks: [],
       };
 
       for (const assignment of assignments.results) {
         const resource = {
           ...assignment,
-          config_overrides: assignment.config_overrides ? JSON.parse(assignment.config_overrides) : null,
-          is_primary: Boolean(assignment.is_primary)
+          config_overrides: assignment.config_overrides
+            ? JSON.parse(assignment.config_overrides)
+            : null,
+          is_primary: Boolean(assignment.is_primary),
         };
 
         switch (assignment.resource_type) {
-          case 'agent':
+          case "agent":
             resources.agents.push(resource);
             break;
-          case 'rule':
+          case "rule":
             resources.rules.push(resource);
             break;
-          case 'hook':
+          case "hook":
             resources.hooks.push(resource);
             break;
         }
@@ -3742,30 +4368,37 @@ class ClaudeCodeExporter {
 
     // Check if project has basic information
     if (!project.name || project.name.trim().length === 0) {
-      errors.push('Project must have a name');
+      errors.push("Project must have a name");
     }
 
     // Check if project has any resources
-    const totalResources = (resources.agents?.length || 0) + 
-                          (resources.rules?.length || 0) + 
-                          (resources.hooks?.length || 0);
+    const totalResources =
+      (resources.agents?.length || 0) +
+      (resources.rules?.length || 0) +
+      (resources.hooks?.length || 0);
 
     if (totalResources === 0) {
-      warnings.push('Project has no assigned resources (agents, rules, or hooks)');
+      warnings.push(
+        "Project has no assigned resources (agents, rules, or hooks)",
+      );
     }
 
     // Check for primary agent
-    const primaryAgents = resources.agents?.filter(a => a.is_primary) || [];
+    const primaryAgents = resources.agents?.filter((a) => a.is_primary) || [];
     if (resources.agents?.length > 0 && primaryAgents.length === 0) {
-      warnings.push('No primary agent assigned - consider setting one agent as primary');
+      warnings.push(
+        "No primary agent assigned - consider setting one agent as primary",
+      );
     }
 
     if (primaryAgents.length > 1) {
-      warnings.push('Multiple primary agents found - only one should be primary');
+      warnings.push(
+        "Multiple primary agents found - only one should be primary",
+      );
     }
 
     if (errors.length > 0) {
-      throw new Error(`Export validation failed: ${errors.join(', ')}`);
+      throw new Error(`Export validation failed: ${errors.join(", ")}`);
     }
 
     return { warnings, errors };
@@ -3778,10 +4411,10 @@ class ClaudeCodeExporter {
   _sanitizeFilename(name) {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single
-      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
   }
 }
 
@@ -3810,18 +4443,18 @@ class ProjectValidator {
       isValid: true,
       errors: [],
       warnings: [],
-      recommendations: []
+      recommendations: [],
     };
 
     try {
       switch (resourceType) {
-        case 'agent':
+        case "agent":
           await this._validateAgentDefinition(resourceData, result);
           break;
-        case 'rule':
+        case "rule":
           await this._validateRuleDefinition(resourceData, result);
           break;
-        case 'hook':
+        case "hook":
           await this._validateHookDefinition(resourceData, result);
           break;
         default:
@@ -3831,7 +4464,6 @@ class ProjectValidator {
 
       // Check for Claude Code best practices
       this._validateClaudeCodeBestPractices(resourceType, resourceData, result);
-
     } catch (error) {
       result.errors.push(`Validation error: ${error.message}`);
       result.isValid = false;
@@ -3858,9 +4490,9 @@ class ProjectValidator {
         agents: false,
         rules: false,
         hooks: false,
-        primaryAgent: false
+        primaryAgent: false,
       },
-      missingComponents: []
+      missingComponents: [],
     };
 
     try {
@@ -3878,7 +4510,6 @@ class ProjectValidator {
 
       // Validate file structure requirements
       await this._validateFileStructureRequirements(project, resources, result);
-
     } catch (error) {
       result.errors.push(`Export validation error: ${error.message}`);
       result.isValid = false;
@@ -3900,7 +4531,7 @@ class ProjectValidator {
       warnings: [],
       missingDependencies: [],
       circularDependencies: [],
-      recommendations: []
+      recommendations: [],
     };
 
     try {
@@ -3917,30 +4548,30 @@ class ProjectValidator {
       // Analyze dependencies for each resource
       for (const resource of resourceList) {
         const dependencies = await this._getResourceDependencies(
-          resource.resource_type, 
-          resource.resource_id
+          resource.resource_type,
+          resource.resource_id,
         );
 
         for (const dep of dependencies) {
           const depKey = `${dep.resource_type}:${dep.resource_id}`;
           const resourceKey = `${resource.resource_type}:${resource.resource_id}`;
-          
+
           // Check if dependency exists in the resource list
           if (!resourceMap.has(depKey)) {
             result.missingDependencies.push({
               resource: resourceKey,
               missingDependency: depKey,
               dependencyType: dep.dependency_type,
-              isCritical: dep.is_critical
+              isCritical: dep.is_critical,
             });
 
             if (dep.is_critical) {
               result.errors.push(
-                `Critical dependency missing: ${resourceKey} requires ${depKey}`
+                `Critical dependency missing: ${resourceKey} requires ${depKey}`,
               );
             } else {
               result.warnings.push(
-                `Optional dependency missing: ${resourceKey} references ${depKey}`
+                `Optional dependency missing: ${resourceKey} references ${depKey}`,
               );
             }
           }
@@ -3956,9 +4587,10 @@ class ProjectValidator {
       const circularDeps = this._detectCircularDependencies(dependencyGraph);
       if (circularDeps.length > 0) {
         result.circularDependencies = circularDeps;
-        result.warnings.push(`Circular dependencies detected: ${circularDeps.join(', ')}`);
+        result.warnings.push(
+          `Circular dependencies detected: ${circularDeps.join(", ")}`,
+        );
       }
-
     } catch (error) {
       result.errors.push(`Dependency validation error: ${error.message}`);
       result.isValid = false;
@@ -3977,26 +4609,30 @@ class ProjectValidator {
 
     // Required fields validation
     if (!name || name.trim().length === 0) {
-      result.errors.push('Agent name is required');
+      result.errors.push("Agent name is required");
     } else if (name.length > 100) {
-      result.errors.push('Agent name must be 100 characters or less');
+      result.errors.push("Agent name must be 100 characters or less");
     }
 
     if (!role || role.trim().length === 0) {
-      result.errors.push('Agent role is required');
+      result.errors.push("Agent role is required");
     } else if (role.length > 200) {
-      result.errors.push('Agent role must be 200 characters or less');
+      result.errors.push("Agent role must be 200 characters or less");
     }
 
     if (!system_prompt || system_prompt.trim().length === 0) {
-      result.errors.push('Agent system prompt is required');
+      result.errors.push("Agent system prompt is required");
     } else {
       // Validate system prompt quality
       if (system_prompt.length < 50) {
-        result.warnings.push('System prompt is very short - consider adding more context');
+        result.warnings.push(
+          "System prompt is very short - consider adding more context",
+        );
       }
       if (system_prompt.length > 4000) {
-        result.warnings.push('System prompt is very long - consider breaking into smaller sections');
+        result.warnings.push(
+          "System prompt is very long - consider breaking into smaller sections",
+        );
       }
     }
 
@@ -4005,35 +4641,29 @@ class ProjectValidator {
       try {
         JSON.parse(output_format);
       } catch (error) {
-        result.errors.push('Output format must be valid JSON');
+        result.errors.push("Output format must be valid JSON");
       }
     }
 
     // Claude Code specific validations
     if (system_prompt) {
       // Check for Claude-specific instructions
-      const claudePatterns = [
-        /claude/i,
-        /assistant/i,
-        /ai/i,
-        /help/i,
-        /task/i
-      ];
+      const claudePatterns = [/claude/i, /assistant/i, /ai/i, /help/i, /task/i];
 
-      const hasClaudeContext = claudePatterns.some(pattern => 
-        pattern.test(system_prompt)
+      const hasClaudeContext = claudePatterns.some((pattern) =>
+        pattern.test(system_prompt),
       );
 
       if (!hasClaudeContext) {
         result.recommendations.push(
-          'Consider adding Claude-specific context to the system prompt'
+          "Consider adding Claude-specific context to the system prompt",
         );
       }
 
       // Check for XML structure awareness
-      if (!system_prompt.includes('<') && !system_prompt.includes('XML')) {
+      if (!system_prompt.includes("<") && !system_prompt.includes("XML")) {
         result.recommendations.push(
-          'Consider mentioning XML structure handling in the system prompt'
+          "Consider mentioning XML structure handling in the system prompt",
         );
       }
     }
@@ -4048,36 +4678,44 @@ class ProjectValidator {
 
     // Required fields validation
     if (!title || title.trim().length === 0) {
-      result.errors.push('Rule title is required');
+      result.errors.push("Rule title is required");
     } else if (title.length > 200) {
-      result.errors.push('Rule title must be 200 characters or less');
+      result.errors.push("Rule title must be 200 characters or less");
     }
 
     if (!rule_text || rule_text.trim().length === 0) {
-      result.errors.push('Rule text is required');
+      result.errors.push("Rule text is required");
     } else {
       if (rule_text.length < 20) {
-        result.warnings.push('Rule text is very short - consider adding more detail');
+        result.warnings.push(
+          "Rule text is very short - consider adding more detail",
+        );
       }
     }
 
     // Category validation
     const validCategories = [
-      'behavior', 'formatting', 'constraints', 'guidelines', 
-      'security', 'performance', 'style', 'workflow'
+      "behavior",
+      "formatting",
+      "constraints",
+      "guidelines",
+      "security",
+      "performance",
+      "style",
+      "workflow",
     ];
-    
+
     if (category && !validCategories.includes(category)) {
       result.warnings.push(
-        `Unusual category '${category}'. Consider using: ${validCategories.join(', ')}`
+        `Unusual category '${category}'. Consider using: ${validCategories.join(", ")}`,
       );
     }
 
     // Priority validation
-    const validPriorities = ['low', 'medium', 'high', 'critical'];
+    const validPriorities = ["low", "medium", "high", "critical"];
     if (priority && !validPriorities.includes(priority)) {
       result.errors.push(
-        `Invalid priority '${priority}'. Must be one of: ${validPriorities.join(', ')}`
+        `Invalid priority '${priority}'. Must be one of: ${validPriorities.join(", ")}`,
       );
     }
 
@@ -4087,16 +4725,16 @@ class ProjectValidator {
       const actionablePatterns = [
         /must|should|shall|will/i,
         /always|never|only/i,
-        /when|if|unless/i
+        /when|if|unless/i,
       ];
 
-      const hasActionableLanguage = actionablePatterns.some(pattern => 
-        pattern.test(rule_text)
+      const hasActionableLanguage = actionablePatterns.some((pattern) =>
+        pattern.test(rule_text),
       );
 
       if (!hasActionableLanguage) {
         result.recommendations.push(
-          'Consider using more actionable language (must, should, when, if)'
+          "Consider using more actionable language (must, should, when, if)",
         );
       }
     }
@@ -4111,28 +4749,32 @@ class ProjectValidator {
 
     // Required fields validation
     if (!name || name.trim().length === 0) {
-      result.errors.push('Hook name is required');
+      result.errors.push("Hook name is required");
     } else if (name.length > 100) {
-      result.errors.push('Hook name must be 100 characters or less');
+      result.errors.push("Hook name must be 100 characters or less");
     }
 
     if (!trigger_event || trigger_event.trim().length === 0) {
-      result.errors.push('Hook trigger event is required');
+      result.errors.push("Hook trigger event is required");
     }
 
     if (!command || command.trim().length === 0) {
-      result.errors.push('Hook command is required');
+      result.errors.push("Hook command is required");
     }
 
     // Validate trigger event
     const validTriggers = [
-      'on_message_send', 'on_agent_complete', 'on_session_create',
-      'on_file_save', 'on_manual_trigger', 'on_project_open'
+      "on_message_send",
+      "on_agent_complete",
+      "on_session_create",
+      "on_file_save",
+      "on_manual_trigger",
+      "on_project_open",
     ];
 
     if (trigger_event && !validTriggers.includes(trigger_event)) {
       result.warnings.push(
-        `Unusual trigger event '${trigger_event}'. Consider using: ${validTriggers.join(', ')}`
+        `Unusual trigger event '${trigger_event}'. Consider using: ${validTriggers.join(", ")}`,
       );
     }
 
@@ -4143,21 +4785,23 @@ class ProjectValidator {
         /del\s+\/s/i,
         /format\s+c:/i,
         /sudo\s+rm/i,
-        />\s*\/dev\/null/i
+        />\s*\/dev\/null/i,
       ];
 
-      const hasDangerousCommand = dangerousPatterns.some(pattern => 
-        pattern.test(command)
+      const hasDangerousCommand = dangerousPatterns.some((pattern) =>
+        pattern.test(command),
       );
 
       if (hasDangerousCommand) {
-        result.errors.push('Hook command contains potentially dangerous operations');
+        result.errors.push(
+          "Hook command contains potentially dangerous operations",
+        );
       }
 
       // Check for Claude Code compatibility
-      if (!command.includes('claude') && !command.includes('kiro')) {
+      if (!command.includes("claude") && !command.includes("kiro")) {
         result.recommendations.push(
-          'Consider integrating hook command with Claude Code workflow'
+          "Consider integrating hook command with Claude Code workflow",
         );
       }
     }
@@ -4173,22 +4817,28 @@ class ProjectValidator {
     if (name) {
       // Check for descriptive naming
       if (name.length < 5) {
-        result.recommendations.push('Consider using more descriptive names');
+        result.recommendations.push("Consider using more descriptive names");
       }
 
       // Check for consistent naming patterns
       const hasConsistentNaming = /^[a-zA-Z][a-zA-Z0-9\s\-_]*$/.test(name);
       if (!hasConsistentNaming) {
-        result.warnings.push('Name contains unusual characters - consider using alphanumeric characters, spaces, hyphens, or underscores');
+        result.warnings.push(
+          "Name contains unusual characters - consider using alphanumeric characters, spaces, hyphens, or underscores",
+        );
       }
     }
 
     // Check for documentation
     const description = resourceData.description;
     if (!description || description.trim().length === 0) {
-      result.recommendations.push('Consider adding a description for better documentation');
+      result.recommendations.push(
+        "Consider adding a description for better documentation",
+      );
     } else if (description.length < 20) {
-      result.recommendations.push('Consider expanding the description for clarity');
+      result.recommendations.push(
+        "Consider expanding the description for clarity",
+      );
     }
   }
 
@@ -4198,23 +4848,27 @@ class ProjectValidator {
    */
   async _validateProjectBasics(project, result) {
     if (!project) {
-      result.errors.push('Project data is required');
+      result.errors.push("Project data is required");
       return;
     }
 
     result.requiredComponents.project = true;
 
     if (!project.name || project.name.trim().length === 0) {
-      result.errors.push('Project name is required for export');
+      result.errors.push("Project name is required for export");
     }
 
     if (!project.description || project.description.trim().length === 0) {
-      result.warnings.push('Project description is missing - consider adding one for better documentation');
+      result.warnings.push(
+        "Project description is missing - consider adding one for better documentation",
+      );
     }
 
     // Check project status
-    if (project.status === 'draft') {
-      result.warnings.push('Project is in draft status - consider activating before export');
+    if (project.status === "draft") {
+      result.warnings.push(
+        "Project is in draft status - consider activating before export",
+      );
     }
   }
 
@@ -4230,42 +4884,54 @@ class ProjectValidator {
     // Check for agents
     if (agents.length > 0) {
       result.requiredComponents.agents = true;
-      
+
       // Check for primary agent
-      const primaryAgents = agents.filter(a => a.is_primary);
+      const primaryAgents = agents.filter((a) => a.is_primary);
       if (primaryAgents.length === 0) {
-        result.warnings.push('No primary agent assigned - consider setting one agent as primary');
+        result.warnings.push(
+          "No primary agent assigned - consider setting one agent as primary",
+        );
       } else if (primaryAgents.length > 1) {
-        result.warnings.push('Multiple primary agents found - only one should be primary');
+        result.warnings.push(
+          "Multiple primary agents found - only one should be primary",
+        );
         result.requiredComponents.primaryAgent = false;
       } else {
         result.requiredComponents.primaryAgent = true;
       }
     } else {
-      result.missingComponents.push('agents');
-      result.warnings.push('No agents assigned to project - Claude Code projects typically include at least one agent');
+      result.missingComponents.push("agents");
+      result.warnings.push(
+        "No agents assigned to project - Claude Code projects typically include at least one agent",
+      );
     }
 
     // Check for rules
     if (rules.length > 0) {
       result.requiredComponents.rules = true;
     } else {
-      result.missingComponents.push('rules');
-      result.recommendations.push('Consider adding rules to guide agent behavior');
+      result.missingComponents.push("rules");
+      result.recommendations.push(
+        "Consider adding rules to guide agent behavior",
+      );
     }
 
     // Check for hooks
     if (hooks.length > 0) {
       result.requiredComponents.hooks = true;
     } else {
-      result.missingComponents.push('hooks');
-      result.recommendations.push('Consider adding hooks for workflow automation');
+      result.missingComponents.push("hooks");
+      result.recommendations.push(
+        "Consider adding hooks for workflow automation",
+      );
     }
 
     // Overall resource check
     const totalResources = agents.length + rules.length + hooks.length;
     if (totalResources === 0) {
-      result.errors.push('Project has no assigned resources - cannot generate meaningful Claude Code export');
+      result.errors.push(
+        "Project has no assigned resources - cannot generate meaningful Claude Code export",
+      );
     }
   }
 
@@ -4275,28 +4941,30 @@ class ProjectValidator {
    */
   async _validateClaudeCodeRequirements(project, resources, result) {
     const agents = resources.agents || [];
-    
+
     // Validate agent system prompts for Claude compatibility
     for (const agent of agents) {
       if (agent.system_prompt) {
         // Check for XML awareness
-        const hasXmlAwareness = agent.system_prompt.toLowerCase().includes('xml') ||
-                               agent.system_prompt.includes('<') ||
-                               agent.system_prompt.toLowerCase().includes('structured');
-        
+        const hasXmlAwareness =
+          agent.system_prompt.toLowerCase().includes("xml") ||
+          agent.system_prompt.includes("<") ||
+          agent.system_prompt.toLowerCase().includes("structured");
+
         if (!hasXmlAwareness) {
           result.recommendations.push(
-            `Agent '${agent.name}' could benefit from XML structure awareness in system prompt`
+            `Agent '${agent.name}' could benefit from XML structure awareness in system prompt`,
           );
         }
 
         // Check for Claude-specific instructions
-        const hasClaudeInstructions = agent.system_prompt.toLowerCase().includes('claude') ||
-                                    agent.system_prompt.toLowerCase().includes('assistant');
-        
+        const hasClaudeInstructions =
+          agent.system_prompt.toLowerCase().includes("claude") ||
+          agent.system_prompt.toLowerCase().includes("assistant");
+
         if (!hasClaudeInstructions) {
           result.recommendations.push(
-            `Agent '${agent.name}' could benefit from Claude-specific context in system prompt`
+            `Agent '${agent.name}' could benefit from Claude-specific context in system prompt`,
           );
         }
       }
@@ -4304,9 +4972,13 @@ class ProjectValidator {
 
     // Validate project structure for Claude Code compatibility
     if (project.name) {
-      const hasValidProjectName = /^[a-zA-Z][a-zA-Z0-9\s\-_]*$/.test(project.name);
+      const hasValidProjectName = /^[a-zA-Z][a-zA-Z0-9\s\-_]*$/.test(
+        project.name,
+      );
       if (!hasValidProjectName) {
-        result.warnings.push('Project name contains special characters that may cause issues in file systems');
+        result.warnings.push(
+          "Project name contains special characters that may cause issues in file systems",
+        );
       }
     }
   }
@@ -4318,18 +4990,27 @@ class ProjectValidator {
   async _validateDependencies(resources, result) {
     try {
       const allResources = [
-        ...(resources.agents || []).map(a => ({ resource_type: 'agent', resource_id: a.id })),
-        ...(resources.rules || []).map(r => ({ resource_type: 'rule', resource_id: r.id })),
-        ...(resources.hooks || []).map(h => ({ resource_type: 'hook', resource_id: h.id }))
+        ...(resources.agents || []).map((a) => ({
+          resource_type: "agent",
+          resource_id: a.id,
+        })),
+        ...(resources.rules || []).map((r) => ({
+          resource_type: "rule",
+          resource_id: r.id,
+        })),
+        ...(resources.hooks || []).map((h) => ({
+          resource_type: "hook",
+          resource_id: h.id,
+        })),
       ];
 
-      const dependencyValidation = await this.validateDependencies(allResources);
-      
+      const dependencyValidation =
+        await this.validateDependencies(allResources);
+
       // Merge dependency validation results
       result.errors.push(...dependencyValidation.errors);
       result.warnings.push(...dependencyValidation.warnings);
       result.recommendations.push(...dependencyValidation.recommendations);
-
     } catch (error) {
       result.warnings.push(`Could not validate dependencies: ${error.message}`);
     }
@@ -4343,36 +5024,37 @@ class ProjectValidator {
     // Check if project name is suitable for file system
     if (project.name) {
       const sanitizedName = project.name
-        .replace(/[^a-zA-Z0-9\s\-_]/g, '')
+        .replace(/[^a-zA-Z0-9\s\-_]/g, "")
         .trim();
-      
+
       if (sanitizedName.length === 0) {
-        result.errors.push('Project name contains only special characters - cannot create valid file structure');
+        result.errors.push(
+          "Project name contains only special characters - cannot create valid file structure",
+        );
       } else if (sanitizedName !== project.name) {
-        result.warnings.push('Project name will be sanitized for file system compatibility');
+        result.warnings.push(
+          "Project name will be sanitized for file system compatibility",
+        );
       }
     }
 
     // Validate that we can generate all required files
-    const requiredFiles = [
-      'CLAUDE.md',
-      '.claude/project_settings.json'
-    ];
+    const requiredFiles = ["CLAUDE.md", ".claude/project_settings.json"];
 
     const agents = resources.agents || [];
     if (agents.length > 0) {
-      requiredFiles.push('.claude/agents/');
+      requiredFiles.push(".claude/agents/");
     }
 
     // Check for potential file naming conflicts
-    const agentNames = agents.map(a => a.name);
-    const duplicateNames = agentNames.filter((name, index) => 
-      agentNames.indexOf(name) !== index
+    const agentNames = agents.map((a) => a.name);
+    const duplicateNames = agentNames.filter(
+      (name, index) => agentNames.indexOf(name) !== index,
     );
 
     if (duplicateNames.length > 0) {
       result.warnings.push(
-        `Duplicate agent names found: ${duplicateNames.join(', ')} - files may be overwritten`
+        `Duplicate agent names found: ${duplicateNames.join(", ")} - files may be overwritten`,
       );
     }
   }
@@ -4383,16 +5065,21 @@ class ProjectValidator {
    */
   async _getResourceDependencies(resourceType, resourceId) {
     try {
-      const result = await this.db.prepare(`
-        SELECT target_resource_type as resource_type, target_resource_id as resource_id, 
+      const result = await this.db
+        .prepare(
+          `
+        SELECT target_resource_type as resource_type, target_resource_id as resource_id,
                dependency_type, is_critical
-        FROM resource_dependencies 
+        FROM resource_dependencies
         WHERE source_resource_type = ? AND source_resource_id = ?
-      `).bind(resourceType, resourceId).all();
+      `,
+        )
+        .bind(resourceType, resourceId)
+        .all();
 
       return result.results || [];
     } catch (error) {
-      console.error('Error getting resource dependencies:', error);
+      console.error("Error getting resource dependencies:", error);
       return [];
     }
   }
@@ -4411,7 +5098,7 @@ class ProjectValidator {
         // Found a cycle
         const cycleStart = path.indexOf(node);
         if (cycleStart !== -1) {
-          circularDeps.push(path.slice(cycleStart).concat([node]).join(' -> '));
+          circularDeps.push(path.slice(cycleStart).concat([node]).join(" -> "));
         }
         return;
       }
@@ -4462,7 +5149,7 @@ app.post("/api/ai/generate-prompt", async (c) => {
     agentId = null,
     saveToProject = false,
     promptTitle = null,
-    promptNotes = null
+    promptNotes = null,
   } = body;
 
   if (!task) {
@@ -4477,46 +5164,65 @@ app.post("/api/ai/generate-prompt", async (c) => {
 
     // Get project context if projectId provided
     if (projectId) {
-      const project = await db.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
+      const project = await db
+        .prepare("SELECT * FROM projects WHERE id = ?")
+        .bind(projectId)
+        .first();
       if (project) {
         projectContext = {
           ...project,
-          tags: project.tags ? JSON.parse(project.tags) : []
+          tags: project.tags ? JSON.parse(project.tags) : [],
         };
 
         // Get project rules
-        const rulesResult = await db.prepare(`
+        const rulesResult = await db
+          .prepare(
+            `
           SELECT ar.* FROM agent_rules ar
           JOIN project_resources pr ON pr.resource_id = ar.id
           WHERE pr.project_id = ? AND pr.resource_type = 'rule' AND ar.is_active = 1
           ORDER BY pr.is_primary DESC, pr.assignment_order
-        `).bind(projectId).all();
+        `,
+          )
+          .bind(projectId)
+          .all();
         projectRules = rulesResult.results || [];
 
         // Get project agents for context
-        const agentsResult = await db.prepare(`
+        const agentsResult = await db
+          .prepare(
+            `
           SELECT a.* FROM agents a
           JOIN project_resources pr ON pr.resource_id = a.id
           WHERE pr.project_id = ? AND pr.resource_type = 'agent' AND a.is_active = 1
           ORDER BY pr.is_primary DESC, pr.assignment_order
-        `).bind(projectId).all();
+        `,
+          )
+          .bind(projectId)
+          .all();
         projectAgents = agentsResult.results || [];
       }
     }
 
     // Get specific agent if agentId provided
     if (agentId) {
-      agent = await db.prepare('SELECT * FROM agents WHERE id = ? AND is_active = 1').bind(agentId).first();
+      agent = await db
+        .prepare("SELECT * FROM agents WHERE id = ? AND is_active = 1")
+        .bind(agentId)
+        .first();
       if (!agent && projectAgents.length === 0) {
         return c.json({ error: "Agent not found or not active" }, 404);
       }
     } else if (projectAgents.length > 0) {
       // Use primary agent from project if no specific agent selected
-      agent = projectAgents.find(a => a.is_primary) || projectAgents[0];
+      agent = projectAgents.find((a) => a.is_primary) || projectAgents[0];
     }
 
     if (!agent) {
-      return c.json({ error: "No agent specified and no project agents available" }, 400);
+      return c.json(
+        { error: "No agent specified and no project agents available" },
+        400,
+      );
     }
 
     // Build project-aware prompt
@@ -4541,7 +5247,7 @@ app.post("/api/ai/generate-prompt", async (c) => {
         prompt += `Category: ${projectContext.category}\n`;
       }
       if (projectContext.tags && projectContext.tags.length > 0) {
-        prompt += `Tags: ${projectContext.tags.join(', ')}\n`;
+        prompt += `Tags: ${projectContext.tags.join(", ")}\n`;
       }
       prompt += `</project_context>\n\n`;
     }
@@ -4549,7 +5255,7 @@ app.post("/api/ai/generate-prompt", async (c) => {
     // Add project rules if available
     if (projectRules.length > 0) {
       prompt += `<project_rules>\n`;
-      projectRules.forEach(rule => {
+      projectRules.forEach((rule) => {
         prompt += `${rule.name}: ${rule.rule_content}\n`;
       });
       prompt += `</project_rules>\n\n`;
@@ -4571,53 +5277,70 @@ app.post("/api/ai/generate-prompt", async (c) => {
     let savedPrompt = null;
     if (saveToProject && projectId) {
       const promptId = generateId();
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO project_prompts (
           id, project_id, prompt_content, prompt_type, title, prompt_notes,
           agent_id, agent_name, context_used, constraints_used, output_format,
           output_requirements_content
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
-        promptId,
-        projectId,
-        prompt,
-        'generated',
-        promptTitle || `Generated prompt - ${new Date().toLocaleDateString()}`,
-        promptNotes,
-        agent.id,
-        agent.name,
-        context,
-        projectRules.map(r => r.name).join(', '),
-        format,
-        outputRequirements
-      ).run();
+      `,
+        )
+        .bind(
+          promptId,
+          projectId,
+          prompt,
+          "generated",
+          promptTitle ||
+            `Generated prompt - ${new Date().toLocaleDateString()}`,
+          promptNotes,
+          agent.id,
+          agent.name,
+          context,
+          projectRules.map((r) => r.name).join(", "),
+          format,
+          outputRequirements,
+        )
+        .run();
 
-      savedPrompt = await db.prepare('SELECT * FROM project_prompts WHERE id = ?').bind(promptId).first();
+      savedPrompt = await db
+        .prepare("SELECT * FROM project_prompts WHERE id = ?")
+        .bind(promptId)
+        .first();
     }
 
     return c.json({
       prompt,
-      projectContext: projectContext ? {
-        id: projectContext.id,
-        name: projectContext.name,
-        description: projectContext.description
-      } : null,
+      projectContext: projectContext
+        ? {
+            id: projectContext.id,
+            name: projectContext.name,
+            description: projectContext.description,
+          }
+        : null,
       agent: {
         id: agent.id,
         name: agent.name,
-        role: agent.role
+        role: agent.role,
       },
-      projectRules: projectRules.map(r => ({ id: r.id, name: r.name, category: r.category })),
+      projectRules: projectRules.map((r) => ({
+        id: r.id,
+        name: r.name,
+        category: r.category,
+      })),
       savedPrompt,
       metadata: {
         generatedAt: new Date().toISOString(),
         hasProjectContext: !!projectContext,
-        rulesApplied: projectRules.length
-      }
+        rulesApplied: projectRules.length,
+      },
     });
-
   } catch (error) {
-    return c.json({ error: "Prompt generation failed", details: error.message }, 500);
+    return c.json(
+      { error: "Prompt generation failed", details: error.message },
+      500,
+    );
   }
 });
 
@@ -4640,7 +5363,10 @@ app.post("/api/ai/enhance-prompt", async (c) => {
   let projectContext = "";
   if (projectId) {
     const db = c.env.DB;
-    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
+    const project = await db
+      .prepare("SELECT * FROM projects WHERE id = ?")
+      .bind(projectId)
+      .first();
     if (project) {
       projectContext = `\n\nProject Context: ${project.name}`;
       if (project.description) {
@@ -4681,7 +5407,7 @@ app.post("/api/ai/enhance-prompt", async (c) => {
       original: prompt,
       enhanced: response.response,
       enhancementType,
-      projectContext: projectId ? { id: projectId } : null
+      projectContext: projectId ? { id: projectId } : null,
     });
   } catch (error) {
     return c.json(
@@ -4697,58 +5423,72 @@ app.get("/api/ai/prompt-context", async (c) => {
 
   try {
     // Get active projects
-    const projectsResult = await db.prepare(`
+    const projectsResult = await db
+      .prepare(
+        `
       SELECT id, name, description, category, ai_context_summary
-      FROM projects 
-      WHERE status IN ('active', 'draft') 
+      FROM projects
+      WHERE status IN ('active', 'draft')
       ORDER BY name
-    `).all();
+    `,
+      )
+      .all();
 
     // Get active agents
-    const agentsResult = await db.prepare(`
+    const agentsResult = await db
+      .prepare(
+        `
       SELECT id, name, role, description
-      FROM agents 
-      WHERE is_active = 1 
+      FROM agents
+      WHERE is_active = 1
       ORDER BY name
-    `).all();
+    `,
+      )
+      .all();
 
     // Get project-agent relationships
-    const projectAgentsResult = await db.prepare(`
+    const projectAgentsResult = await db
+      .prepare(
+        `
       SELECT pr.project_id, pr.resource_id as agent_id, pr.is_primary, a.name as agent_name
       FROM project_resources pr
       JOIN agents a ON a.id = pr.resource_id
       WHERE pr.resource_type = 'agent' AND a.is_active = 1
       ORDER BY pr.project_id, pr.is_primary DESC, pr.assignment_order
-    `).all();
+    `,
+      )
+      .all();
 
     // Group project agents by project
     const projectAgents = {};
-    projectAgentsResult.results.forEach(pa => {
+    projectAgentsResult.results.forEach((pa) => {
       if (!projectAgents[pa.project_id]) {
         projectAgents[pa.project_id] = [];
       }
       projectAgents[pa.project_id].push({
         id: pa.agent_id,
         name: pa.agent_name,
-        isPrimary: Boolean(pa.is_primary)
+        isPrimary: Boolean(pa.is_primary),
       });
     });
 
     // Add agent info to projects
-    const projects = projectsResult.results.map(project => ({
+    const projects = projectsResult.results.map((project) => ({
       ...project,
       agents: projectAgents[project.id] || [],
-      tags: project.tags ? JSON.parse(project.tags) : []
+      tags: project.tags ? JSON.parse(project.tags) : [],
     }));
 
     return c.json({
       projects,
       agents: agentsResult.results,
-      projectAgents
+      projectAgents,
     });
-
   } catch (error) {
-    return c.json({ error: "Failed to get prompt context", details: error.message }, 500);
+    return c.json(
+      { error: "Failed to get prompt context", details: error.message },
+      500,
+    );
   }
 });
 
@@ -4759,56 +5499,76 @@ app.get("/api/projects/:id/prompt-context", async (c) => {
 
   try {
     // Get project details
-    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
+    const project = await db
+      .prepare("SELECT * FROM projects WHERE id = ?")
+      .bind(projectId)
+      .first();
     if (!project) {
       return c.json({ error: "Project not found" }, 404);
     }
 
     // Get project agents
-    const agentsResult = await db.prepare(`
+    const agentsResult = await db
+      .prepare(
+        `
       SELECT a.*, pr.is_primary, pr.assignment_order
       FROM agents a
       JOIN project_resources pr ON pr.resource_id = a.id
       WHERE pr.project_id = ? AND pr.resource_type = 'agent' AND a.is_active = 1
       ORDER BY pr.is_primary DESC, pr.assignment_order, a.name
-    `).bind(projectId).all();
+    `,
+      )
+      .bind(projectId)
+      .all();
 
     // Get project rules
-    const rulesResult = await db.prepare(`
+    const rulesResult = await db
+      .prepare(
+        `
       SELECT ar.*, pr.is_primary, pr.assignment_order
       FROM agent_rules ar
       JOIN project_resources pr ON pr.resource_id = ar.id
       WHERE pr.project_id = ? AND pr.resource_type = 'rule' AND ar.is_active = 1
       ORDER BY pr.is_primary DESC, pr.assignment_order, ar.name
-    `).bind(projectId).all();
+    `,
+      )
+      .bind(projectId)
+      .all();
 
     // Get recent prompts for this project
-    const recentPromptsResult = await db.prepare(`
+    const recentPromptsResult = await db
+      .prepare(
+        `
       SELECT id, title, prompt_type, agent_name, created_at
       FROM project_prompts
       WHERE project_id = ?
       ORDER BY created_at DESC
       LIMIT 10
-    `).bind(projectId).all();
+    `,
+      )
+      .bind(projectId)
+      .all();
 
     return c.json({
       project: {
         ...project,
-        tags: project.tags ? JSON.parse(project.tags) : []
+        tags: project.tags ? JSON.parse(project.tags) : [],
       },
-      agents: agentsResult.results.map(agent => ({
+      agents: agentsResult.results.map((agent) => ({
         ...agent,
-        isPrimary: Boolean(agent.is_primary)
+        isPrimary: Boolean(agent.is_primary),
       })),
-      rules: rulesResult.results.map(rule => ({
+      rules: rulesResult.results.map((rule) => ({
         ...rule,
-        isPrimary: Boolean(rule.is_primary)
+        isPrimary: Boolean(rule.is_primary),
       })),
-      recentPrompts: recentPromptsResult.results
+      recentPrompts: recentPromptsResult.results,
     });
-
   } catch (error) {
-    return c.json({ error: "Failed to get project context", details: error.message }, 500);
+    return c.json(
+      { error: "Failed to get project context", details: error.message },
+      500,
+    );
   }
 });
 
@@ -4936,26 +5696,29 @@ app.post("/api/ai/enhance-resource", async (c) => {
     }
 
     const body = await c.req.json();
-    const { 
-      resource_type, 
-      project_id, 
+    const {
+      resource_type,
+      project_id,
       resource_data = {},
-      include_context = true 
+      include_context = true,
     } = body;
 
     if (!resource_type) {
       return c.json({ error: "resource_type is required" }, 400);
     }
 
-    const validTypes = ['agent', 'rule', 'hook'];
+    const validTypes = ["agent", "rule", "hook"];
     if (!validTypes.includes(resource_type)) {
-      return c.json({ 
-        error: `Invalid resource_type. Must be one of: ${validTypes.join(', ')}` 
-      }, 400);
+      return c.json(
+        {
+          error: `Invalid resource_type. Must be one of: ${validTypes.join(", ")}`,
+        },
+        400,
+      );
     }
 
     const aiEngine = new AIEnhancementEngine(ai, db);
-    
+
     // Build project context if project_id provided
     let projectContext = {};
     if (project_id && include_context) {
@@ -4963,36 +5726,42 @@ app.post("/api/ai/enhance-resource", async (c) => {
     }
 
     const enhancement = await aiEngine.enhanceResourceCreation(
-      resource_type, 
-      projectContext, 
-      resource_data
+      resource_type,
+      projectContext,
+      resource_data,
     );
 
     return c.json({
       resource_type,
       project_id,
       enhancement,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('AI enhancement failed:', error);
-    
+    console.error("AI enhancement failed:", error);
+
     // Provide graceful fallback
-    if (error.message.includes('AI service not available')) {
-      return c.json({
-        error: "AI service temporarily unavailable",
-        fallback: true,
-        suggestions: {
-          message: "AI enhancement is currently unavailable. Please try again later or create the resource manually."
-        }
-      }, 503);
+    if (error.message.includes("AI service not available")) {
+      return c.json(
+        {
+          error: "AI service temporarily unavailable",
+          fallback: true,
+          suggestions: {
+            message:
+              "AI enhancement is currently unavailable. Please try again later or create the resource manually.",
+          },
+        },
+        503,
+      );
     }
 
-    return c.json({ 
-      error: "Enhancement failed", 
-      details: error.message 
-    }, 500);
+    return c.json(
+      {
+        error: "Enhancement failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5003,41 +5772,50 @@ app.post("/api/ai/validate-compatibility", async (c) => {
     const db = c.env.DB;
 
     if (!ai) {
-      return c.json({ 
-        error: "AI binding not configured",
-        fallback: true,
-        validation: {
-          isCompatible: true,
-          confidence: 0.5,
-          warnings: ['AI validation unavailable - manual review recommended'],
-          suggestions: []
-        }
-      }, 200); // Return 200 with fallback instead of 500
+      return c.json(
+        {
+          error: "AI binding not configured",
+          fallback: true,
+          validation: {
+            isCompatible: true,
+            confidence: 0.5,
+            warnings: ["AI validation unavailable - manual review recommended"],
+            suggestions: [],
+          },
+        },
+        200,
+      ); // Return 200 with fallback instead of 500
     }
 
     const body = await c.req.json();
-    const { 
-      resource_type, 
-      resource_data, 
+    const {
+      resource_type,
+      resource_data,
       project_id,
-      include_context = true 
+      include_context = true,
     } = body;
 
     if (!resource_type || !resource_data) {
-      return c.json({ 
-        error: "resource_type and resource_data are required" 
-      }, 400);
+      return c.json(
+        {
+          error: "resource_type and resource_data are required",
+        },
+        400,
+      );
     }
 
-    const validTypes = ['agent', 'rule', 'hook'];
+    const validTypes = ["agent", "rule", "hook"];
     if (!validTypes.includes(resource_type)) {
-      return c.json({ 
-        error: `Invalid resource_type. Must be one of: ${validTypes.join(', ')}` 
-      }, 400);
+      return c.json(
+        {
+          error: `Invalid resource_type. Must be one of: ${validTypes.join(", ")}`,
+        },
+        400,
+      );
     }
 
     const aiEngine = new AIEnhancementEngine(ai, db);
-    
+
     // Build project context if project_id provided
     let projectContext = {};
     if (project_id && include_context) {
@@ -5045,33 +5823,35 @@ app.post("/api/ai/validate-compatibility", async (c) => {
     }
 
     const validation = await aiEngine.validateResourceCompatibility(
-      resource_type, 
-      resource_data, 
-      projectContext
+      resource_type,
+      resource_data,
+      projectContext,
     );
 
     return c.json({
       resource_type,
       project_id,
       validation,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('AI validation failed:', error);
-    
+    console.error("AI validation failed:", error);
+
     // Provide graceful fallback for validation errors
-    return c.json({
-      error: "Validation failed",
-      fallback: true,
-      validation: {
-        isCompatible: true,
-        confidence: 0.3,
-        warnings: ['AI validation failed - manual review recommended'],
-        suggestions: [],
-        error_details: error.message
-      }
-    }, 200); // Return 200 with fallback validation
+    return c.json(
+      {
+        error: "Validation failed",
+        fallback: true,
+        validation: {
+          isCompatible: true,
+          confidence: 0.3,
+          warnings: ["AI validation failed - manual review recommended"],
+          suggestions: [],
+          error_details: error.message,
+        },
+      },
+      200,
+    ); // Return 200 with fallback validation
   }
 });
 
@@ -5087,20 +5867,22 @@ app.get("/api/ai/project-context/:projectId", async (c) => {
     }
 
     const aiEngine = new AIEnhancementEngine(ai, db);
-    const context = await aiEngine.buildContextPrompt({ projectId }, 'general');
+    const context = await aiEngine.buildContextPrompt({ projectId }, "general");
 
     return c.json({
       project_id: projectId,
       context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Failed to get project context:', error);
-    return c.json({ 
-      error: "Failed to retrieve project context", 
-      details: error.message 
-    }, 500);
+    console.error("Failed to get project context:", error);
+    return c.json(
+      {
+        error: "Failed to retrieve project context",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5126,7 +5908,7 @@ app.post("/api/ai/enhance-resources-batch", async (c) => {
     }
 
     const aiEngine = new AIEnhancementEngine(ai, db);
-    
+
     // Build project context once for efficiency
     let projectContext = {};
     if (project_id && include_context) {
@@ -5134,42 +5916,41 @@ app.post("/api/ai/enhance-resources-batch", async (c) => {
     }
 
     const results = [];
-    
+
     for (const resource of resources) {
       try {
         const { resource_type, resource_data = {} } = resource;
-        
+
         if (!resource_type) {
           results.push({
             resource,
             error: "resource_type is required",
-            success: false
+            success: false,
           });
           continue;
         }
 
         const enhancement = await aiEngine.enhanceResourceCreation(
-          resource_type, 
-          projectContext, 
-          resource_data
+          resource_type,
+          projectContext,
+          resource_data,
         );
 
         results.push({
           resource,
           enhancement,
-          success: true
+          success: true,
         });
-
       } catch (error) {
         results.push({
           resource,
           error: error.message,
-          success: false
+          success: false,
         });
       }
     }
 
-    const successCount = results.filter(r => r.success).length;
+    const successCount = results.filter((r) => r.success).length;
 
     return c.json({
       project_id,
@@ -5177,17 +5958,19 @@ app.post("/api/ai/enhance-resources-batch", async (c) => {
       summary: {
         total: resources.length,
         successful: successCount,
-        failed: resources.length - successCount
+        failed: resources.length - successCount,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Batch enhancement failed:', error);
-    return c.json({ 
-      error: "Batch enhancement failed", 
-      details: error.message 
-    }, 500);
+    console.error("Batch enhancement failed:", error);
+    return c.json(
+      {
+        error: "Batch enhancement failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5203,54 +5986,69 @@ app.post("/api/ai/detect-platforms", async (c) => {
     const body = await c.req.json();
     const { input, project_id = null } = body;
 
-    if (!input || typeof input !== 'string') {
+    if (!input || typeof input !== "string") {
       return c.json({ error: "Input text is required" }, 400);
     }
 
     // Initialize platform detection engine
     const platformEngine = new PlatformDetectionEngine(db);
-    
+
     // Detect platforms
     const detections = platformEngine.detectPlatforms(input);
-    
+
     // Track AI usage
     if (detections.length > 0) {
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO ai_usage_tracking (request_type, project_id, success, request_context)
         VALUES (?, ?, ?, ?)
-      `).bind(
-        'detect_platform',
-        project_id,
-        1,
-        JSON.stringify({ input_length: input.length, detections_count: detections.length })
-      ).run();
+      `,
+        )
+        .bind(
+          "detect_platform",
+          project_id,
+          1,
+          JSON.stringify({
+            input_length: input.length,
+            detections_count: detections.length,
+          }),
+        )
+        .run();
     }
 
     return c.json({
       detections,
       input_analyzed: input.length,
       platforms_detected: detections.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Platform detection failed:', error);
-    
+    console.error("Platform detection failed:", error);
+
     // Track failed usage
     try {
       const db = c.env.DB;
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO ai_usage_tracking (request_type, project_id, success, error_message)
         VALUES (?, ?, ?, ?)
-      `).bind('detect_platform', null, 0, error.message).run();
+      `,
+        )
+        .bind("detect_platform", null, 0, error.message)
+        .run();
     } catch (trackingError) {
-      console.error('Failed to track usage:', trackingError);
+      console.error("Failed to track usage:", trackingError);
     }
 
-    return c.json({ 
-      error: "Platform detection failed", 
-      details: error.message 
-    }, 500);
+    return c.json(
+      {
+        error: "Platform detection failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5259,12 +6057,12 @@ app.post("/api/ai/suggest-templates", async (c) => {
   try {
     const db = c.env.DB;
     const body = await c.req.json();
-    const { 
-      platforms = [], 
-      project_id = null, 
-      user_input = '',
+    const {
+      platforms = [],
+      project_id = null,
+      user_input = "",
       existing_rules = [],
-      limit = 10 
+      limit = 10,
     } = body;
 
     if (!platforms || !Array.isArray(platforms) || platforms.length === 0) {
@@ -5276,72 +6074,94 @@ app.post("/api/ai/suggest-templates", async (c) => {
     const suggestionService = new TemplateSuggestionService(db, platformEngine);
 
     // Get templates for detected platforms
-    const platformNames = platforms.map(p => typeof p === 'string' ? p : p.platform);
+    const platformNames = platforms.map((p) =>
+      typeof p === "string" ? p : p.platform,
+    );
     const templates = await platformEngine.getPlatformTemplates(platformNames);
 
     // Get existing rules context if project_id provided
     let existingRulesContext = existing_rules;
     if (project_id && existingRulesContext.length === 0) {
-      const rulesResult = await db.prepare(`
+      const rulesResult = await db
+        .prepare(
+          `
         SELECT ar.* FROM agent_rules ar
         JOIN project_resources pr ON ar.id = pr.resource_id
         WHERE pr.project_id = ? AND pr.resource_type = 'rule' AND ar.is_active = 1
-      `).bind(project_id).all();
+      `,
+        )
+        .bind(project_id)
+        .all();
       existingRulesContext = rulesResult.results;
     }
 
     // Rank suggestions by relevance
-    const rankedSuggestions = platformEngine.rankSuggestionsByRelevance(templates, {
-      projectId: project_id,
-      existingRules: existingRulesContext,
-      detectedPlatforms: platforms,
-      userInput: user_input
-    });
+    const rankedSuggestions = platformEngine.rankSuggestionsByRelevance(
+      templates,
+      {
+        projectId: project_id,
+        existingRules: existingRulesContext,
+        detectedPlatforms: platforms,
+        userInput: user_input,
+      },
+    );
 
     // Limit results
     const limitedSuggestions = rankedSuggestions.slice(0, limit);
 
     // Track usage
-    await db.prepare(`
+    await db
+      .prepare(
+        `
       INSERT INTO ai_usage_tracking (request_type, project_id, success, request_context)
       VALUES (?, ?, ?, ?)
-    `).bind(
-      'suggest_template',
-      project_id,
-      1,
-      JSON.stringify({ 
-        platforms_count: platforms.length, 
-        templates_found: templates.length,
-        suggestions_returned: limitedSuggestions.length
-      })
-    ).run();
+    `,
+      )
+      .bind(
+        "suggest_template",
+        project_id,
+        1,
+        JSON.stringify({
+          platforms_count: platforms.length,
+          templates_found: templates.length,
+          suggestions_returned: limitedSuggestions.length,
+        }),
+      )
+      .run();
 
     return c.json({
       suggestions: limitedSuggestions,
       total_templates: templates.length,
       platforms_analyzed: platforms.length,
       project_id,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Template suggestion failed:', error);
-    
+    console.error("Template suggestion failed:", error);
+
     // Track failed usage
     try {
       const db = c.env.DB;
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO ai_usage_tracking (request_type, project_id, success, error_message)
         VALUES (?, ?, ?, ?)
-      `).bind('suggest_template', null, 0, error.message).run();
+      `,
+        )
+        .bind("suggest_template", null, 0, error.message)
+        .run();
     } catch (trackingError) {
-      console.error('Failed to track usage:', trackingError);
+      console.error("Failed to track usage:", trackingError);
     }
 
-    return c.json({ 
-      error: "Template suggestion failed", 
-      details: error.message 
-    }, 500);
+    return c.json(
+      {
+        error: "Template suggestion failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5362,49 +6182,64 @@ app.post("/api/ai/analyze-rules", async (c) => {
 
     // Analyze existing rules
     const patterns = await suggestionService.analyzeExistingRules(project_id);
-    
+
     // Get improvement suggestions
-    const improvements = suggestionService.suggestImprovements(rule_data, patterns);
+    const improvements = suggestionService.suggestImprovements(
+      rule_data,
+      patterns,
+    );
 
     // Track usage
-    await db.prepare(`
+    await db
+      .prepare(
+        `
       INSERT INTO ai_usage_tracking (request_type, project_id, success, request_context)
       VALUES (?, ?, ?, ?)
-    `).bind(
-      'analyze_rules',
-      project_id,
-      1,
-      JSON.stringify({ 
-        patterns_found: patterns.length,
-        improvements_suggested: improvements.length
-      })
-    ).run();
+    `,
+      )
+      .bind(
+        "analyze_rules",
+        project_id,
+        1,
+        JSON.stringify({
+          patterns_found: patterns.length,
+          improvements_suggested: improvements.length,
+        }),
+      )
+      .run();
 
     return c.json({
       project_id,
       patterns,
       improvements,
-      analysis_timestamp: new Date().toISOString()
+      analysis_timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Rule analysis failed:', error);
-    
+    console.error("Rule analysis failed:", error);
+
     // Track failed usage
     try {
       const db = c.env.DB;
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO ai_usage_tracking (request_type, project_id, success, error_message)
         VALUES (?, ?, ?, ?)
-      `).bind('analyze_rules', null, 0, error.message).run();
+      `,
+        )
+        .bind("analyze_rules", null, 0, error.message)
+        .run();
     } catch (trackingError) {
-      console.error('Failed to track usage:', trackingError);
+      console.error("Failed to track usage:", trackingError);
     }
 
-    return c.json({ 
-      error: "Rule analysis failed", 
-      details: error.message 
-    }, 500);
+    return c.json(
+      {
+        error: "Rule analysis failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5418,32 +6253,38 @@ app.get("/api/ai/platform-info", async (c) => {
     const platforms = platformEngine.getSupportedPlatforms();
 
     // Get template statistics
-    const templateStats = await db.prepare(`
-      SELECT 
+    const templateStats = await db
+      .prepare(
+        `
+      SELECT
         platform,
         category,
         COUNT(*) as template_count,
         AVG(success_rate) as avg_success_rate,
         SUM(usage_count) as total_usage
-      FROM platform_templates 
+      FROM platform_templates
       WHERE is_active = 1
       GROUP BY platform, category
       ORDER BY platform, category
-    `).all();
+    `,
+      )
+      .all();
 
     return c.json({
       categories,
       platforms,
       template_statistics: templateStats.results,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Failed to get platform info:', error);
-    return c.json({ 
-      error: "Failed to retrieve platform information", 
-      details: error.message 
-    }, 500);
+    console.error("Failed to get platform info:", error);
+    return c.json(
+      {
+        error: "Failed to retrieve platform information",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5634,33 +6475,36 @@ app.post("/api/export/claude-code/:projectId", async (c) => {
   try {
     const db = c.env.DB;
     const projectId = parseInt(c.req.param("projectId"));
-    
+
     if (!projectId || isNaN(projectId)) {
       return c.json({ error: "Valid project ID is required" }, 400);
     }
 
     const body = await c.req.json().catch(() => ({}));
     const {
-      format = 'json', // 'json' or 'zip'
+      format = "json", // 'json' or 'zip'
       includeAgents = true,
       includeRules = true,
       includeHooks = true,
       includeProjectSettings = true,
       includeClaudeMD = true,
-      exportNotes = null
+      exportNotes = null,
     } = body;
 
     const exporter = new ClaudeCodeExporter(db);
-    
+
     // Generate the complete project structure
-    const projectStructure = await exporter.generateProjectStructure(projectId, {
-      includeAgents,
-      includeRules,
-      includeHooks,
-      includeProjectSettings,
-      includeClaudeMD,
-      format
-    });
+    const projectStructure = await exporter.generateProjectStructure(
+      projectId,
+      {
+        includeAgents,
+        includeRules,
+        includeHooks,
+        includeProjectSettings,
+        includeClaudeMD,
+        format,
+      },
+    );
 
     // Record export in history
     const exportId = generateId();
@@ -5673,49 +6517,55 @@ app.post("/api/export/claude-code/:projectId", async (c) => {
         agents: projectStructure.metadata.includedComponents.agents,
         rules: projectStructure.metadata.includedComponents.rules,
         hooks: projectStructure.metadata.includedComponents.hooks,
-        projectSettings: projectStructure.metadata.includedComponents.projectSettings,
-        claudeMD: projectStructure.metadata.includedComponents.claudeMD
+        projectSettings:
+          projectStructure.metadata.includedComponents.projectSettings,
+        claudeMD: projectStructure.metadata.includedComponents.claudeMD,
       }),
       export_settings: JSON.stringify({
         format,
-        totalFiles: projectStructure.metadata.totalFiles
+        totalFiles: projectStructure.metadata.totalFiles,
       }),
       processing_started_at: new Date().toISOString(),
       processing_completed_at: new Date().toISOString(),
       export_notes: exportNotes,
-      exported_by: 'api'
+      exported_by: "api",
     };
 
     try {
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO export_history (
           id, project_id, export_format, included_resources,
           export_settings, processing_started_at, processing_completed_at,
           export_notes, exported_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
-        exportRecord.id,
-        exportRecord.project_id,
-        exportRecord.export_format,
-        exportRecord.included_resources,
-        exportRecord.export_settings,
-        exportRecord.processing_started_at,
-        exportRecord.processing_completed_at,
-        exportRecord.export_notes,
-        exportRecord.exported_by
-      ).run();
+      `,
+        )
+        .bind(
+          exportRecord.id,
+          exportRecord.project_id,
+          exportRecord.export_format,
+          exportRecord.included_resources,
+          exportRecord.export_settings,
+          exportRecord.processing_started_at,
+          exportRecord.processing_completed_at,
+          exportRecord.export_notes,
+          exportRecord.exported_by,
+        )
+        .run();
     } catch (historyError) {
-      console.warn('Failed to record export history:', historyError);
+      console.warn("Failed to record export history:", historyError);
       // Continue with export even if history recording fails
     }
 
-    if (format === 'zip') {
+    if (format === "zip") {
       // For ZIP format, we would need to implement ZIP generation
       // For now, return the structure with a note about ZIP implementation
       return c.json({
         ...projectStructure,
         exportId,
-        note: "ZIP format not yet implemented. Use 'json' format to get file contents."
+        note: "ZIP format not yet implemented. Use 'json' format to get file contents.",
       });
     }
 
@@ -5723,15 +6573,17 @@ app.post("/api/export/claude-code/:projectId", async (c) => {
     return c.json({
       ...projectStructure,
       exportId,
-      success: true
+      success: true,
     });
-
   } catch (error) {
-    console.error('Claude Code export failed:', error);
-    return c.json({ 
-      error: "Export failed", 
-      details: error.message 
-    }, 500);
+    console.error("Claude Code export failed:", error);
+    return c.json(
+      {
+        error: "Export failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5740,7 +6592,7 @@ app.get("/api/export/history/:projectId", async (c) => {
   try {
     const db = c.env.DB;
     const projectId = parseInt(c.req.param("projectId"));
-    
+
     if (!projectId || isNaN(projectId)) {
       return c.json({ error: "Valid project ID is required" }, 400);
     }
@@ -5749,37 +6601,46 @@ app.get("/api/export/history/:projectId", async (c) => {
     const limit = parseInt(query.limit) || 50;
     const offset = parseInt(query.offset) || 0;
 
-
-    let whereClause = 'WHERE project_id = ?';
+    let whereClause = "WHERE project_id = ?";
     const params = [projectId];
 
-
-
     // Get total count
-    const countResult = await db.prepare(`
+    const countResult = await db
+      .prepare(
+        `
       SELECT COUNT(*) as total FROM export_history ${whereClause}
-    `).bind(...params).first();
+    `,
+      )
+      .bind(...params)
+      .first();
 
     // Get export history
     const historyQuery = `
-      SELECT 
+      SELECT
         id, project_id, export_format, included_resources,
         export_settings, file_size, processing_started_at, processing_completed_at,
         processing_duration_ms, exported_by, export_notes, download_count,
         last_downloaded_at, created_at
-      FROM export_history 
+      FROM export_history
       ${whereClause}
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
     `;
 
     params.push(limit, offset);
-    const historyResult = await db.prepare(historyQuery).bind(...params).all();
+    const historyResult = await db
+      .prepare(historyQuery)
+      .bind(...params)
+      .all();
 
-    const exports = historyResult.results.map(record => ({
+    const exports = historyResult.results.map((record) => ({
       ...record,
-      included_resources: record.included_resources ? JSON.parse(record.included_resources) : {},
-      export_settings: record.export_settings ? JSON.parse(record.export_settings) : {}
+      included_resources: record.included_resources
+        ? JSON.parse(record.included_resources)
+        : {},
+      export_settings: record.export_settings
+        ? JSON.parse(record.export_settings)
+        : {},
     }));
 
     return c.json({
@@ -5788,16 +6649,18 @@ app.get("/api/export/history/:projectId", async (c) => {
         total: countResult.total,
         limit,
         offset,
-        hasMore: offset + limit < countResult.total
-      }
+        hasMore: offset + limit < countResult.total,
+      },
     });
-
   } catch (error) {
-    console.error('Failed to get export history:', error);
-    return c.json({ 
-      error: "Failed to get export history", 
-      details: error.message 
-    }, 500);
+    console.error("Failed to get export history:", error);
+    return c.json(
+      {
+        error: "Failed to get export history",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -5805,15 +6668,15 @@ app.get("/api/export/history/:projectId", async (c) => {
 app.get("/api/export/validate/:projectId", async (c) => {
   try {
     const db = c.env.DB;
-    const validator = c.get('projectValidator');
+    const validator = c.get("projectValidator");
     const projectId = parseInt(c.req.param("projectId"));
-    
+
     if (!projectId || isNaN(projectId)) {
       return c.json({ error: "Valid project ID is required" }, 400);
     }
 
     const exporter = new ClaudeCodeExporter(db);
-    
+
     // Get project details and resources
     const project = await exporter._getProjectDetails(projectId);
     if (!project) {
@@ -5821,9 +6684,12 @@ app.get("/api/export/validate/:projectId", async (c) => {
     }
 
     const resources = await exporter._getProjectResources(projectId);
-    
+
     // Use comprehensive validation
-    const validationResult = await validator.validateExportRequirements(project, resources);
+    const validationResult = await validator.validateExportRequirements(
+      project,
+      resources,
+    );
 
     const summary = {
       projectId,
@@ -5838,259 +6704,107 @@ app.get("/api/export/validate/:projectId", async (c) => {
         agents: resources.agents?.length || 0,
         rules: resources.rules?.length || 0,
         hooks: resources.hooks?.length || 0,
-        total: (resources.agents?.length || 0) + (resources.rules?.length || 0) + (resources.hooks?.length || 0)
+        total:
+          (resources.agents?.length || 0) +
+          (resources.rules?.length || 0) +
+          (resources.hooks?.length || 0),
       },
       claudeCodeCompatibility: {
         score: this._calculateCompatibilityScore(validationResult),
         issues: this._getCompatibilityIssues(validationResult),
-        suggestions: this._getCompatibilitySuggestions(validationResult)
-      }
+        suggestions: this._getCompatibilitySuggestions(validationResult),
+      },
     };
 
     return c.json(summary);
-
   } catch (error) {
-    console.error('Export validation failed:', error);
-    return c.json({ 
-      error: "Validation failed", 
-      details: error.message 
-    }, 500);
+    console.error("Export validation failed:", error);
+    return c.json(
+      {
+        error: "Validation failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
 // Helper function to calculate compatibility score
 function _calculateCompatibilityScore(validationResult) {
   let score = 100;
-  
+
   // Deduct points for errors and warnings
   score -= validationResult.errors.length * 20;
   score -= validationResult.warnings.length * 5;
-  
+
   // Bonus points for having required components
   if (validationResult.requiredComponents.project) score += 5;
   if (validationResult.requiredComponents.agents) score += 10;
   if (validationResult.requiredComponents.primaryAgent) score += 5;
   if (validationResult.requiredComponents.rules) score += 5;
   if (validationResult.requiredComponents.hooks) score += 5;
-  
+
   return Math.max(0, Math.min(100, score));
 }
 
 // Helper function to get compatibility issues
 function _getCompatibilityIssues(validationResult) {
   const issues = [];
-  
+
   if (validationResult.missingComponents.length > 0) {
-    issues.push(`Missing components: ${validationResult.missingComponents.join(', ')}`);
+    issues.push(
+      `Missing components: ${validationResult.missingComponents.join(", ")}`,
+    );
   }
-  
-  if (!validationResult.requiredComponents.primaryAgent && validationResult.requiredComponents.agents) {
-    issues.push('No primary agent designated');
+
+  if (
+    !validationResult.requiredComponents.primaryAgent &&
+    validationResult.requiredComponents.agents
+  ) {
+    issues.push("No primary agent designated");
   }
-  
+
   return issues;
 }
 
 // Helper function to get compatibility suggestions
 function _getCompatibilitySuggestions(validationResult) {
   const suggestions = [];
-  
-  if (validationResult.missingComponents.includes('agents')) {
-    suggestions.push('Add at least one agent to define AI behavior');
+
+  if (validationResult.missingComponents.includes("agents")) {
+    suggestions.push("Add at least one agent to define AI behavior");
   }
-  
-  if (validationResult.missingComponents.includes('rules')) {
-    suggestions.push('Add rules to guide agent behavior and ensure consistency');
+
+  if (validationResult.missingComponents.includes("rules")) {
+    suggestions.push(
+      "Add rules to guide agent behavior and ensure consistency",
+    );
   }
-  
-  if (validationResult.missingComponents.includes('hooks')) {
-    suggestions.push('Add hooks to automate workflows and improve productivity');
+
+  if (validationResult.missingComponents.includes("hooks")) {
+    suggestions.push(
+      "Add hooks to automate workflows and improve productivity",
+    );
   }
-  
+
   return suggestions.concat(validationResult.recommendations);
 }
 
 // ============================================
-// AGENTS API
+// LEGACY AGENTS API (DEPRECATED)
+// These routes are replaced by CUSTOM AGENTS/COMMANDS API below
+// which uses the custom_agents table for slash command agents
 // ============================================
 
-// List all agents
-app.get("/api/agents", async (c) => {
-  const db = c.env.DB;
-  const result = await db
-    .prepare(
-      "SELECT * FROM agents WHERE is_active = 1 ORDER BY created_at DESC",
-    )
-    .all();
-  return c.json(result.results);
-});
+// Legacy agents routes have been removed to prevent conflicts
+// with the custom_agents API. The custom_agents API supports:
+// - name (slug format for command name)
+// - display_name
+// - prompt_content
+// - agent_config (JSON with allowed tools)
+// - icon, category, is_enabled
 
-// Get single agent
-app.get("/api/agents/:id", async (c) => {
-  const db = c.env.DB;
-  const id = c.req.param("id");
-  const result = await db
-    .prepare("SELECT * FROM agents WHERE id = ?")
-    .bind(id)
-    .first();
-
-  if (!result) {
-    return c.json({ error: "Agent not found" }, 404);
-  }
-  return c.json(result);
-});
-
-// Create agent
-app.post("/api/agents", async (c) => {
-  try {
-    const db = c.env.DB;
-    const validator = c.get('projectValidator');
-    const body = await c.req.json();
-    const { name, role, style, description, system_prompt } = body;
-
-    // Basic validation
-    if (!name || !role) {
-      return c.json({ error: "Name and role are required" }, 400);
-    }
-
-    // Comprehensive validation using ProjectValidator
-    const validationResult = await validator.validateResourceDefinition('agent', {
-      name,
-      role,
-      style,
-      description,
-      system_prompt
-    });
-
-    if (!validationResult.isValid) {
-      return c.json({ 
-        error: "Agent validation failed", 
-        details: validationResult.errors,
-        warnings: validationResult.warnings,
-        recommendations: validationResult.recommendations
-      }, 400);
-    }
-
-    const id = generateId();
-    await db
-      .prepare(
-        "INSERT INTO agents (id, name, role, style, description, system_prompt) VALUES (?, ?, ?, ?, ?, ?)",
-      )
-      .bind(id, name, role, style || "", description || "", system_prompt || "")
-      .run();
-
-    const agent = await db
-      .prepare("SELECT * FROM agents WHERE id = ?")
-      .bind(id)
-      .first();
-    
-    // Include validation feedback in response
-    const response = {
-      ...agent,
-      validation: {
-        warnings: validationResult.warnings,
-        recommendations: validationResult.recommendations
-      }
-    };
-    
-    return c.json(response, 201);
-  } catch (error) {
-    console.error('Agent creation error:', error);
-    return c.json({ error: "Failed to create agent", details: error.message }, 500);
-  }
-});
-
-// Update agent
-app.put("/api/agents/:id", async (c) => {
-  try {
-    const db = c.env.DB;
-    const validator = c.get('projectValidator');
-    const id = c.req.param("id");
-    const body = await c.req.json();
-
-    const existing = await db
-      .prepare("SELECT * FROM agents WHERE id = ?")
-      .bind(id)
-      .first();
-
-    if (!existing) {
-      return c.json({ error: "Agent not found" }, 404);
-    }
-
-    // Prepare updated data for validation
-    const updatedData = {
-      name: body.name ?? existing.name,
-      role: body.role ?? existing.role,
-      style: body.style ?? existing.style,
-      description: body.description ?? existing.description,
-      system_prompt: body.system_prompt ?? existing.system_prompt ?? ""
-    };
-
-    // Comprehensive validation using ProjectValidator
-    const validationResult = await validator.validateResourceDefinition('agent', updatedData);
-
-    if (!validationResult.isValid) {
-      return c.json({ 
-        error: "Agent validation failed", 
-        details: validationResult.errors,
-        warnings: validationResult.warnings,
-        recommendations: validationResult.recommendations
-      }, 400);
-    }
-
-    await db
-      .prepare(
-        `UPDATE agents
-         SET name = ?, role = ?, style = ?, description = ?, system_prompt = ?, is_active = ?
-         WHERE id = ?`,
-      )
-      .bind(
-        updatedData.name,
-        updatedData.role,
-        updatedData.style,
-        updatedData.description,
-        updatedData.system_prompt,
-        body.is_active ?? existing.is_active,
-        id,
-      )
-      .run();
-
-    const agent = await db
-      .prepare("SELECT * FROM agents WHERE id = ?")
-      .bind(id)
-      .first();
-    
-    // Include validation feedback in response
-    const response = {
-      ...agent,
-      validation: {
-        warnings: validationResult.warnings,
-        recommendations: validationResult.recommendations
-      }
-    };
-    
-    return c.json(response);
-  } catch (error) {
-    console.error('Agent update error:', error);
-    return c.json({ error: "Failed to update agent", details: error.message }, 500);
-  }
-});
-
-// Delete agent (soft delete)
-app.delete("/api/agents/:id", async (c) => {
-  const db = c.env.DB;
-  const id = c.req.param("id");
-
-  const result = await db
-    .prepare("UPDATE agents SET is_active = 0 WHERE id = ?")
-    .bind(id)
-    .run();
-
-  if (result.meta.changes === 0) {
-    return c.json({ error: "Agent not found" }, 404);
-  }
-  return c.json({ success: true });
-});
+// For project-based agent personas, use the /api/projects/:id/agents endpoints
 
 // ============================================
 // PROMPT TEMPLATES API
@@ -6428,7 +7142,7 @@ app.get("/api/rules/:id", async (c) => {
 app.post("/api/rules", async (c) => {
   try {
     const db = c.env.DB;
-    const validator = c.get('projectValidator');
+    const validator = c.get("projectValidator");
     const body = await c.req.json();
     const {
       name,
@@ -6446,21 +7160,34 @@ app.post("/api/rules", async (c) => {
     }
 
     // Comprehensive validation using ProjectValidator
-    const validationResult = await validator.validateResourceDefinition('rule', {
-      title: name,
-      description,
-      rule_text: rule_content,
-      category,
-      priority: priority === 0 ? 'low' : (priority === 1 ? 'medium' : (priority === 2 ? 'high' : 'critical'))
-    });
+    const validationResult = await validator.validateResourceDefinition(
+      "rule",
+      {
+        title: name,
+        description,
+        rule_text: rule_content,
+        category,
+        priority:
+          priority === 0
+            ? "low"
+            : priority === 1
+              ? "medium"
+              : priority === 2
+                ? "high"
+                : "critical",
+      },
+    );
 
     if (!validationResult.isValid) {
-      return c.json({ 
-        error: "Rule validation failed", 
-        details: validationResult.errors,
-        warnings: validationResult.warnings,
-        recommendations: validationResult.recommendations
-      }, 400);
+      return c.json(
+        {
+          error: "Rule validation failed",
+          details: validationResult.errors,
+          warnings: validationResult.warnings,
+          recommendations: validationResult.recommendations,
+        },
+        400,
+      );
     }
 
     const id = generateId();
@@ -6487,20 +7214,23 @@ app.post("/api/rules", async (c) => {
       .prepare("SELECT * FROM agent_rules WHERE id = ?")
       .bind(id)
       .first();
-    
+
     // Include validation feedback in response
     const response = {
       ...rule,
       validation: {
         warnings: validationResult.warnings,
-        recommendations: validationResult.recommendations
-      }
+        recommendations: validationResult.recommendations,
+      },
     };
-    
+
     return c.json(response, 201);
   } catch (error) {
-    console.error('Rule creation error:', error);
-    return c.json({ error: "Failed to create rule", details: error.message }, 500);
+    console.error("Rule creation error:", error);
+    return c.json(
+      { error: "Failed to create rule", details: error.message },
+      500,
+    );
   }
 });
 
@@ -6930,19 +7660,20 @@ app.get("/api/projects", async (c) => {
   try {
     const db = c.env.DB;
     const projectManager = new ProjectManager(db);
-    
+
     // Extract query parameters
     const options = {
       status: c.req.query("status"),
       category: c.req.query("category"),
       priority: c.req.query("priority"),
       search: c.req.query("search"),
-      sortBy: c.req.query("sort_by") || 'updated_at',
-      sortOrder: c.req.query("sort_order") || 'DESC',
+      sortBy: c.req.query("sort_by") || "updated_at",
+      sortOrder: c.req.query("sort_order") || "DESC",
       limit: parseInt(c.req.query("limit")) || 50,
       offset: parseInt(c.req.query("offset")) || 0,
-      includeInAiContext: c.req.query("include_in_ai_context") ? 
-        c.req.query("include_in_ai_context") === 'true' : null
+      includeInAiContext: c.req.query("include_in_ai_context")
+        ? c.req.query("include_in_ai_context") === "true"
+        : null,
     };
 
     const includeRelated = c.req.query("include_related") === "true";
@@ -6969,18 +7700,21 @@ app.get("/api/projects", async (c) => {
       );
       return c.json({
         ...result,
-        projects: projectsWithRelations
+        projects: projectsWithRelations,
       });
     }
 
     return c.json(result);
   } catch (error) {
-    console.error('Error in /api/projects:', error);
-    return c.json({ 
-      error: error.message,
-      details: error.stack,
-      timestamp: new Date().toISOString()
-    }, 500);
+    console.error("Error in /api/projects:", error);
+    return c.json(
+      {
+        error: error.message,
+        details: error.stack,
+        timestamp: new Date().toISOString(),
+      },
+      500,
+    );
   }
 });
 
@@ -7071,7 +7805,7 @@ app.get("/api/projects/:id", async (c) => {
     const id = parseInt(c.req.param("id"));
 
     const project = await projectManager.getProject(id);
-    
+
     if (!project) {
       return c.json({ error: "Project not found" }, 404);
     }
@@ -7101,24 +7835,29 @@ app.get("/api/projects/:id", async (c) => {
 // Create project
 app.post("/api/projects", async (c) => {
   try {
-    const projectManager = c.get('projectManager');
+    const projectManager = c.get("projectManager");
     const body = await c.req.json();
 
     const project = await projectManager.createProject(body);
     return c.json({ success: true, project }, 201);
   } catch (error) {
-    const errorHandler = c.get('errorHandler');
-    
+    const errorHandler = c.get("errorHandler");
+
     if (error instanceof SystemError) {
-      const statusCode = error.code === 'VALIDATION_ERROR' ? 400 : 
-                        error.code === 'CONFLICT_ERROR' ? 409 : 
-                        error.code === 'RESOURCE_NOT_FOUND' ? 404 : 500;
+      const statusCode =
+        error.code === "VALIDATION_ERROR"
+          ? 400
+          : error.code === "CONFLICT_ERROR"
+            ? 409
+            : error.code === "RESOURCE_NOT_FOUND"
+              ? 404
+              : 500;
       return c.json(error.toJSON(), statusCode);
     }
-    
+
     const errorResponse = errorHandler.handleError(error, {
-      operation: 'createProject',
-      body
+      operation: "createProject",
+      body,
     });
     return c.json(errorResponse, 500);
   }
@@ -7135,7 +7874,7 @@ app.put("/api/projects/:id", async (c) => {
     const project = await projectManager.updateProject(id, body);
     return c.json(project);
   } catch (error) {
-    if (error.message === 'Project not found') {
+    if (error.message === "Project not found") {
       return c.json({ error: error.message }, 404);
     }
     return c.json({ error: error.message }, 400);
@@ -7145,23 +7884,27 @@ app.put("/api/projects/:id", async (c) => {
 // Delete project
 app.delete("/api/projects/:id", async (c) => {
   try {
-    const projectManager = c.get('projectManager');
+    const projectManager = c.get("projectManager");
     const id = parseInt(c.req.param("id"));
 
     const result = await projectManager.deleteProject(id);
     return c.json(result);
   } catch (error) {
-    const errorHandler = c.get('errorHandler');
-    
+    const errorHandler = c.get("errorHandler");
+
     if (error instanceof SystemError) {
-      const statusCode = error.code === 'RESOURCE_NOT_FOUND' ? 404 : 
-                        error.code === 'TRANSACTION_ERROR' ? 500 : 400;
+      const statusCode =
+        error.code === "RESOURCE_NOT_FOUND"
+          ? 404
+          : error.code === "TRANSACTION_ERROR"
+            ? 500
+            : 400;
       return c.json(error.toJSON(), statusCode);
     }
-    
+
     const errorResponse = errorHandler.handleError(error, {
-      operation: 'deleteProject',
-      projectId: id
+      operation: "deleteProject",
+      projectId: id,
     });
     return c.json(errorResponse, 500);
   }
@@ -7175,8 +7918,8 @@ app.delete("/api/projects/:id", async (c) => {
 app.post("/api/projects/:id/resources", async (c) => {
   try {
     const db = c.env.DB;
-    const resourceManager = c.get('resourceManager');
-    const validator = c.get('projectValidator');
+    const resourceManager = c.get("resourceManager");
+    const validator = c.get("projectValidator");
     const projectId = parseInt(c.req.param("id"));
     const body = await c.req.json();
 
@@ -7187,86 +7930,116 @@ app.post("/api/projects/:id/resources", async (c) => {
       assignment_order = 0,
       config_overrides = null,
       assigned_by = null,
-      assignment_reason = null
+      assignment_reason = null,
     } = body;
 
     if (!resource_type || !resource_id) {
-      return c.json({ 
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'resource_type and resource_id are required',
-          details: { resource_type, resource_id }
-        }
-      }, 400);
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "resource_type and resource_id are required",
+            details: { resource_type, resource_id },
+          },
+        },
+        400,
+      );
     }
 
     // Get resource data for validation
     let resourceData = null;
     try {
       switch (resource_type) {
-        case 'agent':
-          resourceData = await db.prepare('SELECT * FROM agents WHERE id = ?').bind(resource_id).first();
+        case "agent":
+          resourceData = await db
+            .prepare("SELECT * FROM agents WHERE id = ?")
+            .bind(resource_id)
+            .first();
           break;
-        case 'rule':
-          resourceData = await db.prepare('SELECT * FROM agent_rules WHERE id = ?').bind(resource_id).first();
+        case "rule":
+          resourceData = await db
+            .prepare("SELECT * FROM agent_rules WHERE id = ?")
+            .bind(resource_id)
+            .first();
           break;
-        case 'hook':
-          resourceData = await db.prepare('SELECT * FROM hooks WHERE id = ?').bind(resource_id).first();
+        case "hook":
+          resourceData = await db
+            .prepare("SELECT * FROM hooks WHERE id = ?")
+            .bind(resource_id)
+            .first();
           break;
       }
     } catch (error) {
-      console.warn('Could not fetch resource data for validation:', error);
+      console.warn("Could not fetch resource data for validation:", error);
     }
 
     // Perform resource validation if data is available
     let validationFeedback = null;
     if (resourceData) {
       try {
-        const validationResult = await validator.validateResourceDefinition(resource_type, resourceData);
+        const validationResult = await validator.validateResourceDefinition(
+          resource_type,
+          resourceData,
+        );
         validationFeedback = {
           warnings: validationResult.warnings,
-          recommendations: validationResult.recommendations
+          recommendations: validationResult.recommendations,
         };
       } catch (error) {
-        console.warn('Resource validation failed:', error);
+        console.warn("Resource validation failed:", error);
       }
     }
 
-    const assignment = await resourceManager.assignResource(projectId, resource_type, resource_id, {
-      isPrimary: is_primary,
-      assignmentOrder: assignment_order,
-      configOverrides: config_overrides,
-      assignedBy: assigned_by,
-      assignmentReason: assignment_reason
-    });
+    const assignment = await resourceManager.assignResource(
+      projectId,
+      resource_type,
+      resource_id,
+      {
+        isPrimary: is_primary,
+        assignmentOrder: assignment_order,
+        configOverrides: config_overrides,
+        assignedBy: assigned_by,
+        assignmentReason: assignment_reason,
+      },
+    );
 
-    const response = { 
-      success: true, 
-      assignment 
+    const response = {
+      success: true,
+      assignment,
     };
 
     // Include validation feedback if available
-    if (validationFeedback && (validationFeedback.warnings.length > 0 || validationFeedback.recommendations.length > 0)) {
+    if (
+      validationFeedback &&
+      (validationFeedback.warnings.length > 0 ||
+        validationFeedback.recommendations.length > 0)
+    ) {
       response.validation = validationFeedback;
     }
 
     return c.json(response, 201);
   } catch (error) {
-    const errorHandler = c.get('errorHandler');
-    
+    const errorHandler = c.get("errorHandler");
+
     if (error instanceof SystemError) {
-      const statusCode = error.code === 'VALIDATION_ERROR' ? 400 : 
-                        error.code === 'CONFLICT_ERROR' ? 409 : 
-                        error.code === 'RESOURCE_NOT_FOUND' ? 404 : 
-                        error.code === 'TRANSACTION_ERROR' ? 500 : 400;
+      const statusCode =
+        error.code === "VALIDATION_ERROR"
+          ? 400
+          : error.code === "CONFLICT_ERROR"
+            ? 409
+            : error.code === "RESOURCE_NOT_FOUND"
+              ? 404
+              : error.code === "TRANSACTION_ERROR"
+                ? 500
+                : 400;
       return c.json(error.toJSON(), statusCode);
     }
-    
+
     const errorResponse = errorHandler.handleError(error, {
-      operation: 'assignResource',
+      operation: "assignResource",
       projectId,
-      body
+      body,
     });
     return c.json(errorResponse, 500);
   }
@@ -7282,11 +8055,18 @@ app.delete("/api/projects/:id/resources/:resourceId", async (c) => {
     const resourceType = c.req.query("resource_type");
 
     if (!resourceType) {
-      return c.json({ error: "resource_type query parameter is required" }, 400);
+      return c.json(
+        { error: "resource_type query parameter is required" },
+        400,
+      );
     }
 
-    const success = await resourceManager.unassignResource(projectId, resourceType, resourceId);
-    
+    const success = await resourceManager.unassignResource(
+      projectId,
+      resourceType,
+      resourceId,
+    );
+
     if (!success) {
       return c.json({ error: "Resource assignment not found" }, 404);
     }
@@ -7305,7 +8085,10 @@ app.get("/api/projects/:id/resources", async (c) => {
     const projectId = parseInt(c.req.param("id"));
     const resourceType = c.req.query("resource_type");
 
-    const resources = await resourceManager.getProjectResources(projectId, resourceType);
+    const resources = await resourceManager.getProjectResources(
+      projectId,
+      resourceType,
+    );
     return c.json(resources);
   } catch (error) {
     return c.json({ error: error.message }, 500);
@@ -7320,7 +8103,10 @@ app.get("/api/projects/:id/available-resources", async (c) => {
     const projectId = parseInt(c.req.param("id"));
     const resourceType = c.req.query("resource_type");
 
-    const resources = await resourceManager.getAvailableResources(projectId, resourceType);
+    const resources = await resourceManager.getAvailableResources(
+      projectId,
+      resourceType,
+    );
     return c.json(resources);
   } catch (error) {
     return c.json({ error: error.message }, 500);
@@ -7339,13 +8125,16 @@ app.put("/api/projects/:projectId/resources/:assignmentId", async (c) => {
       isPrimary: body.is_primary,
       assignmentOrder: body.assignment_order,
       configOverrides: body.config_overrides,
-      assignmentReason: body.assignment_reason
+      assignmentReason: body.assignment_reason,
     };
 
-    const assignment = await resourceManager.updateResourceAssignment(assignmentId, updates);
+    const assignment = await resourceManager.updateResourceAssignment(
+      assignmentId,
+      updates,
+    );
     return c.json(assignment);
   } catch (error) {
-    if (error.message.includes('not found')) {
+    if (error.message.includes("not found")) {
       return c.json({ error: error.message }, 404);
     }
     return c.json({ error: error.message }, 400);
@@ -7353,23 +8142,27 @@ app.put("/api/projects/:projectId/resources/:assignmentId", async (c) => {
 });
 
 // Get specific resource assignment
-app.get("/api/projects/:projectId/resources/assignments/:assignmentId", async (c) => {
-  try {
-    const db = c.env.DB;
-    const resourceManager = new ResourceManager(db);
-    const assignmentId = c.req.param("assignmentId"); // Keep as string
+app.get(
+  "/api/projects/:projectId/resources/assignments/:assignmentId",
+  async (c) => {
+    try {
+      const db = c.env.DB;
+      const resourceManager = new ResourceManager(db);
+      const assignmentId = c.req.param("assignmentId"); // Keep as string
 
-    const assignment = await resourceManager.getResourceAssignment(assignmentId);
-    
-    if (!assignment) {
-      return c.json({ error: "Resource assignment not found" }, 404);
+      const assignment =
+        await resourceManager.getResourceAssignment(assignmentId);
+
+      if (!assignment) {
+        return c.json({ error: "Resource assignment not found" }, 404);
+      }
+
+      return c.json(assignment);
+    } catch (error) {
+      return c.json({ error: error.message }, 500);
     }
-
-    return c.json(assignment);
-  } catch (error) {
-    return c.json({ error: error.message }, 500);
-  }
-});
+  },
+);
 
 // ============================================
 // RESOURCE IMPORT API ENDPOINTS
@@ -7385,57 +8178,72 @@ app.post("/api/projects/:id/import", async (c) => {
     const projectId = parseInt(c.req.param("id"));
     const body = await c.req.json();
 
-    const {
-      resources = [],
-      options = {}
-    } = body;
+    const { resources = [], options = {} } = body;
 
     if (!Array.isArray(resources) || resources.length === 0) {
-      return c.json({ error: "resources array is required and cannot be empty" }, 400);
+      return c.json(
+        { error: "resources array is required and cannot be empty" },
+        400,
+      );
     }
 
     if (resources.length > 50) {
-      return c.json({ error: "Maximum 50 resources per import operation" }, 400);
+      return c.json(
+        { error: "Maximum 50 resources per import operation" },
+        400,
+      );
     }
 
     // Validate resource structure
     for (const resource of resources) {
       if (!resource.resource_type || !resource.resource_id) {
-        return c.json({ 
-          error: "Each resource must have resource_type and resource_id" 
-        }, 400);
+        return c.json(
+          {
+            error: "Each resource must have resource_type and resource_id",
+          },
+          400,
+        );
       }
 
-      const validTypes = ['agent', 'rule', 'hook'];
+      const validTypes = ["agent", "rule", "hook"];
       if (!validTypes.includes(resource.resource_type)) {
-        return c.json({ 
-          error: `Invalid resource_type: ${resource.resource_type}. Must be one of: ${validTypes.join(', ')}` 
-        }, 400);
+        return c.json(
+          {
+            error: `Invalid resource_type: ${resource.resource_type}. Must be one of: ${validTypes.join(", ")}`,
+          },
+          400,
+        );
       }
     }
 
     // Set default options
     const importOptions = {
       resolveDependencies: options.resolve_dependencies !== false,
-      conflictResolution: options.conflict_resolution || 'skip',
+      conflictResolution: options.conflict_resolution || "skip",
       assignedBy: options.assigned_by || null,
-      importReason: options.import_reason || 'api_import'
+      importReason: options.import_reason || "api_import",
     };
 
-    const result = await projectManager.importResources(projectId, resources, importOptions);
+    const result = await projectManager.importResources(
+      projectId,
+      resources,
+      importOptions,
+    );
     return c.json(result);
-
   } catch (error) {
-    console.error('Import operation failed:', error);
-    
-    if (error.message.includes('not found')) {
+    console.error("Import operation failed:", error);
+
+    if (error.message.includes("not found")) {
       return c.json({ error: error.message }, 404);
     }
-    
-    return c.json({ 
-      error: "Import operation failed", 
-      details: error.message 
-    }, 500);
+
+    return c.json(
+      {
+        error: "Import operation failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -7444,10 +8252,12 @@ app.get("/api/resources/available", async (c) => {
   try {
     const db = c.env.DB;
     const resourceManager = new ResourceManager(db);
-    
-    const projectId = c.req.query("project_id") ? parseInt(c.req.query("project_id")) : null;
+
+    const projectId = c.req.query("project_id")
+      ? parseInt(c.req.query("project_id"))
+      : null;
     const resourceType = c.req.query("resource_type") || null;
-    const includeAssigned = c.req.query("include_assigned") === 'true';
+    const includeAssigned = c.req.query("include_assigned") === "true";
     const search = c.req.query("search") || null;
     const category = c.req.query("category") || null;
 
@@ -7455,36 +8265,42 @@ app.get("/api/resources/available", async (c) => {
 
     if (projectId) {
       // Get resources with assignment status for specific project
-      resources = await resourceManager.getAvailableResources(projectId, resourceType);
+      resources = await resourceManager.getAvailableResources(
+        projectId,
+        resourceType,
+      );
     } else {
       // Get all resources without project context
-      const validTypes = resourceType ? [resourceType] : ['agent', 'rule', 'hook'];
-      
+      const validTypes = resourceType
+        ? [resourceType]
+        : ["agent", "rule", "hook"];
+
       for (const type of validTypes) {
-        let query, params = [];
-        
+        let query,
+          params = [];
+
         switch (type) {
-          case 'agent':
+          case "agent":
             query = `
-              SELECT 'agent' as resource_type, id as resource_id, name, role as metadata, 
+              SELECT 'agent' as resource_type, id as resource_id, name, role as metadata,
                      description, 0 as is_assigned
-              FROM agents 
+              FROM agents
               WHERE is_active = 1
             `;
             break;
-          case 'rule':
+          case "rule":
             query = `
-              SELECT 'rule' as resource_type, id as resource_id, name, category as metadata, 
+              SELECT 'rule' as resource_type, id as resource_id, name, category as metadata,
                      description, 0 as is_assigned
-              FROM agent_rules 
+              FROM agent_rules
               WHERE is_active = 1
             `;
             break;
-          case 'hook':
+          case "hook":
             query = `
-              SELECT 'hook' as resource_type, id as resource_id, name, hook_type as metadata, 
+              SELECT 'hook' as resource_type, id as resource_id, name, hook_type as metadata,
                      description, 0 as is_assigned
-              FROM hooks 
+              FROM hooks
               WHERE is_enabled = 1
             `;
             break;
@@ -7497,21 +8313,24 @@ app.get("/api/resources/available", async (c) => {
         }
 
         // Add category filter for rules
-        if (category && type === 'rule') {
+        if (category && type === "rule") {
           query += ` AND category = ?`;
           params.push(category);
         }
 
         query += ` ORDER BY name`;
 
-        const result = await db.prepare(query).bind(...params).all();
+        const result = await db
+          .prepare(query)
+          .bind(...params)
+          .all();
         resources.push(...result.results);
       }
     }
 
     // Filter out assigned resources if requested
     if (!includeAssigned && projectId) {
-      resources = resources.filter(r => !r.is_assigned);
+      resources = resources.filter((r) => !r.is_assigned);
     }
 
     // Add dependency information for each resource
@@ -7519,15 +8338,15 @@ app.get("/api/resources/available", async (c) => {
     const enhancedResources = [];
     for (const resource of resources) {
       const dependencies = await projectManager.getResourceDependencies(
-        resource.resource_type, 
-        resource.resource_id
+        resource.resource_type,
+        resource.resource_id,
       );
-      
+
       enhancedResources.push({
         ...resource,
         dependencies_count: dependencies.length,
-        critical_dependencies: dependencies.filter(d => d.is_critical).length,
-        missing_dependencies: dependencies.filter(d => !d.exists).length
+        critical_dependencies: dependencies.filter((d) => d.is_critical).length,
+        missing_dependencies: dependencies.filter((d) => !d.exists).length,
       });
     }
 
@@ -7539,16 +8358,18 @@ app.get("/api/resources/available", async (c) => {
         resource_type: resourceType,
         include_assigned: includeAssigned,
         search,
-        category
-      }
+        category,
+      },
     });
-
   } catch (error) {
-    console.error('Failed to get available resources:', error);
-    return c.json({ 
-      error: "Failed to retrieve available resources", 
-      details: error.message 
-    }, 500);
+    console.error("Failed to get available resources:", error);
+    return c.json(
+      {
+        error: "Failed to retrieve available resources",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -7560,43 +8381,52 @@ app.post("/api/projects/:id/import/preview", async (c) => {
     const projectId = parseInt(c.req.param("id"));
     const body = await c.req.json();
 
-    const {
-      resources = [],
-      options = {}
-    } = body;
+    const { resources = [], options = {} } = body;
 
     if (!Array.isArray(resources) || resources.length === 0) {
-      return c.json({ error: "resources array is required and cannot be empty" }, 400);
+      return c.json(
+        { error: "resources array is required and cannot be empty" },
+        400,
+      );
     }
 
     // Validate resource structure
     for (const resource of resources) {
       if (!resource.resource_type || !resource.resource_id) {
-        return c.json({ 
-          error: "Each resource must have resource_type and resource_id" 
-        }, 400);
+        return c.json(
+          {
+            error: "Each resource must have resource_type and resource_id",
+          },
+          400,
+        );
       }
     }
 
     const previewOptions = {
       includeDependencies: options.include_dependencies !== false,
-      checkCompatibility: options.check_compatibility !== false
+      checkCompatibility: options.check_compatibility !== false,
     };
 
-    const preview = await projectManager.previewImport(projectId, resources, previewOptions);
+    const preview = await projectManager.previewImport(
+      projectId,
+      resources,
+      previewOptions,
+    );
     return c.json(preview);
-
   } catch (error) {
-    console.error('Import preview failed:', error);
-    
-    if (error.message.includes('not found')) {
+    console.error("Import preview failed:", error);
+
+    if (error.message.includes("not found")) {
       return c.json({ error: error.message }, 404);
     }
-    
-    return c.json({ 
-      error: "Import preview failed", 
-      details: error.message 
-    }, 500);
+
+    return c.json(
+      {
+        error: "Import preview failed",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -7605,37 +8435,45 @@ app.get("/api/resources/:resourceType/:resourceId/dependencies", async (c) => {
   try {
     const db = c.env.DB;
     const projectManager = new ProjectManager(db);
-    
+
     const resourceType = c.req.param("resourceType");
     const resourceId = c.req.param("resourceId");
 
-    const validTypes = ['agent', 'rule', 'hook'];
+    const validTypes = ["agent", "rule", "hook"];
     if (!validTypes.includes(resourceType)) {
-      return c.json({ 
-        error: `Invalid resource_type: ${resourceType}. Must be one of: ${validTypes.join(', ')}` 
-      }, 400);
+      return c.json(
+        {
+          error: `Invalid resource_type: ${resourceType}. Must be one of: ${validTypes.join(", ")}`,
+        },
+        400,
+      );
     }
 
-    const dependencies = await projectManager.getResourceDependencies(resourceType, resourceId);
-    
+    const dependencies = await projectManager.getResourceDependencies(
+      resourceType,
+      resourceId,
+    );
+
     return c.json({
       resource_type: resourceType,
       resource_id: resourceId,
       dependencies,
       summary: {
         total: dependencies.length,
-        critical: dependencies.filter(d => d.is_critical).length,
-        missing: dependencies.filter(d => !d.exists).length,
-        available: dependencies.filter(d => d.exists).length
-      }
+        critical: dependencies.filter((d) => d.is_critical).length,
+        missing: dependencies.filter((d) => !d.exists).length,
+        available: dependencies.filter((d) => d.exists).length,
+      },
     });
-
   } catch (error) {
-    console.error('Failed to get resource dependencies:', error);
-    return c.json({ 
-      error: "Failed to retrieve resource dependencies", 
-      details: error.message 
-    }, 500);
+    console.error("Failed to get resource dependencies:", error);
+    return c.json(
+      {
+        error: "Failed to retrieve resource dependencies",
+        details: error.message,
+      },
+      500,
+    );
   }
 });
 
@@ -7914,7 +8752,7 @@ app.post("/api/projects/:id/prompts", async (c) => {
     is_primary = 0,
     task_description,
     project_rules_used,
-    generation_metadata
+    generation_metadata,
   } = body;
 
   if (!prompt_content) {
@@ -7934,8 +8772,10 @@ app.post("/api/projects/:id/prompts", async (c) => {
   // If agent_id provided, verify it exists and get agent name
   let resolvedAgentName = agent_name;
   if (agent_id && !agent_name) {
-    const agent = await db.prepare("SELECT name FROM agents WHERE id = ? AND is_active = 1")
-      .bind(agent_id).first();
+    const agent = await db
+      .prepare("SELECT name FROM agents WHERE id = ? AND is_active = 1")
+      .bind(agent_id)
+      .first();
     if (agent) {
       resolvedAgentName = agent.name;
     }
@@ -7957,7 +8797,8 @@ app.post("/api/projects/:id/prompts", async (c) => {
         projectId,
         prompt_content,
         prompt_type,
-        title || `Prompt for ${project.name} - ${new Date().toLocaleDateString()}`,
+        title ||
+          `Prompt for ${project.name} - ${new Date().toLocaleDateString()}`,
         prompt_notes || null,
         agent_id || null,
         resolvedAgentName || null,
@@ -7978,22 +8819,30 @@ app.post("/api/projects/:id/prompts", async (c) => {
 
     // If this is marked as primary, update other prompts to not be primary
     if (is_primary) {
-      await db.prepare(
-        "UPDATE project_prompts SET is_primary = 0 WHERE project_id = ? AND id != ?"
-      ).bind(projectId, id).run();
+      await db
+        .prepare(
+          "UPDATE project_prompts SET is_primary = 0 WHERE project_id = ? AND id != ?",
+        )
+        .bind(projectId, id)
+        .run();
     }
 
-    return c.json({
-      ...savedPrompt,
-      project: {
-        id: project.id,
-        name: project.name
+    return c.json(
+      {
+        ...savedPrompt,
+        project: {
+          id: project.id,
+          name: project.name,
+        },
+        metadata: generation_metadata || null,
       },
-      metadata: generation_metadata || null
-    }, 201);
-
+      201,
+    );
   } catch (error) {
-    return c.json({ error: "Failed to save prompt", details: error.message }, 500);
+    return c.json(
+      { error: "Failed to save prompt", details: error.message },
+      500,
+    );
   }
 });
 
@@ -8022,7 +8871,8 @@ app.get("/api/projects/:id/prompts", async (c) => {
   }
 
   if (search) {
-    whereClause += " AND (title LIKE ? OR prompt_content LIKE ? OR prompt_notes LIKE ?)";
+    whereClause +=
+      " AND (title LIKE ? OR prompt_content LIKE ? OR prompt_notes LIKE ?)";
     const searchPattern = `%${search}%`;
     params.push(searchPattern, searchPattern, searchPattern);
   }
@@ -8033,7 +8883,10 @@ app.get("/api/projects/:id/prompts", async (c) => {
   try {
     // Get total count
     const countQuery = `SELECT COUNT(*) as total FROM project_prompts ${whereClause}`;
-    const countResult = await db.prepare(countQuery).bind(...params.slice(0, -2)).first();
+    const countResult = await db
+      .prepare(countQuery)
+      .bind(...params.slice(0, -2))
+      .first();
     const total = countResult.total;
 
     // Get prompts with agent information
@@ -8046,7 +8899,10 @@ app.get("/api/projects/:id/prompts", async (c) => {
       LIMIT ? OFFSET ?
     `;
 
-    const prompts = await db.prepare(promptsQuery).bind(...params).all();
+    const prompts = await db
+      .prepare(promptsQuery)
+      .bind(...params)
+      .all();
 
     return c.json({
       prompts: prompts.results,
@@ -8054,17 +8910,19 @@ app.get("/api/projects/:id/prompts", async (c) => {
         total,
         limit,
         offset,
-        hasMore: offset + limit < total
+        hasMore: offset + limit < total,
       },
       filters: {
         type: promptType,
         agentId,
-        search
-      }
+        search,
+      },
     });
-
   } catch (error) {
-    return c.json({ error: "Failed to get prompts", details: error.message }, 500);
+    return c.json(
+      { error: "Failed to get prompts", details: error.message },
+      500,
+    );
   }
 });
 
@@ -8154,7 +9012,7 @@ app.post("/api/projects/:id/generate-from-template", async (c) => {
     variables = {},
     savePrompt = false,
     promptTitle,
-    promptNotes
+    promptNotes,
   } = body;
 
   if (!templateId) {
@@ -8163,13 +9021,19 @@ app.post("/api/projects/:id/generate-from-template", async (c) => {
 
   try {
     // Get project details
-    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
+    const project = await db
+      .prepare("SELECT * FROM projects WHERE id = ?")
+      .bind(projectId)
+      .first();
     if (!project) {
       return c.json({ error: "Project not found" }, 404);
     }
 
     // Get template
-    const template = await db.prepare('SELECT * FROM prompt_templates WHERE id = ?').bind(templateId).first();
+    const template = await db
+      .prepare("SELECT * FROM prompt_templates WHERE id = ?")
+      .bind(templateId)
+      .first();
     if (!template) {
       return c.json({ error: "Template not found" }, 404);
     }
@@ -8177,52 +9041,68 @@ app.post("/api/projects/:id/generate-from-template", async (c) => {
     // Get agent (use project primary agent if not specified)
     let agent = null;
     if (agentId) {
-      agent = await db.prepare('SELECT * FROM agents WHERE id = ? AND is_active = 1').bind(agentId).first();
+      agent = await db
+        .prepare("SELECT * FROM agents WHERE id = ? AND is_active = 1")
+        .bind(agentId)
+        .first();
     } else {
       // Get primary agent from project
-      const primaryAgentResult = await db.prepare(`
+      const primaryAgentResult = await db
+        .prepare(
+          `
         SELECT a.* FROM agents a
         JOIN project_resources pr ON pr.resource_id = a.id
         WHERE pr.project_id = ? AND pr.resource_type = 'agent' AND pr.is_primary = 1 AND a.is_active = 1
         LIMIT 1
-      `).bind(projectId).all();
-      
+      `,
+        )
+        .bind(projectId)
+        .all();
+
       if (primaryAgentResult.results.length > 0) {
         agent = primaryAgentResult.results[0];
       }
     }
 
     if (!agent) {
-      return c.json({ error: "No agent specified and no primary agent found for project" }, 400);
+      return c.json(
+        { error: "No agent specified and no primary agent found for project" },
+        400,
+      );
     }
 
     // Get project rules
-    const rulesResult = await db.prepare(`
+    const rulesResult = await db
+      .prepare(
+        `
       SELECT ar.* FROM agent_rules ar
       JOIN project_resources pr ON pr.resource_id = ar.id
       WHERE pr.project_id = ? AND pr.resource_type = 'rule' AND ar.is_active = 1
       ORDER BY pr.is_primary DESC, pr.assignment_order
-    `).bind(projectId).all();
+    `,
+      )
+      .bind(projectId)
+      .all();
 
     // Process template with variables and project context
     let processedTemplate = template.template_content;
-    
+
     // Replace project variables
     const projectVars = {
       PROJECT_NAME: project.name,
-      PROJECT_DESCRIPTION: project.description || '',
-      PROJECT_CATEGORY: project.category || '',
-      PROJECT_AI_CONTEXT: project.ai_context_summary || '',
+      PROJECT_DESCRIPTION: project.description || "",
+      PROJECT_CATEGORY: project.category || "",
+      PROJECT_AI_CONTEXT: project.ai_context_summary || "",
       AGENT_NAME: agent.name,
       AGENT_ROLE: agent.role,
-      AGENT_STYLE: agent.style || ''
+      AGENT_STYLE: agent.style || "",
     };
 
     // Replace all variables
     const allVariables = { ...projectVars, ...variables };
     Object.entries(allVariables).forEach(([key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      processedTemplate = processedTemplate.replace(regex, value || '');
+      const regex = new RegExp(`{{${key}}}`, "g");
+      processedTemplate = processedTemplate.replace(regex, value || "");
     });
 
     // Build final prompt with project context
@@ -8246,7 +9126,7 @@ app.post("/api/projects/:id/generate-from-template", async (c) => {
     // Add project rules if any
     if (rulesResult.results.length > 0) {
       finalPrompt += `<project_rules>\n`;
-      rulesResult.results.forEach(rule => {
+      rulesResult.results.forEach((rule) => {
         finalPrompt += `${rule.name}: ${rule.rule_content}\n`;
       });
       finalPrompt += `</project_rules>\n\n`;
@@ -8259,49 +9139,60 @@ app.post("/api/projects/:id/generate-from-template", async (c) => {
     let savedPrompt = null;
     if (savePrompt) {
       const promptId = generateId();
-      await db.prepare(`
+      await db
+        .prepare(
+          `
         INSERT INTO project_prompts (
           id, project_id, prompt_content, prompt_type, title, prompt_notes,
           agent_id, agent_name, context_used, constraints_used
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
-        promptId,
-        projectId,
-        finalPrompt,
-        'template_generated',
-        promptTitle || `${template.name} - ${new Date().toLocaleDateString()}`,
-        promptNotes,
-        agent.id,
-        agent.name,
-        `Template: ${template.name}`,
-        rulesResult.results.map(r => r.name).join(', ')
-      ).run();
+      `,
+        )
+        .bind(
+          promptId,
+          projectId,
+          finalPrompt,
+          "template_generated",
+          promptTitle ||
+            `${template.name} - ${new Date().toLocaleDateString()}`,
+          promptNotes,
+          agent.id,
+          agent.name,
+          `Template: ${template.name}`,
+          rulesResult.results.map((r) => r.name).join(", "),
+        )
+        .run();
 
-      savedPrompt = await db.prepare('SELECT * FROM project_prompts WHERE id = ?').bind(promptId).first();
+      savedPrompt = await db
+        .prepare("SELECT * FROM project_prompts WHERE id = ?")
+        .bind(promptId)
+        .first();
     }
 
     return c.json({
       prompt: finalPrompt,
       template: {
         id: template.id,
-        name: template.name
+        name: template.name,
       },
       project: {
         id: project.id,
-        name: project.name
+        name: project.name,
       },
       agent: {
         id: agent.id,
         name: agent.name,
-        role: agent.role
+        role: agent.role,
       },
       variablesUsed: allVariables,
       rulesApplied: rulesResult.results.length,
-      savedPrompt
+      savedPrompt,
     });
-
   } catch (error) {
-    return c.json({ error: "Template generation failed", details: error.message }, 500);
+    return c.json(
+      { error: "Template generation failed", details: error.message },
+      500,
+    );
   }
 });
 
@@ -8823,7 +9714,7 @@ app.get("/api/rule-sets/:id/projects", async (c) => {
        FROM projects p
        JOIN rule_set_projects rsp ON p.id = rsp.project_id
        WHERE rsp.rule_set_id = ?
-       ORDER BY rsp.is_primary DESC, p.name ASC`
+       ORDER BY rsp.is_primary DESC, p.name ASC`,
     )
     .bind(id)
     .all();
@@ -8859,13 +9750,17 @@ app.post("/api/rule-sets/:id/projects", async (c) => {
       await db
         .prepare(
           `INSERT OR IGNORE INTO rule_set_projects (id, rule_set_id, project_id, is_primary)
-           VALUES (?, ?, ?, ?)`
+           VALUES (?, ?, ?, ?)`,
         )
         .bind(linkId, ruleSetId, projectId, is_primary ? 1 : 0)
         .run();
       results.push({ project_id: projectId, linked: true });
     } catch (error) {
-      results.push({ project_id: projectId, linked: false, error: error.message });
+      results.push({
+        project_id: projectId,
+        linked: false,
+        error: error.message,
+      });
     }
   }
 
@@ -8879,7 +9774,9 @@ app.delete("/api/rule-sets/:id/projects/:projectId", async (c) => {
   const projectId = c.req.param("projectId");
 
   const result = await db
-    .prepare("DELETE FROM rule_set_projects WHERE rule_set_id = ? AND project_id = ?")
+    .prepare(
+      "DELETE FROM rule_set_projects WHERE rule_set_id = ? AND project_id = ?",
+    )
     .bind(ruleSetId, projectId)
     .run();
 
@@ -8901,7 +9798,7 @@ app.get("/api/projects/:id/rule-sets", async (c) => {
        FROM rule_sets rs
        JOIN rule_set_projects rsp ON rs.id = rsp.rule_set_id
        WHERE rsp.project_id = ?
-       ORDER BY rsp.is_primary DESC, rs.name ASC`
+       ORDER BY rsp.is_primary DESC, rs.name ASC`,
     )
     .bind(projectId)
     .all();
@@ -8951,8 +9848,9 @@ Rules:
 - Output ONLY the XML structure, no explanations or additional text
 - Ensure proper XML formatting with correct opening and closing tags`;
 
-  const userPrompt = context || constraints || format
-    ? `Input prompt:
+  const userPrompt =
+    context || constraints || format
+      ? `Input prompt:
 ${inputContent}
 
 Additional context provided: ${context || "None"}
@@ -8960,7 +9858,7 @@ Constraints mentioned: ${constraints || "None"}
 Output format preference: ${format || "Not specified"}
 
 Convert to structured XML:`
-    : `Input prompt:
+      : `Input prompt:
 ${inputContent}
 
 Convert to structured XML:`;
@@ -8982,13 +9880,16 @@ Convert to structured XML:`;
         context: extractXmlSection(response.response, "context"),
         instructions: extractXmlSection(response.response, "instructions"),
         constraints: extractXmlSection(response.response, "constraints"),
-        output_requirements: extractXmlSection(response.response, "output_requirements"),
+        output_requirements: extractXmlSection(
+          response.response,
+          "output_requirements",
+        ),
       },
     });
   } catch (error) {
     return c.json(
       { error: "XML conversion failed", details: error.message },
-      500
+      500,
     );
   }
 });
@@ -9034,14 +9935,15 @@ Return a JSON array with objects containing:
 
 Output ONLY valid JSON array, no explanations.`;
 
-  const userPrompt = existingRules.length > 0
-    ? `Generate 5-8 practical rules for: "${ruleName}" (${ruleSetType} format)
+  const userPrompt =
+    existingRules.length > 0
+      ? `Generate 5-8 practical rules for: "${ruleName}" (${ruleSetType} format)
 
 Existing rules to avoid duplicating:
 ${existingRules.map((r) => `- ${r.title}`).join("\n")}
 
 Generate new, complementary rules:`
-    : `Generate 5-8 practical rules for: "${ruleName}" (${ruleSetType} format)`;
+      : `Generate 5-8 practical rules for: "${ruleName}" (${ruleSetType} format)`;
 
   try {
     const response = await ai.run("@cf/meta/llama-3.1-8b-instruct", {
@@ -9070,10 +9972,13 @@ Generate new, complementary rules:`
       suggestedRules = JSON.parse(cleanResponse.trim());
     } catch (parseError) {
       // If parsing fails, return a helpful error
-      return c.json({
-        error: "Failed to parse AI response",
-        rawResponse: response.response,
-      }, 500);
+      return c.json(
+        {
+          error: "Failed to parse AI response",
+          rawResponse: response.response,
+        },
+        500,
+      );
     }
 
     return c.json({
@@ -9084,7 +9989,7 @@ Generate new, complementary rules:`
   } catch (error) {
     return c.json(
       { error: "Rule suggestion failed", details: error.message },
-      500
+      500,
     );
   }
 });
@@ -9098,88 +10003,281 @@ const BOOTSTRAP_CATEGORIES = {
   // Software Development
   "frontend-development": {
     roles: [
-      { id: "react-developer", name: "React Developer", keywords: "React, hooks, JSX, state management, Redux, Context API, component lifecycle" },
-      { id: "vue-developer", name: "Vue.js Developer", keywords: "Vue 3, Composition API, Vuex, Pinia, Vue Router, single-file components" },
-      { id: "angular-developer", name: "Angular Developer", keywords: "Angular, TypeScript, RxJS, NgRx, dependency injection, modules, services" },
-      { id: "svelte-developer", name: "Svelte Developer", keywords: "Svelte, SvelteKit, stores, reactive declarations, transitions" },
-      { id: "nextjs-developer", name: "Next.js Developer", keywords: "Next.js, SSR, SSG, ISR, API routes, App Router, Server Components" },
-      { id: "web-developer", name: "Web Developer (General)", keywords: "HTML5, CSS3, JavaScript, responsive design, accessibility, SEO" },
-      { id: "css-specialist", name: "CSS/Styling Specialist", keywords: "CSS architecture, Tailwind, Sass, CSS-in-JS, animations, responsive design" },
-    ]
+      {
+        id: "react-developer",
+        name: "React Developer",
+        keywords:
+          "React, hooks, JSX, state management, Redux, Context API, component lifecycle",
+      },
+      {
+        id: "vue-developer",
+        name: "Vue.js Developer",
+        keywords:
+          "Vue 3, Composition API, Vuex, Pinia, Vue Router, single-file components",
+      },
+      {
+        id: "angular-developer",
+        name: "Angular Developer",
+        keywords:
+          "Angular, TypeScript, RxJS, NgRx, dependency injection, modules, services",
+      },
+      {
+        id: "svelte-developer",
+        name: "Svelte Developer",
+        keywords:
+          "Svelte, SvelteKit, stores, reactive declarations, transitions",
+      },
+      {
+        id: "nextjs-developer",
+        name: "Next.js Developer",
+        keywords:
+          "Next.js, SSR, SSG, ISR, API routes, App Router, Server Components",
+      },
+      {
+        id: "web-developer",
+        name: "Web Developer (General)",
+        keywords:
+          "HTML5, CSS3, JavaScript, responsive design, accessibility, SEO",
+      },
+      {
+        id: "css-specialist",
+        name: "CSS/Styling Specialist",
+        keywords:
+          "CSS architecture, Tailwind, Sass, CSS-in-JS, animations, responsive design",
+      },
+    ],
   },
   "backend-development": {
     roles: [
-      { id: "nodejs-developer", name: "Node.js Developer", keywords: "Node.js, Express, Fastify, NestJS, async/await, streams, event loop" },
-      { id: "python-developer", name: "Python Developer", keywords: "Python, FastAPI, Django, Flask, asyncio, type hints, virtual environments" },
-      { id: "go-developer", name: "Go Developer", keywords: "Go, goroutines, channels, interfaces, error handling, standard library" },
-      { id: "rust-developer", name: "Rust Developer", keywords: "Rust, ownership, borrowing, lifetimes, cargo, traits, async Rust" },
-      { id: "java-developer", name: "Java Developer", keywords: "Java, Spring Boot, Maven, Gradle, JPA, microservices, streams API" },
-      { id: "csharp-developer", name: "C#/.NET Developer", keywords: "C#, .NET Core, ASP.NET, Entity Framework, LINQ, dependency injection" },
-      { id: "ruby-developer", name: "Ruby Developer", keywords: "Ruby, Rails, RSpec, ActiveRecord, gems, metaprogramming" },
-      { id: "php-developer", name: "PHP Developer", keywords: "PHP 8, Laravel, Symfony, Composer, PSR standards, modern PHP" },
-    ]
+      {
+        id: "nodejs-developer",
+        name: "Node.js Developer",
+        keywords:
+          "Node.js, Express, Fastify, NestJS, async/await, streams, event loop",
+      },
+      {
+        id: "python-developer",
+        name: "Python Developer",
+        keywords:
+          "Python, FastAPI, Django, Flask, asyncio, type hints, virtual environments",
+      },
+      {
+        id: "go-developer",
+        name: "Go Developer",
+        keywords:
+          "Go, goroutines, channels, interfaces, error handling, standard library",
+      },
+      {
+        id: "rust-developer",
+        name: "Rust Developer",
+        keywords:
+          "Rust, ownership, borrowing, lifetimes, cargo, traits, async Rust",
+      },
+      {
+        id: "java-developer",
+        name: "Java Developer",
+        keywords:
+          "Java, Spring Boot, Maven, Gradle, JPA, microservices, streams API",
+      },
+      {
+        id: "csharp-developer",
+        name: "C#/.NET Developer",
+        keywords:
+          "C#, .NET Core, ASP.NET, Entity Framework, LINQ, dependency injection",
+      },
+      {
+        id: "ruby-developer",
+        name: "Ruby Developer",
+        keywords: "Ruby, Rails, RSpec, ActiveRecord, gems, metaprogramming",
+      },
+      {
+        id: "php-developer",
+        name: "PHP Developer",
+        keywords:
+          "PHP 8, Laravel, Symfony, Composer, PSR standards, modern PHP",
+      },
+    ],
   },
   "mobile-development": {
     roles: [
-      { id: "react-native-developer", name: "React Native Developer", keywords: "React Native, Expo, native modules, navigation, state management" },
-      { id: "flutter-developer", name: "Flutter Developer", keywords: "Flutter, Dart, widgets, state management, platform channels" },
-      { id: "ios-developer", name: "iOS Developer", keywords: "Swift, SwiftUI, UIKit, Core Data, Combine, App Store guidelines" },
-      { id: "android-developer", name: "Android Developer", keywords: "Kotlin, Jetpack Compose, Android SDK, Room, Coroutines" },
-    ]
+      {
+        id: "react-native-developer",
+        name: "React Native Developer",
+        keywords:
+          "React Native, Expo, native modules, navigation, state management",
+      },
+      {
+        id: "flutter-developer",
+        name: "Flutter Developer",
+        keywords: "Flutter, Dart, widgets, state management, platform channels",
+      },
+      {
+        id: "ios-developer",
+        name: "iOS Developer",
+        keywords:
+          "Swift, SwiftUI, UIKit, Core Data, Combine, App Store guidelines",
+      },
+      {
+        id: "android-developer",
+        name: "Android Developer",
+        keywords: "Kotlin, Jetpack Compose, Android SDK, Room, Coroutines",
+      },
+    ],
   },
   "cloud-infrastructure": {
     roles: [
-      { id: "aws-engineer", name: "AWS Engineer", keywords: "AWS, Lambda, EC2, S3, RDS, CloudFormation, IAM, VPC" },
-      { id: "azure-engineer", name: "Azure Engineer", keywords: "Azure, Functions, App Service, Cosmos DB, ARM templates, AKS" },
-      { id: "gcp-engineer", name: "GCP Engineer", keywords: "Google Cloud, Cloud Functions, GKE, BigQuery, Firestore, Pub/Sub" },
-      { id: "cloudflare-developer", name: "Cloudflare Developer", keywords: "Cloudflare Workers, D1, R2, KV, Durable Objects, Pages" },
-      { id: "devops-engineer", name: "DevOps Engineer", keywords: "CI/CD, Docker, Kubernetes, Terraform, monitoring, GitOps" },
-      { id: "sre-engineer", name: "Site Reliability Engineer", keywords: "SRE, observability, incident response, SLOs, chaos engineering" },
-      { id: "platform-engineer", name: "Platform Engineer", keywords: "Platform engineering, developer experience, internal tools, IaC" },
-    ]
+      {
+        id: "aws-engineer",
+        name: "AWS Engineer",
+        keywords: "AWS, Lambda, EC2, S3, RDS, CloudFormation, IAM, VPC",
+      },
+      {
+        id: "azure-engineer",
+        name: "Azure Engineer",
+        keywords:
+          "Azure, Functions, App Service, Cosmos DB, ARM templates, AKS",
+      },
+      {
+        id: "gcp-engineer",
+        name: "GCP Engineer",
+        keywords:
+          "Google Cloud, Cloud Functions, GKE, BigQuery, Firestore, Pub/Sub",
+      },
+      {
+        id: "cloudflare-developer",
+        name: "Cloudflare Developer",
+        keywords: "Cloudflare Workers, D1, R2, KV, Durable Objects, Pages",
+      },
+      {
+        id: "devops-engineer",
+        name: "DevOps Engineer",
+        keywords: "CI/CD, Docker, Kubernetes, Terraform, monitoring, GitOps",
+      },
+      {
+        id: "sre-engineer",
+        name: "Site Reliability Engineer",
+        keywords:
+          "SRE, observability, incident response, SLOs, chaos engineering",
+      },
+      {
+        id: "platform-engineer",
+        name: "Platform Engineer",
+        keywords:
+          "Platform engineering, developer experience, internal tools, IaC",
+      },
+    ],
   },
   "data-ai": {
     roles: [
-      { id: "data-scientist", name: "Data Scientist", keywords: "Python, pandas, scikit-learn, statistical analysis, feature engineering" },
-      { id: "ml-engineer", name: "Machine Learning Engineer", keywords: "ML pipelines, model deployment, MLOps, TensorFlow, PyTorch" },
-      { id: "data-engineer", name: "Data Engineer", keywords: "ETL, data pipelines, Spark, Airflow, data warehousing, dbt" },
-      { id: "ai-engineer", name: "AI/LLM Engineer", keywords: "LLMs, prompt engineering, RAG, fine-tuning, embeddings, vector databases" },
-      { id: "analytics-engineer", name: "Analytics Engineer", keywords: "dbt, SQL, data modeling, metrics, dashboards, data quality" },
-    ]
+      {
+        id: "data-scientist",
+        name: "Data Scientist",
+        keywords:
+          "Python, pandas, scikit-learn, statistical analysis, feature engineering",
+      },
+      {
+        id: "ml-engineer",
+        name: "Machine Learning Engineer",
+        keywords: "ML pipelines, model deployment, MLOps, TensorFlow, PyTorch",
+      },
+      {
+        id: "data-engineer",
+        name: "Data Engineer",
+        keywords: "ETL, data pipelines, Spark, Airflow, data warehousing, dbt",
+      },
+      {
+        id: "ai-engineer",
+        name: "AI/LLM Engineer",
+        keywords:
+          "LLMs, prompt engineering, RAG, fine-tuning, embeddings, vector databases",
+      },
+      {
+        id: "analytics-engineer",
+        name: "Analytics Engineer",
+        keywords: "dbt, SQL, data modeling, metrics, dashboards, data quality",
+      },
+    ],
   },
-  "security": {
+  security: {
     roles: [
-      { id: "security-engineer", name: "Security Engineer", keywords: "AppSec, OWASP, penetration testing, security audits, threat modeling" },
-      { id: "devsecops-engineer", name: "DevSecOps Engineer", keywords: "Security automation, SAST, DAST, dependency scanning, secrets management" },
-    ]
+      {
+        id: "security-engineer",
+        name: "Security Engineer",
+        keywords:
+          "AppSec, OWASP, penetration testing, security audits, threat modeling",
+      },
+      {
+        id: "devsecops-engineer",
+        name: "DevSecOps Engineer",
+        keywords:
+          "Security automation, SAST, DAST, dependency scanning, secrets management",
+      },
+    ],
   },
-  "specialized": {
+  specialized: {
     roles: [
-      { id: "api-developer", name: "API Developer", keywords: "REST, GraphQL, OpenAPI, API design, versioning, rate limiting" },
-      { id: "database-administrator", name: "Database Administrator", keywords: "SQL, PostgreSQL, MySQL, MongoDB, query optimization, replication" },
-      { id: "blockchain-developer", name: "Blockchain Developer", keywords: "Solidity, smart contracts, Web3, DeFi, EVM, security" },
-      { id: "game-developer", name: "Game Developer", keywords: "Unity, Unreal, game loops, physics, shaders, optimization" },
-      { id: "embedded-developer", name: "Embedded Systems Developer", keywords: "C, C++, microcontrollers, RTOS, hardware interfaces" },
-      { id: "qa-engineer", name: "QA/Test Engineer", keywords: "Testing strategies, automation, Cypress, Playwright, test design" },
-      { id: "technical-writer", name: "Technical Writer", keywords: "Documentation, API docs, tutorials, style guides, markdown" },
-    ]
-  }
+      {
+        id: "api-developer",
+        name: "API Developer",
+        keywords:
+          "REST, GraphQL, OpenAPI, API design, versioning, rate limiting",
+      },
+      {
+        id: "database-administrator",
+        name: "Database Administrator",
+        keywords:
+          "SQL, PostgreSQL, MySQL, MongoDB, query optimization, replication",
+      },
+      {
+        id: "blockchain-developer",
+        name: "Blockchain Developer",
+        keywords: "Solidity, smart contracts, Web3, DeFi, EVM, security",
+      },
+      {
+        id: "game-developer",
+        name: "Game Developer",
+        keywords: "Unity, Unreal, game loops, physics, shaders, optimization",
+      },
+      {
+        id: "embedded-developer",
+        name: "Embedded Systems Developer",
+        keywords: "C, C++, microcontrollers, RTOS, hardware interfaces",
+      },
+      {
+        id: "qa-engineer",
+        name: "QA/Test Engineer",
+        keywords:
+          "Testing strategies, automation, Cypress, Playwright, test design",
+      },
+      {
+        id: "technical-writer",
+        name: "Technical Writer",
+        keywords: "Documentation, API docs, tutorials, style guides, markdown",
+      },
+    ],
+  },
 };
 
 // Flatten categories into a single list for easy lookup
-const ALL_BOOTSTRAP_ROLES = Object.values(BOOTSTRAP_CATEGORIES)
-  .flatMap(cat => cat.roles);
+const ALL_BOOTSTRAP_ROLES = Object.values(BOOTSTRAP_CATEGORIES).flatMap(
+  (cat) => cat.roles,
+);
 
 app.get("/api/ai/bootstrap-templates", async (c) => {
   // Return categorized list of all available templates
-  const categorized = Object.entries(BOOTSTRAP_CATEGORIES).map(([categoryId, category]) => ({
-    id: categoryId,
-    name: categoryId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-    roles: category.roles.map(r => ({
-      id: r.id,
-      name: r.name,
-    }))
-  }));
+  const categorized = Object.entries(BOOTSTRAP_CATEGORIES).map(
+    ([categoryId, category]) => ({
+      id: categoryId,
+      name: categoryId
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" "),
+      roles: category.roles.map((r) => ({
+        id: r.id,
+        name: r.name,
+      })),
+    }),
+  );
 
   return c.json({
     categories: categorized,
@@ -9194,14 +10292,19 @@ app.post("/api/ai/bootstrap-rules", async (c) => {
 
   // If no templateType, return available templates
   if (!templateType && !customRole) {
-    const categorized = Object.entries(BOOTSTRAP_CATEGORIES).map(([categoryId, category]) => ({
-      id: categoryId,
-      name: categoryId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-      roles: category.roles.map(r => ({
-        id: r.id,
-        name: r.name,
-      }))
-    }));
+    const categorized = Object.entries(BOOTSTRAP_CATEGORIES).map(
+      ([categoryId, category]) => ({
+        id: categoryId,
+        name: categoryId
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" "),
+        roles: category.roles.map((r) => ({
+          id: r.id,
+          name: r.name,
+        })),
+      }),
+    );
 
     return c.json({
       categories: categorized,
@@ -9220,7 +10323,7 @@ app.post("/api/ai/bootstrap-rules", async (c) => {
   let roleKeywords = "";
 
   if (templateType) {
-    roleInfo = ALL_BOOTSTRAP_ROLES.find(r => r.id === templateType);
+    roleInfo = ALL_BOOTSTRAP_ROLES.find((r) => r.id === templateType);
     if (roleInfo) {
       roleName = roleInfo.name;
       roleKeywords = roleInfo.keywords;
@@ -9309,10 +10412,13 @@ Research and include rules covering the most important technologies, patterns, a
       result = JSON.parse(cleanResponse.trim());
     } catch (parseError) {
       console.error("Failed to parse AI response:", response.response);
-      return c.json({
-        error: "Failed to parse AI-generated rules",
-        rawResponse: response.response,
-      }, 500);
+      return c.json(
+        {
+          error: "Failed to parse AI-generated rules",
+          rawResponse: response.response,
+        },
+        500,
+      );
     }
 
     // Validate and normalize the result
@@ -9324,7 +10430,9 @@ Research and include rules covering the most important technologies, patterns, a
     result.rules = result.rules.map((rule, index) => ({
       title: rule.title || `Rule ${index + 1}`,
       content: rule.content || "",
-      priority: ["high", "medium", "low"].includes(rule.priority) ? rule.priority : "medium",
+      priority: ["high", "medium", "low"].includes(rule.priority)
+        ? rule.priority
+        : "medium",
       arguments: Array.isArray(rule.arguments) ? rule.arguments : [],
     }));
 
@@ -9332,7 +10440,8 @@ Research and include rules covering the most important technologies, patterns, a
       template: {
         id: templateType || customRole.toLowerCase().replace(/\s+/g, "-"),
         name: result.name || roleName,
-        description: result.description || `Comprehensive rules for ${roleName}`,
+        description:
+          result.description || `Comprehensive rules for ${roleName}`,
         rules: result.rules,
         generatedAt: new Date().toISOString(),
         isAIGenerated: true,
@@ -9342,7 +10451,7 @@ Research and include rules covering the most important technologies, patterns, a
     console.error("Bootstrap generation error:", error);
     return c.json(
       { error: "Failed to generate bootstrap rules", details: error.message },
-      500
+      500,
     );
   }
 });
@@ -9390,7 +10499,10 @@ app.post("/api/export/claude-md-enhanced", async (c) => {
     };
     rules = providedRules;
   } else {
-    return c.json({ error: "Either ruleSetId or rules array is required" }, 400);
+    return c.json(
+      { error: "Either ruleSetId or rules array is required" },
+      400,
+    );
   }
   let content = "";
 
@@ -9404,7 +10516,9 @@ app.post("/api/export/claude-md-enhanced", async (c) => {
   let projectContext = null;
   if (includeProjectContext && projectId) {
     const project = await db
-      .prepare("SELECT name, description, ai_context_summary FROM projects WHERE id = ?")
+      .prepare(
+        "SELECT name, description, ai_context_summary FROM projects WHERE id = ?",
+      )
       .bind(projectId)
       .first();
 
@@ -9481,7 +10595,10 @@ app.get("/api/hooks", async (c) => {
 
   query += " ORDER BY sort_order ASC, created_at DESC";
 
-  const result = await db.prepare(query).bind(...params).all();
+  const result = await db
+    .prepare(query)
+    .bind(...params)
+    .all();
 
   // Parse tool_matcher JSON for each hook
   const hooks = (result.results || []).map((hook) => ({
@@ -9497,7 +10614,10 @@ app.get("/api/hooks/:id", async (c) => {
   const db = c.env.DB;
   const id = c.req.param("id");
 
-  const hook = await db.prepare("SELECT * FROM hooks WHERE id = ?").bind(id).first();
+  const hook = await db
+    .prepare("SELECT * FROM hooks WHERE id = ?")
+    .bind(id)
+    .first();
 
   if (!hook) {
     return c.json({ error: "Hook not found" }, 404);
@@ -9531,9 +10651,18 @@ app.post("/api/hooks", async (c) => {
     return c.json({ error: "name, hook_type, and command are required" }, 400);
   }
 
-  const validHookTypes = ["PreToolUse", "PostToolUse", "Notification", "Stop", "SubagentStop"];
+  const validHookTypes = [
+    "PreToolUse",
+    "PostToolUse",
+    "Notification",
+    "Stop",
+    "SubagentStop",
+  ];
   if (!validHookTypes.includes(hook_type)) {
-    return c.json({ error: `hook_type must be one of: ${validHookTypes.join(", ")}` }, 400);
+    return c.json(
+      { error: `hook_type must be one of: ${validHookTypes.join(", ")}` },
+      400,
+    );
   }
 
   const id = generateId();
@@ -9542,24 +10671,39 @@ app.post("/api/hooks", async (c) => {
   await db
     .prepare(
       `INSERT INTO hooks (id, project_id, name, description, hook_type, tool_matcher, command, working_directory, timeout_ms, is_enabled, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .bind(id, project_id || null, name, description || null, hook_type, toolMatcherJson, command, working_directory || null, timeout_ms, is_enabled ? 1 : 0, sort_order)
+    .bind(
+      id,
+      project_id || null,
+      name,
+      description || null,
+      hook_type,
+      toolMatcherJson,
+      command,
+      working_directory || null,
+      timeout_ms,
+      is_enabled ? 1 : 0,
+      sort_order,
+    )
     .run();
 
-  return c.json({
-    id,
-    project_id,
-    name,
-    description,
-    hook_type,
-    tool_matcher,
-    command,
-    working_directory,
-    timeout_ms,
-    is_enabled,
-    sort_order,
-  }, 201);
+  return c.json(
+    {
+      id,
+      project_id,
+      name,
+      description,
+      hook_type,
+      tool_matcher,
+      command,
+      working_directory,
+      timeout_ms,
+      is_enabled,
+      sort_order,
+    },
+    201,
+  );
 });
 
 // Update a hook
@@ -9568,7 +10712,10 @@ app.put("/api/hooks/:id", async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
 
-  const existing = await db.prepare("SELECT id FROM hooks WHERE id = ?").bind(id).first();
+  const existing = await db
+    .prepare("SELECT id FROM hooks WHERE id = ?")
+    .bind(id)
+    .first();
   if (!existing) {
     return c.json({ error: "Hook not found" }, 404);
   }
@@ -9585,21 +10732,49 @@ app.put("/api/hooks/:id", async (c) => {
     sort_order,
   } = body;
 
-  const toolMatcherJson = tool_matcher !== undefined ? JSON.stringify(tool_matcher) : undefined;
+  const toolMatcherJson =
+    tool_matcher !== undefined ? JSON.stringify(tool_matcher) : undefined;
 
   // Build dynamic update query
   const updates = [];
   const values = [];
 
-  if (name !== undefined) { updates.push("name = ?"); values.push(name); }
-  if (description !== undefined) { updates.push("description = ?"); values.push(description); }
-  if (hook_type !== undefined) { updates.push("hook_type = ?"); values.push(hook_type); }
-  if (toolMatcherJson !== undefined) { updates.push("tool_matcher = ?"); values.push(toolMatcherJson); }
-  if (command !== undefined) { updates.push("command = ?"); values.push(command); }
-  if (working_directory !== undefined) { updates.push("working_directory = ?"); values.push(working_directory); }
-  if (timeout_ms !== undefined) { updates.push("timeout_ms = ?"); values.push(timeout_ms); }
-  if (is_enabled !== undefined) { updates.push("is_enabled = ?"); values.push(is_enabled ? 1 : 0); }
-  if (sort_order !== undefined) { updates.push("sort_order = ?"); values.push(sort_order); }
+  if (name !== undefined) {
+    updates.push("name = ?");
+    values.push(name);
+  }
+  if (description !== undefined) {
+    updates.push("description = ?");
+    values.push(description);
+  }
+  if (hook_type !== undefined) {
+    updates.push("hook_type = ?");
+    values.push(hook_type);
+  }
+  if (toolMatcherJson !== undefined) {
+    updates.push("tool_matcher = ?");
+    values.push(toolMatcherJson);
+  }
+  if (command !== undefined) {
+    updates.push("command = ?");
+    values.push(command);
+  }
+  if (working_directory !== undefined) {
+    updates.push("working_directory = ?");
+    values.push(working_directory);
+  }
+  if (timeout_ms !== undefined) {
+    updates.push("timeout_ms = ?");
+    values.push(timeout_ms);
+  }
+  if (is_enabled !== undefined) {
+    updates.push("is_enabled = ?");
+    values.push(is_enabled ? 1 : 0);
+  }
+  if (sort_order !== undefined) {
+    updates.push("sort_order = ?");
+    values.push(sort_order);
+  }
 
   updates.push("updated_at = CURRENT_TIMESTAMP");
   values.push(id);
@@ -9617,7 +10792,10 @@ app.delete("/api/hooks/:id", async (c) => {
   const db = c.env.DB;
   const id = c.req.param("id");
 
-  const result = await db.prepare("DELETE FROM hooks WHERE id = ?").bind(id).run();
+  const result = await db
+    .prepare("DELETE FROM hooks WHERE id = ?")
+    .bind(id)
+    .run();
 
   if (result.meta.changes === 0) {
     return c.json({ error: "Hook not found" }, 404);
@@ -9641,7 +10819,10 @@ app.get("/api/hook-templates", async (c) => {
 
   query += " ORDER BY category, name";
 
-  const result = await db.prepare(query).bind(...params).all();
+  const result = await db
+    .prepare(query)
+    .bind(...params)
+    .all();
 
   const templates = (result.results || []).map((t) => ({
     ...t,
@@ -9671,7 +10852,10 @@ app.get("/api/agents", async (c) => {
 
   query += " ORDER BY category, display_name";
 
-  const result = await db.prepare(query).bind(...params).all();
+  const result = await db
+    .prepare(query)
+    .bind(...params)
+    .all();
 
   const agents = (result.results || []).map((agent) => ({
     ...agent,
@@ -9686,7 +10870,10 @@ app.get("/api/agents/:id", async (c) => {
   const db = c.env.DB;
   const id = c.req.param("id");
 
-  const agent = await db.prepare("SELECT * FROM custom_agents WHERE id = ?").bind(id).first();
+  const agent = await db
+    .prepare("SELECT * FROM custom_agents WHERE id = ?")
+    .bind(id)
+    .first();
 
   if (!agent) {
     return c.json({ error: "Agent not found" }, 404);
@@ -9722,7 +10909,13 @@ app.post("/api/agents", async (c) => {
   // Validate name format (should be slug-like for filename)
   const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   if (!slugRegex.test(name)) {
-    return c.json({ error: "name must be lowercase with hyphens only (e.g., 'review-pr', 'write-tests')" }, 400);
+    return c.json(
+      {
+        error:
+          "name must be lowercase with hyphens only (e.g., 'review-pr', 'write-tests')",
+      },
+      400,
+    );
   }
 
   const id = generateId();
@@ -9731,23 +10924,37 @@ app.post("/api/agents", async (c) => {
   await db
     .prepare(
       `INSERT INTO custom_agents (id, project_id, name, display_name, description, prompt_content, agent_config, icon, category, is_enabled)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .bind(id, project_id || null, name, display_name || name, description || null, prompt_content, agentConfigJson, icon, category, is_enabled ? 1 : 0)
+    .bind(
+      id,
+      project_id || null,
+      name,
+      display_name || name,
+      description || null,
+      prompt_content,
+      agentConfigJson,
+      icon,
+      category,
+      is_enabled ? 1 : 0,
+    )
     .run();
 
-  return c.json({
-    id,
-    project_id,
-    name,
-    display_name: display_name || name,
-    description,
-    prompt_content,
-    agent_config,
-    icon,
-    category,
-    is_enabled,
-  }, 201);
+  return c.json(
+    {
+      id,
+      project_id,
+      name,
+      display_name: display_name || name,
+      description,
+      prompt_content,
+      agent_config,
+      icon,
+      category,
+      is_enabled,
+    },
+    201,
+  );
 });
 
 // Update an agent
@@ -9756,7 +10963,10 @@ app.put("/api/agents/:id", async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
 
-  const existing = await db.prepare("SELECT id FROM custom_agents WHERE id = ?").bind(id).first();
+  const existing = await db
+    .prepare("SELECT id FROM custom_agents WHERE id = ?")
+    .bind(id)
+    .first();
   if (!existing) {
     return c.json({ error: "Agent not found" }, 404);
   }
@@ -9772,20 +10982,45 @@ app.put("/api/agents/:id", async (c) => {
     is_enabled,
   } = body;
 
-  const agentConfigJson = agent_config !== undefined ? JSON.stringify(agent_config) : undefined;
+  const agentConfigJson =
+    agent_config !== undefined ? JSON.stringify(agent_config) : undefined;
 
   // Build dynamic update query
   const updates = [];
   const values = [];
 
-  if (name !== undefined) { updates.push("name = ?"); values.push(name); }
-  if (display_name !== undefined) { updates.push("display_name = ?"); values.push(display_name); }
-  if (description !== undefined) { updates.push("description = ?"); values.push(description); }
-  if (prompt_content !== undefined) { updates.push("prompt_content = ?"); values.push(prompt_content); }
-  if (agentConfigJson !== undefined) { updates.push("agent_config = ?"); values.push(agentConfigJson); }
-  if (icon !== undefined) { updates.push("icon = ?"); values.push(icon); }
-  if (category !== undefined) { updates.push("category = ?"); values.push(category); }
-  if (is_enabled !== undefined) { updates.push("is_enabled = ?"); values.push(is_enabled ? 1 : 0); }
+  if (name !== undefined) {
+    updates.push("name = ?");
+    values.push(name);
+  }
+  if (display_name !== undefined) {
+    updates.push("display_name = ?");
+    values.push(display_name);
+  }
+  if (description !== undefined) {
+    updates.push("description = ?");
+    values.push(description);
+  }
+  if (prompt_content !== undefined) {
+    updates.push("prompt_content = ?");
+    values.push(prompt_content);
+  }
+  if (agentConfigJson !== undefined) {
+    updates.push("agent_config = ?");
+    values.push(agentConfigJson);
+  }
+  if (icon !== undefined) {
+    updates.push("icon = ?");
+    values.push(icon);
+  }
+  if (category !== undefined) {
+    updates.push("category = ?");
+    values.push(category);
+  }
+  if (is_enabled !== undefined) {
+    updates.push("is_enabled = ?");
+    values.push(is_enabled ? 1 : 0);
+  }
 
   updates.push("updated_at = CURRENT_TIMESTAMP");
   values.push(id);
@@ -9803,7 +11038,10 @@ app.delete("/api/agents/:id", async (c) => {
   const db = c.env.DB;
   const id = c.req.param("id");
 
-  const result = await db.prepare("DELETE FROM custom_agents WHERE id = ?").bind(id).run();
+  const result = await db
+    .prepare("DELETE FROM custom_agents WHERE id = ?")
+    .bind(id)
+    .run();
 
   if (result.meta.changes === 0) {
     return c.json({ error: "Agent not found" }, 404);
@@ -9827,7 +11065,10 @@ app.get("/api/agent-templates", async (c) => {
 
   query += " ORDER BY category, display_name";
 
-  const result = await db.prepare(query).bind(...params).all();
+  const result = await db
+    .prepare(query)
+    .bind(...params)
+    .all();
 
   const templates = (result.results || []).map((t) => ({
     ...t,
@@ -9846,7 +11087,11 @@ app.post("/api/projects/:id/export-claude-config", async (c) => {
   const db = c.env.DB;
   const projectId = c.req.param("id");
   const body = await c.req.json().catch(() => ({}));
-  const { includeRules = true, includeHooks = true, includeAgents = true } = body;
+  const {
+    includeRules = true,
+    includeHooks = true,
+    includeAgents = true,
+  } = body;
 
   // Get project
   const project = await db
@@ -9863,7 +11108,9 @@ app.post("/api/projects/:id/export-claude-config", async (c) => {
   // Export hooks to settings.json
   if (includeHooks) {
     const hooksResult = await db
-      .prepare("SELECT * FROM hooks WHERE project_id = ? AND is_enabled = 1 ORDER BY sort_order")
+      .prepare(
+        "SELECT * FROM hooks WHERE project_id = ? AND is_enabled = 1 ORDER BY sort_order",
+      )
       .bind(projectId)
       .all();
 
@@ -9871,7 +11118,7 @@ app.post("/api/projects/:id/export-claude-config", async (c) => {
 
     if (hooks.length > 0) {
       const settingsJson = {
-        hooks: {}
+        hooks: {},
       };
 
       // Group hooks by type
@@ -9902,14 +11149,20 @@ app.post("/api/projects/:id/export-claude-config", async (c) => {
         settingsJson.hooks[hookType].push(hookConfig);
       }
 
-      exportFiles[".claude/settings.json"] = JSON.stringify(settingsJson, null, 2);
+      exportFiles[".claude/settings.json"] = JSON.stringify(
+        settingsJson,
+        null,
+        2,
+      );
     }
   }
 
   // Export custom agents/commands
   if (includeAgents) {
     const agentsResult = await db
-      .prepare("SELECT * FROM custom_agents WHERE project_id = ? AND is_enabled = 1")
+      .prepare(
+        "SELECT * FROM custom_agents WHERE project_id = ? AND is_enabled = 1",
+      )
       .bind(projectId)
       .all();
 
@@ -9927,7 +11180,7 @@ app.post("/api/projects/:id/export-claude-config", async (c) => {
       .prepare(
         `SELECT rs.* FROM rule_sets rs
          JOIN rule_set_projects rsp ON rs.id = rsp.rule_set_id
-         WHERE rsp.project_id = ?`
+         WHERE rsp.project_id = ?`,
       )
       .bind(projectId)
       .all();
@@ -9953,9 +11206,9 @@ app.post("/api/projects/:id/export-claude-config", async (c) => {
         }
 
         // Group by priority
-        const highRules = rules.filter(r => r.priority === "high");
-        const mediumRules = rules.filter(r => r.priority === "medium");
-        const lowRules = rules.filter(r => r.priority === "low");
+        const highRules = rules.filter((r) => r.priority === "high");
+        const mediumRules = rules.filter((r) => r.priority === "medium");
+        const lowRules = rules.filter((r) => r.priority === "low");
 
         if (highRules.length > 0) {
           claudeMdContent += `### Critical Rules\n\n`;
@@ -10080,7 +11333,9 @@ app.get("/hooks", async (c) => {
 
 // Clean URL: /agents -> agents.html
 app.get("/agents", async (c) => {
-  const htmlRequest = new Request(new URL("/agents.html", c.req.url).toString());
+  const htmlRequest = new Request(
+    new URL("/agents.html", c.req.url).toString(),
+  );
   const response = await c.env.ASSETS.fetch(htmlRequest);
   const newResponse = new Response(response.body, response);
   newResponse.headers.set(
@@ -10118,6 +11373,14 @@ app.get("*", async (c) => {
 });
 
 // Export classes for testing
-export { ProjectManager, ResourceManager, AIEnhancementEngine, ClaudeCodeExporter, ProjectValidator, PlatformDetectionEngine, TemplateSuggestionService };
+export {
+  ProjectManager,
+  ResourceManager,
+  AIEnhancementEngine,
+  ClaudeCodeExporter,
+  ProjectValidator,
+  PlatformDetectionEngine,
+  TemplateSuggestionService,
+};
 
 export default app;

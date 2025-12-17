@@ -1,0 +1,296 @@
+---
+// PWA Status Component
+// Shows online/offline status and handles update notifications
+---
+
+<div id="pwa-status" class="pwa-status">
+  <div id="online-indicator" class="status-indicator online">
+    <span class="status-dot"></span>
+    <span class="status-text">Online</span>
+  </div>
+  
+  <div id="update-notification" class="update-notification hidden">
+    <span class="update-text">Update available</span>
+    <button id="update-button" class="update-button">Update</button>
+    <button id="dismiss-button" class="dismiss-button">×</button>
+  </div>
+  
+  <div id="cache-info" class="cache-info hidden">
+    <div class="cache-details">
+      <span id="cache-size" class="cache-size">Cache: 0 KB</span>
+      <span id="cache-entries" class="cache-entries">0 items</span>
+    </div>
+    <button id="clear-cache-button" class="clear-cache-button">Clear Cache</button>
+  </div>
+</div>
+
+<style>
+  .pwa-status {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .status-indicator.online {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: rgb(34, 197, 94);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .status-indicator.offline {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: rgb(239, 68, 68);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: currentColor;
+    animation: pulse 2s infinite;
+  }
+
+  .update-notification {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: rgba(59, 130, 246, 0.1);
+    color: rgb(59, 130, 246);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .update-notification.hidden {
+    display: none;
+  }
+
+  .update-button {
+    padding: 0.25rem 0.75rem;
+    background-color: rgb(59, 130, 246);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .update-button:hover {
+    background-color: rgb(37, 99, 235);
+  }
+
+  .dismiss-button {
+    padding: 0.25rem 0.5rem;
+    background: none;
+    border: none;
+    color: currentColor;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  .dismiss-button:hover {
+    opacity: 1;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .cache-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(34, 211, 153, 0.1);
+    color: rgb(34, 211, 153);
+    border: 1px solid rgba(34, 211, 153, 0.2);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .cache-info.hidden {
+    display: none;
+  }
+
+  .cache-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cache-size,
+  .cache-entries {
+    font-size: 0.7rem;
+    opacity: 0.8;
+  }
+
+  .clear-cache-button {
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(34, 211, 153, 0.2);
+    color: rgb(34, 211, 153);
+    border: 1px solid rgba(34, 211, 153, 0.3);
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .clear-cache-button:hover {
+    background-color: rgba(34, 211, 153, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .pwa-status {
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+    
+    .status-indicator,
+    .update-notification,
+    .cache-info {
+      font-size: 0.75rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  import { pwaManager } from '../scripts/pwa.ts';
+
+  // Get DOM elements
+  const onlineIndicator = document.getElementById('online-indicator');
+  const updateNotification = document.getElementById('update-notification');
+  const updateButton = document.getElementById('update-button');
+  const dismissButton = document.getElementById('dismiss-button');
+  const cacheInfo = document.getElementById('cache-info');
+  const cacheSize = document.getElementById('cache-size');
+  const cacheEntries = document.getElementById('cache-entries');
+  const clearCacheButton = document.getElementById('clear-cache-button');
+
+  // Update online/offline status
+  function updateOnlineStatus(isOnline: boolean) {
+    if (onlineIndicator) {
+      onlineIndicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+      onlineIndicator.querySelector('.status-text')!.textContent = isOnline ? 'Online' : 'Offline';
+    }
+  }
+
+  // Show update notification
+  function showUpdateNotification() {
+    if (updateNotification) {
+      updateNotification.classList.remove('hidden');
+    }
+  }
+
+  // Hide update notification
+  function hideUpdateNotification() {
+    if (updateNotification) {
+      updateNotification.classList.add('hidden');
+    }
+  }
+
+  // Update cache information
+  async function updateCacheInfo() {
+    try {
+      const info = await pwaManager.getCacheInfo();
+      if (cacheSize && cacheEntries) {
+        const sizeKB = Math.round(info.size / 1024);
+        cacheSize.textContent = `Cache: ${sizeKB} KB`;
+        cacheEntries.textContent = `${info.entries} items`;
+        
+        // Show cache info if there's cached data
+        if (info.entries > 0 && cacheInfo) {
+          cacheInfo.classList.remove('hidden');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get cache info:', error);
+    }
+  }
+
+  // Clear cache
+  async function clearCache() {
+    try {
+      await pwaManager.clearCaches();
+      await updateCacheInfo();
+      // Hide cache info after clearing
+      if (cacheInfo) {
+        cacheInfo.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('Failed to clear cache:', error);
+    }
+  }
+
+  // Initialize PWA status
+  function initializePWAStatus() {
+    // Set initial online status
+    updateOnlineStatus(pwaManager.getOnlineStatus());
+
+    // Listen for PWA events
+    pwaManager.on('online', () => updateOnlineStatus(true));
+    pwaManager.on('offline', () => updateOnlineStatus(false));
+    pwaManager.on('update-available', showUpdateNotification);
+    pwaManager.on('update-ready', () => {
+      // Reload the page when update is ready
+      window.location.reload();
+    });
+
+    // Handle update button click
+    if (updateButton) {
+      updateButton.addEventListener('click', async () => {
+        await pwaManager.activateUpdate();
+        hideUpdateNotification();
+      });
+    }
+
+    // Handle dismiss button click
+    if (dismissButton) {
+      dismissButton.addEventListener('click', hideUpdateNotification);
+    }
+
+    // Handle clear cache button click
+    if (clearCacheButton) {
+      clearCacheButton.addEventListener('click', clearCache);
+    }
+
+    // Update cache info periodically
+    updateCacheInfo();
+    setInterval(updateCacheInfo, 30000); // Update every 30 seconds
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePWAStatus);
+  } else {
+    initializePWAStatus();
+  }
+</script>

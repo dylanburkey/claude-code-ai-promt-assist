@@ -1,0 +1,773 @@
+---
+// DEPRECATED: This component has been replaced by SimplePromptBuilder.astro
+// This file is kept for reference but should not be used in production
+// Use SimplePromptBuilder.astro instead for the simplified implementation
+
+import Button from './ui/Button.astro';
+import Form from './ui/Form.astro';
+import type { Agent, OutputRequirement, Project, GeneratedPrompt } from '../types';
+
+export interface Props {
+  agents?: Agent[];
+  outputRequirements?: OutputRequirement[];
+  currentProject?: Project | null;
+  class?: string;
+}
+
+const { 
+  agents = [], 
+  outputRequirements = [], 
+  currentProject = null,
+  class: className = '' 
+} = Astro.props;
+---
+
+<section class={`panel active-view ${className}`} id="view-builder">
+  <div class="panel-header">
+    <span class="panel-title">Prompt Builder</span>
+    <div class="header-actions">
+      <Button 
+        variant="ghost" 
+        size="xs" 
+        class="ai-enhanced" 
+        id="ai-suggest-btn" 
+        title="Get AI Suggestions"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      </Button>
+    </div>
+  </div>
+
+  <!-- Project Context Display -->
+  <div id="project-context-banner" class="progress-container" style="display: none;">
+    <div class="progress-header">
+      <span class="progress-title">Project Context Active</span>
+      <span class="progress-status" id="project-context-status">No project selected</span>
+    </div>
+    <div id="project-context-summary" class="ai-suggestion" style="margin: 0;">
+      <div class="ai-suggestion-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+        Project Context
+      </div>
+      <div id="project-context-text">Select a project to see context information</div>
+    </div>
+  </div>
+
+  <!-- AI Suggestions Display -->
+  <div id="ai-suggestions-container" style="display: none;">
+    <div class="ai-suggestion">
+      <div class="ai-suggestion-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+        AI Suggestions
+      </div>
+      <div id="ai-suggestions-content">Click the AI button to get contextual suggestions</div>
+    </div>
+  </div>
+
+  <Form>
+    <label>Selected Agent</label>
+    <div id="current-agent-display" class="selection-tag">
+      <span class="selection-tag-name">No agent selected</span>
+      <span class="selection-tag-status">Select from sidebar</span>
+    </div>
+  </Form>
+
+  <Form>
+    <label for="task">Task Description</label>
+    <textarea
+      id="task"
+      rows="4"
+      placeholder="Describe what you want the AI to do. Be specific about the desired outcome..."
+    ></textarea>
+  </Form>
+
+  <Form>
+    <label for="context">Context & Constraints</label>
+    <textarea
+      id="context"
+      rows="3"
+      placeholder="Add relevant background information, limitations, or specific requirements..."
+    ></textarea>
+  </Form>
+
+  <Form>
+    <label for="format">Output Format</label>
+    <input
+      type="text"
+      id="format"
+      placeholder="e.g., Markdown, JSON, bullet points, executive summary..."
+    />
+  </Form>
+
+  <Form>
+    <label>Output Requirements</label>
+    <div
+      id="current-requirement-display"
+      class="selection-tag"
+      style="margin-bottom: 0.5rem"
+    >
+      <span class="selection-tag-name">No template selected</span>
+      <div class="selection-tag-actions">
+        <Button
+          variant="ghost"
+          size="xs"
+          id="clear-requirement-btn"
+          title="Clear"
+          style="display: none"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </Button>
+      </div>
+    </div>
+    <textarea
+      id="output-requirements"
+      rows="4"
+      placeholder="Specify detailed requirements for the output, or select a saved template from the sidebar..."
+    ></textarea>
+  </Form>
+
+  <div class="input-group" style="flex-direction: row; gap: 0.75rem;">
+    <Button
+      variant="primary"
+      style="flex: 1"
+      id="generate-prompt-btn"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polygon
+          points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+        />
+      </svg>
+      Generate Prompt
+    </Button>
+    <Button
+      variant="secondary"
+      id="save-prompt-btn"
+      style="display: none"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+      Save to Project
+    </Button>
+  </div>
+</section>
+
+<script>
+  import { api } from '../scripts/api';
+  import type { Agent, OutputRequirement, GeneratedPrompt } from '../types';
+
+  // State management
+  let selectedAgentId: string | null = null;
+  let selectedRequirementId: string | null = null;
+  let currentProjectId: string | null = null;
+  let lastGeneratedPrompt: string | null = null;
+  let agents: Agent[] = [];
+  let outputRequirements: OutputRequirement[] = [];
+
+  // Initialize component
+  async function initializePromptBuilder() {
+    try {
+      // Load data
+      agents = await api.agents.list();
+      outputRequirements = await api.requirements.list();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Load saved state from localStorage
+      loadSavedState();
+      
+      // Update UI
+      updateAgentDisplay();
+      updateRequirementDisplay();
+      updateProjectContext();
+      
+    } catch (error) {
+      console.error('Failed to initialize prompt builder:', error);
+      showToast('Failed to load prompt builder data', 'error');
+    }
+  }
+
+  function setupEventListeners() {
+    // Generate prompt button
+    const generateBtn = document.getElementById('generate-prompt-btn');
+    if (generateBtn) {
+      generateBtn.addEventListener('click', generatePrompt);
+    }
+
+    // Save prompt button
+    const saveBtn = document.getElementById('save-prompt-btn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', savePromptToProject);
+    }
+
+    // AI suggestions button
+    const aiBtn = document.getElementById('ai-suggest-btn');
+    if (aiBtn) {
+      aiBtn.addEventListener('click', getAISuggestions);
+    }
+
+    // Clear requirement button
+    const clearBtn = document.getElementById('clear-requirement-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearSelectedRequirement);
+    }
+
+    // Form field change listeners for state persistence
+    const formFields = ['task', 'context', 'format', 'output-requirements'];
+    formFields.forEach(fieldId => {
+      const field = document.getElementById(fieldId) as HTMLInputElement | HTMLTextAreaElement;
+      if (field) {
+        field.addEventListener('input', saveFormState);
+        field.addEventListener('blur', saveFormState);
+      }
+    });
+
+    // Listen for agent selection events from sidebar
+    document.addEventListener('agent-selected', (event: CustomEvent) => {
+      selectAgent(event.detail.agentId);
+    });
+
+    // Listen for requirement selection events from sidebar
+    document.addEventListener('requirement-selected', (event: CustomEvent) => {
+      selectRequirement(event.detail.requirementId);
+    });
+
+    // Listen for project changes
+    document.addEventListener('project-changed', (event: CustomEvent) => {
+      currentProjectId = event.detail.projectId;
+      updateProjectContext();
+    });
+  }
+
+  // Agent selection
+  function selectAgent(agentId: string) {
+    selectedAgentId = agentId;
+    updateAgentDisplay();
+    saveFormState();
+  }
+
+  function updateAgentDisplay() {
+    const display = document.getElementById('current-agent-display');
+    if (!display) return;
+
+    const agent = agents.find(a => a.id === selectedAgentId);
+    const nameSpan = display.querySelector('.selection-tag-name');
+    const statusSpan = display.querySelector('.selection-tag-status');
+
+    if (agent && nameSpan && statusSpan) {
+      nameSpan.textContent = agent.name;
+      statusSpan.textContent = agent.role;
+      display.classList.add('has-selection');
+    } else if (nameSpan && statusSpan) {
+      nameSpan.textContent = 'No agent selected';
+      statusSpan.textContent = 'Select from sidebar';
+      display.classList.remove('has-selection');
+    }
+  }
+
+  // Output requirement selection
+  function selectRequirement(requirementId: string) {
+    selectedRequirementId = requirementId;
+    const requirement = outputRequirements.find(r => r.id === requirementId);
+    
+    if (requirement) {
+      const textarea = document.getElementById('output-requirements') as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.value = requirement.requirements_content;
+      }
+      
+      // Track usage
+      api.requirements.trackUsage(requirementId).catch(console.error);
+    }
+    
+    updateRequirementDisplay();
+    saveFormState();
+  }
+
+  function updateRequirementDisplay() {
+    const display = document.getElementById('current-requirement-display');
+    const clearBtn = document.getElementById('clear-requirement-btn');
+    if (!display) return;
+
+    const requirement = outputRequirements.find(r => r.id === selectedRequirementId);
+    const nameSpan = display.querySelector('.selection-tag-name');
+
+    if (requirement && nameSpan) {
+      nameSpan.textContent = requirement.name;
+      display.classList.add('has-selection');
+      if (clearBtn) clearBtn.style.display = 'block';
+    } else if (nameSpan) {
+      nameSpan.textContent = 'No template selected';
+      display.classList.remove('has-selection');
+      if (clearBtn) clearBtn.style.display = 'none';
+    }
+  }
+
+  function clearSelectedRequirement() {
+    selectedRequirementId = null;
+    const textarea = document.getElementById('output-requirements') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.value = '';
+    }
+    updateRequirementDisplay();
+    saveFormState();
+  }
+
+  // Project context management
+  function updateProjectContext() {
+    const banner = document.getElementById('project-context-banner');
+    const status = document.getElementById('project-context-status');
+    const text = document.getElementById('project-context-text');
+    
+    if (!banner || !status || !text) return;
+
+    if (currentProjectId) {
+      // Show project context
+      banner.style.display = 'block';
+      status.textContent = 'Project context active';
+      text.textContent = 'AI suggestions and prompt generation will use project context';
+      
+      // Show save button
+      const saveBtn = document.getElementById('save-prompt-btn');
+      if (saveBtn && lastGeneratedPrompt) {
+        saveBtn.style.display = 'block';
+      }
+    } else {
+      // Hide project context
+      banner.style.display = 'none';
+      
+      // Hide save button
+      const saveBtn = document.getElementById('save-prompt-btn');
+      if (saveBtn) {
+        saveBtn.style.display = 'none';
+      }
+    }
+  }
+
+  // Prompt generation
+  async function generatePrompt() {
+    const taskEl = document.getElementById('task') as HTMLTextAreaElement;
+    const contextEl = document.getElementById('context') as HTMLTextAreaElement;
+    const formatEl = document.getElementById('format') as HTMLInputElement;
+    const outputReqsEl = document.getElementById('output-requirements') as HTMLTextAreaElement;
+
+    if (!taskEl || !contextEl || !formatEl || !outputReqsEl) {
+      showToast('Form elements not found', 'error');
+      return;
+    }
+
+    const task = taskEl.value.trim();
+    const context = contextEl.value.trim();
+    const format = formatEl.value.trim();
+    const outputReqs = outputReqsEl.value.trim();
+
+    if (!task) {
+      showToast('Please enter a task description', 'error');
+      return;
+    }
+
+    if (!selectedAgentId) {
+      showToast('Please select an agent first', 'error');
+      return;
+    }
+
+    const agent = agents.find(a => a.id === selectedAgentId);
+    if (!agent) {
+      showToast('Selected agent not found', 'error');
+      return;
+    }
+
+    try {
+      let prompt: string;
+      
+      if (currentProjectId) {
+        // Use project-aware generation
+        const response = await api.prompts.generate(currentProjectId, {
+          agentId: selectedAgentId,
+          task,
+          context,
+          format,
+          outputRequirements: outputReqs
+        });
+        prompt = response.prompt;
+      } else {
+        // Fallback to client-side generation
+        prompt = `${agent.role}
+
+<agent_style>
+${agent.style || "Professional and helpful."}
+</agent_style>
+
+<context>
+${context || "No additional context provided."}
+</context>
+
+<task_instruction>
+${task}
+</task_instruction>
+
+<output_format>
+${format || "Best fit for the task."}
+</output_format>
+
+<output_requirements>
+${outputReqs || "Best fit."}
+</output_requirements>`;
+      }
+
+      lastGeneratedPrompt = prompt;
+      
+      // Dispatch event to update output panel
+      document.dispatchEvent(new CustomEvent('prompt-generated', {
+        detail: { prompt }
+      }));
+      
+      showToast('Prompt generated!');
+      
+      // Show save button if project is selected
+      if (currentProjectId) {
+        const saveBtn = document.getElementById('save-prompt-btn');
+        if (saveBtn) {
+          saveBtn.style.display = 'block';
+        }
+      }
+      
+      // Switch to output view on mobile
+      if (window.innerWidth < 769) {
+        document.dispatchEvent(new CustomEvent('switch-view', {
+          detail: { view: 'output' }
+        }));
+      }
+      
+    } catch (error) {
+      console.error('Failed to generate prompt:', error);
+      showToast('Failed to generate prompt: ' + (error as Error).message, 'error');
+    }
+  }
+
+  // Save prompt to project
+  async function savePromptToProject() {
+    if (!currentProjectId || !lastGeneratedPrompt) {
+      showToast('No prompt to save or project not selected', 'error');
+      return;
+    }
+
+    const taskEl = document.getElementById('task') as HTMLTextAreaElement;
+    const contextEl = document.getElementById('context') as HTMLTextAreaElement;
+    const formatEl = document.getElementById('format') as HTMLInputElement;
+    const outputReqsEl = document.getElementById('output-requirements') as HTMLTextAreaElement;
+
+    if (!taskEl || !contextEl || !formatEl || !outputReqsEl) return;
+
+    const promptData: GeneratedPrompt = {
+      content: lastGeneratedPrompt,
+      agentId: selectedAgentId || undefined,
+      projectId: currentProjectId,
+      context: {
+        task: taskEl.value.trim(),
+        context: contextEl.value.trim(),
+        format: formatEl.value.trim(),
+        requirements: outputReqsEl.value.trim()
+      },
+      created: new Date()
+    };
+
+    try {
+      await api.prompts.save(currentProjectId, promptData);
+      showToast('Prompt saved to project');
+    } catch (error) {
+      console.error('Failed to save prompt:', error);
+      showToast('Failed to save prompt', 'error');
+    }
+  }
+
+  // AI suggestions
+  async function getAISuggestions() {
+    if (!currentProjectId) {
+      showToast('Select a project to get AI suggestions', 'error');
+      return;
+    }
+
+    const taskEl = document.getElementById('task') as HTMLTextAreaElement;
+    const contextEl = document.getElementById('context') as HTMLTextAreaElement;
+
+    if (!taskEl || !contextEl) return;
+
+    const task = taskEl.value.trim();
+    const context = contextEl.value.trim();
+
+    if (!task) {
+      showToast('Enter a task description to get suggestions', 'error');
+      return;
+    }
+
+    try {
+      const agent = agents.find(a => a.id === selectedAgentId);
+      const suggestions = await api.ai.getSuggestions(currentProjectId, {
+        task,
+        context,
+        agent
+      });
+
+      // Display suggestions
+      const container = document.getElementById('ai-suggestions-container');
+      const content = document.getElementById('ai-suggestions-content');
+      
+      if (container && content) {
+        container.style.display = 'block';
+        content.innerHTML = suggestions.suggestions.map(s => `<p>• ${s}</p>`).join('');
+        
+        if (suggestions.contextualTips) {
+          content.innerHTML += `<hr style="margin: 0.75rem 0; border: none; border-top: 1px solid var(--border-subtle);"><p><strong>Tip:</strong> ${suggestions.contextualTips}</p>`;
+        }
+      }
+
+      showToast('AI suggestions loaded');
+    } catch (error) {
+      console.error('Failed to get AI suggestions:', error);
+      showToast('Failed to get AI suggestions', 'error');
+    }
+  }
+
+  // State persistence
+  function saveFormState() {
+    const state = {
+      selectedAgentId,
+      selectedRequirementId,
+      currentProjectId,
+      task: (document.getElementById('task') as HTMLTextAreaElement)?.value || '',
+      context: (document.getElementById('context') as HTMLTextAreaElement)?.value || '',
+      format: (document.getElementById('format') as HTMLInputElement)?.value || '',
+      outputRequirements: (document.getElementById('output-requirements') as HTMLTextAreaElement)?.value || ''
+    };
+    
+    localStorage.setItem('promptBuilderState', JSON.stringify(state));
+  }
+
+  function loadSavedState() {
+    try {
+      const saved = localStorage.getItem('promptBuilderState');
+      if (!saved) return;
+
+      const state = JSON.parse(saved);
+      
+      selectedAgentId = state.selectedAgentId;
+      selectedRequirementId = state.selectedRequirementId;
+      currentProjectId = state.currentProjectId;
+
+      // Restore form values
+      const taskEl = document.getElementById('task') as HTMLTextAreaElement;
+      const contextEl = document.getElementById('context') as HTMLTextAreaElement;
+      const formatEl = document.getElementById('format') as HTMLInputElement;
+      const outputReqsEl = document.getElementById('output-requirements') as HTMLTextAreaElement;
+
+      if (taskEl) taskEl.value = state.task || '';
+      if (contextEl) contextEl.value = state.context || '';
+      if (formatEl) formatEl.value = state.format || '';
+      if (outputReqsEl) outputReqsEl.value = state.outputRequirements || '';
+
+    } catch (error) {
+      console.error('Failed to load saved state:', error);
+    }
+  }
+
+  // Toast notifications
+  function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
+    document.dispatchEvent(new CustomEvent('show-toast', {
+      detail: { message, type }
+    }));
+  }
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', initializePromptBuilder);
+</script>
+
+<style>
+  /* Selection Tag Styles */
+  .selection-tag {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .selection-tag.has-selection {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .selection-tag-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  .selection-tag-status {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .selection-tag-actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  /* Progress Container */
+  .progress-container {
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .progress-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* AI Suggestion */
+  .ai-suggestion {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .ai-suggestion-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--accent-primary);
+  }
+
+  /* AI Enhanced Indicator */
+  .ai-enhanced {
+    position: relative;
+  }
+
+  .ai-enhanced::after {
+    content: "✨";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  /* Panel Styles */
+  .panel {
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-base);
+  }
+
+  .panel:last-child {
+    border-right: none;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Input Group */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .panel {
+      display: none;
+    }
+    
+    .panel.active-view {
+      display: flex;
+    }
+  }
+</style>

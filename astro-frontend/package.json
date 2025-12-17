@@ -1,0 +1,34 @@
+{
+  "name": "astro-frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "build:prod": "NODE_ENV=production astro build",
+    "build:analyze": "NODE_ENV=production astro build --verbose",
+    "preview": "astro preview",
+    "preview:prod": "astro preview --host",
+    "astro": "astro",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "deploy:prepare": "npm run build:prod && npm run deploy:copy",
+    "deploy:copy": "cp -r dist/* ../worker/public/",
+    "deploy:validate": "npm run test && npm run build:analyze",
+    "deploy": "node scripts/deploy.js",
+    "deploy:full": "npm run deploy",
+    "clean": "rm -rf dist .astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.6",
+    "@types/jsdom": "^27.0.0",
+    "@vitest/ui": "^3.2.4",
+    "astro": "^5.16.5",
+    "fast-check": "^4.4.0",
+    "jsdom": "^27.0.1",
+    "typescript": "^5.9.3",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^3.2.4"
+  }
+}

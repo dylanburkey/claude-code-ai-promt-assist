@@ -1,0 +1,926 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Button from '../components/ui/Button.astro';
+import Form from '../components/ui/Form.astro';
+import Modal from '../components/ui/Modal.astro';
+---
+
+<Layout title="Rules - Semantic Prompt Workstation">
+  <Navigation currentPath="/rules" />
+
+  <div class="main-layout">
+    <!-- RULE SETS LIST -->
+    <section class="panel" id="rule-sets-panel">
+      <div class="panel-header">
+        <span class="panel-title">Rule Sets</span>
+        <div class="header-actions">
+          <Button variant="primary" size="sm" id="new-rule-set-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Rule Set
+          </Button>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input type="text" id="rule-set-search" placeholder="Search rule sets..." />
+        </div>
+      </div>
+
+      <div id="rule-set-list" class="item-list">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <h3>No rule sets yet</h3>
+          <p>Create your first rule set to guide AI behavior</p>
+          <Button variant="primary" id="empty-new-rule-set-btn">Create Rule Set</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULE EDITOR -->
+    <section class="panel" id="rule-editor-panel">
+      <div class="panel-header">
+        <span class="panel-title">Rule Editor</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="ai-enhance-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            AI Enhance
+          </Button>
+          <Button variant="secondary" size="sm" id="duplicate-rule-set-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Duplicate
+          </Button>
+          <Button variant="secondary" size="sm" id="delete-rule-set-btn" style="display: none; color: #ef4444; border-color: #ef4444;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      <div id="rule-editor-content" class="editor-content">
+        <div class="empty-editor">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <h3>Select a rule set to edit</h3>
+          <p>Choose a rule set from the list or create a new one</p>
+        </div>
+      </div>
+
+      <div id="rule-form" class="rule-form" style="display: none;">
+        <input type="hidden" id="rule-set-id" />
+        
+        <Form>
+          <label for="rule-set-name">Rule Set Name</label>
+          <input type="text" id="rule-set-name" placeholder="e.g., Code Review Guidelines" required />
+        </Form>
+
+        <Form>
+          <label for="rule-set-description">Description</label>
+          <textarea id="rule-set-description" rows="2" placeholder="Brief description of when to use these rules..."></textarea>
+        </Form>
+
+        <Form>
+          <label for="rule-set-content">Rules Content</label>
+          <textarea id="rule-set-content" rows="12" placeholder="Define the rules and guidelines..." required></textarea>
+          <div class="form-help">
+            <p>Write clear, specific rules that guide AI behavior. Examples:</p>
+            <ul>
+              <li>Always include error handling in code examples</li>
+              <li>Use TypeScript for all JavaScript code</li>
+              <li>Follow accessibility best practices</li>
+              <li>Provide explanations for complex logic</li>
+            </ul>
+          </div>
+        </Form>
+
+        <div class="form-actions">
+          <Button variant="secondary" id="cancel-rule-set-btn">Cancel</Button>
+          <Button variant="primary" id="save-rule-set-btn">Save Rule Set</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULE PREVIEW -->
+    <section class="panel preview-panel" id="rule-preview-panel">
+      <div class="panel-header">
+        <span class="panel-title">Preview</span>
+        <div class="header-actions">
+          <Button variant="secondary" size="sm" id="test-rules-btn" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Test Rules
+          </Button>
+        </div>
+      </div>
+
+      <div id="rule-preview-content" class="preview-content">
+        <div class="empty-preview">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <h3>Rule Preview</h3>
+          <p>Select a rule set to see how it will appear in prompts</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- AI Enhancement Modal -->
+  <Modal id="ai-enhance-modal" title="AI-Assisted Rule Enhancement">
+    <Form>
+      <label for="enhancement-context">Context</label>
+      <textarea id="enhancement-context" rows="3" placeholder="Describe the domain, use case, or specific requirements for these rules..."></textarea>
+    </Form>
+    <Form>
+      <label for="enhancement-goals">Enhancement Goals</label>
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="goal-clarity" checked />
+          <span>Improve clarity and specificity</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="goal-completeness" checked />
+          <span>Add missing rules or edge cases</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="goal-examples" />
+          <span>Include examples and use cases</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="goal-structure" />
+          <span>Improve organization and structure</span>
+        </label>
+      </div>
+    </Form>
+    <div class="modal-actions">
+      <Button variant="secondary" id="btn-cancel-enhance">Cancel</Button>
+      <Button variant="primary" id="btn-start-enhance">Enhance Rules</Button>
+    </div>
+  </Modal>
+
+  <!-- Rule Test Modal -->
+  <Modal id="test-rules-modal" title="Test Rule Set">
+    <Form>
+      <label for="test-scenario">Test Scenario</label>
+      <textarea id="test-scenario" rows="4" placeholder="Describe a scenario where these rules would apply..."></textarea>
+    </Form>
+    <Form>
+      <label for="test-task">Sample Task</label>
+      <textarea id="test-task" rows="3" placeholder="Enter a sample task to test against the rules..."></textarea>
+    </Form>
+    <div class="modal-actions">
+      <Button variant="secondary" id="btn-cancel-test-rules">Cancel</Button>
+      <Button variant="primary" id="btn-run-test-rules">Generate Test Prompt</Button>
+    </div>
+  </Modal>
+
+  <div id="toast" class="toast"></div>
+</Layout>
+
+<style>
+  .main-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 420px;
+    height: calc(100vh - var(--header-height));
+    overflow: hidden;
+  }
+
+  @media (max-width: 1200px) {
+    .main-layout {
+      grid-template-columns: 280px 1fr;
+    }
+    .preview-panel {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .main-layout {
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-panel {
+      display: none;
+    }
+  }
+
+  .panel {
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-base);
+  }
+  .panel:last-child {
+    border-right: none;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .search-section {
+    margin-bottom: 1rem;
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    z-index: 1;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .item-card {
+    background: var(--bg-surface);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .item-card:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+  }
+
+  .item-card.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+  }
+
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .item-preview {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  .empty-state, .empty-editor, .empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    flex: 1;
+  }
+
+  .empty-state svg, .empty-editor svg, .empty-preview svg {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3, .empty-editor h3, .empty-preview h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state p, .empty-editor p, .empty-preview p {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .editor-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rule-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+  }
+
+  .form-help {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .form-help p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-help ul {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: 1rem;
+  }
+
+  .form-help li {
+    margin-bottom: 0.25rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .preview-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rule-preview {
+    background: var(--bg-surface);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    flex: 1;
+  }
+
+  .preview-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .preview-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .preview-label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .preview-value {
+    color: var(--text-primary);
+  }
+
+  /* Checkbox styles */
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-primary);
+  }
+
+  /* AI Enhancement indicator */
+  .ai-enhanced {
+    position: relative;
+  }
+
+  .ai-enhanced::after {
+    content: "✨";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  .enhancement-progress {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .enhancement-progress h4 {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .enhancement-progress p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-elevated);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    transition: width 0.3s ease;
+  }
+</style>
+
+<script>
+  import { api } from '../scripts/api';
+  import type { RuleSet } from '../types';
+
+  // Global state
+  let ruleSets: RuleSet[] = [];
+  let selectedRuleSetId: string | null = null;
+  let isEditing = false;
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadRuleSets();
+    setupEventListeners();
+  });
+
+  // Data loading
+  async function loadRuleSets() {
+    try {
+      ruleSets = await api.rules.list();
+      renderRuleSetList();
+      
+      if (ruleSets.length > 0 && !selectedRuleSetId) {
+        selectRuleSet(ruleSets[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to load rule sets:', error);
+      showToast('Failed to load rule sets', 'error');
+    }
+  }
+
+  // UI rendering
+  function renderRuleSetList() {
+    const container = document.getElementById('rule-set-list');
+    if (!container) return;
+
+    if (ruleSets.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <h3>No rule sets yet</h3>
+          <p>Create your first rule set to guide AI behavior</p>
+          <button class="btn-primary" onclick="startNewRuleSet()">Create Rule Set</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = ruleSets.map(ruleSet => `
+      <div class="item-card ${ruleSet.id === selectedRuleSetId ? 'active' : ''} ${ruleSet.ai_enhanced ? 'ai-enhanced' : ''}" onclick="selectRuleSet('${ruleSet.id}')">
+        <div class="item-card-header">
+          <span class="item-name">${escapeHtml(ruleSet.name)}</span>
+        </div>
+        ${ruleSet.description ? `<span class="item-preview">${escapeHtml(ruleSet.description)}</span>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function renderRuleEditor(ruleSet?: RuleSet) {
+    const content = document.getElementById('rule-editor-content');
+    const form = document.getElementById('rule-form');
+    
+    if (!content || !form) return;
+
+    if (!ruleSet) {
+      content.style.display = 'flex';
+      form.style.display = 'none';
+      return;
+    }
+
+    content.style.display = 'none';
+    form.style.display = 'flex';
+
+    // Populate form
+    const idInput = document.getElementById('rule-set-id') as HTMLInputElement;
+    const nameInput = document.getElementById('rule-set-name') as HTMLInputElement;
+    const descriptionInput = document.getElementById('rule-set-description') as HTMLTextAreaElement;
+    const contentInput = document.getElementById('rule-set-content') as HTMLTextAreaElement;
+
+    if (idInput) idInput.value = ruleSet.id || '';
+    if (nameInput) nameInput.value = ruleSet.name || '';
+    if (descriptionInput) descriptionInput.value = ruleSet.description || '';
+    if (contentInput) contentInput.value = ruleSet.rules_content || '';
+
+    // Show/hide action buttons
+    const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
+    const duplicateBtn = document.getElementById('duplicate-rule-set-btn');
+    const deleteBtn = document.getElementById('delete-rule-set-btn');
+    
+    if (aiEnhanceBtn && duplicateBtn && deleteBtn) {
+      if (ruleSet.id) {
+        aiEnhanceBtn.style.display = 'flex';
+        duplicateBtn.style.display = 'flex';
+        deleteBtn.style.display = 'flex';
+      } else {
+        aiEnhanceBtn.style.display = 'none';
+        duplicateBtn.style.display = 'none';
+        deleteBtn.style.display = 'none';
+      }
+    }
+  }
+
+  function renderRulePreview(ruleSet?: RuleSet) {
+    const container = document.getElementById('rule-preview-content');
+    if (!container) return;
+
+    if (!ruleSet) {
+      container.innerHTML = `
+        <div class="empty-preview">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <h3>Rule Preview</h3>
+          <p>Select a rule set to see how it will appear in prompts</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="rule-preview">
+        <div class="preview-section">
+          <div class="preview-label">RULES</div>
+          <div class="preview-value">${escapeHtml(ruleSet.rules_content)}</div>
+        </div>
+      </div>
+    `;
+
+    const testBtn = document.getElementById('test-rules-btn');
+    if (testBtn) testBtn.style.display = 'flex';
+  }
+
+  // Rule set management
+  function selectRuleSet(id: string) {
+    selectedRuleSetId = id;
+    const ruleSet = ruleSets.find(r => r.id === id);
+    
+    renderRuleSetList();
+    renderRuleEditor(ruleSet);
+    renderRulePreview(ruleSet);
+    
+    isEditing = false;
+  }
+
+  function startNewRuleSet() {
+    selectedRuleSetId = null;
+    isEditing = true;
+    
+    const newRuleSet: Partial<RuleSet> = {
+      name: '',
+      description: '',
+      rules_content: ''
+    };
+    
+    renderRuleEditor(newRuleSet as RuleSet);
+    renderRulePreview();
+    
+    const nameInput = document.getElementById('rule-set-name') as HTMLInputElement;
+    if (nameInput) nameInput.focus();
+  }
+
+  async function saveRuleSet() {
+    const idInput = document.getElementById('rule-set-id') as HTMLInputElement;
+    const nameInput = document.getElementById('rule-set-name') as HTMLInputElement;
+    const descriptionInput = document.getElementById('rule-set-description') as HTMLTextAreaElement;
+    const contentInput = document.getElementById('rule-set-content') as HTMLTextAreaElement;
+
+    if (!nameInput || !contentInput) return;
+
+    const name = nameInput.value.trim();
+    const description = descriptionInput?.value.trim() || '';
+    const rules_content = contentInput.value.trim();
+
+    if (!name || !rules_content) {
+      showToast('Name and rules content are required', 'error');
+      return;
+    }
+
+    try {
+      const ruleSetData = { name, description, rules_content };
+      const isUpdate = idInput && idInput.value;
+
+      let savedRuleSet: RuleSet;
+      if (isUpdate) {
+        savedRuleSet = await api.rules.update(idInput.value, ruleSetData);
+        showToast('Rule set updated!');
+      } else {
+        savedRuleSet = await api.rules.create(ruleSetData);
+        showToast('Rule set created!');
+      }
+
+      await loadRuleSets();
+      selectRuleSet(savedRuleSet.id);
+      isEditing = false;
+    } catch (error) {
+      console.error('Failed to save rule set:', error);
+      showToast('Failed to save rule set', 'error');
+    }
+  }
+
+  async function deleteRuleSet() {
+    if (!selectedRuleSetId) return;
+
+    const ruleSet = ruleSets.find(r => r.id === selectedRuleSetId);
+    if (!ruleSet) return;
+
+    if (!confirm(`Delete rule set "${ruleSet.name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.rules.delete(selectedRuleSetId);
+      showToast('Rule set deleted');
+      
+      await loadRuleSets();
+      
+      if (ruleSets.length > 0) {
+        selectRuleSet(ruleSets[0].id);
+      } else {
+        selectedRuleSetId = null;
+        renderRuleEditor();
+        renderRulePreview();
+      }
+    } catch (error) {
+      console.error('Failed to delete rule set:', error);
+      showToast('Failed to delete rule set', 'error');
+    }
+  }
+
+  function cancelEdit() {
+    isEditing = false;
+    
+    if (selectedRuleSetId) {
+      const ruleSet = ruleSets.find(r => r.id === selectedRuleSetId);
+      renderRuleEditor(ruleSet);
+    } else {
+      renderRuleEditor();
+    }
+  }
+
+  // AI Enhancement
+  async function enhanceRules() {
+    if (!selectedRuleSetId) return;
+
+    const contextInput = document.getElementById('enhancement-context') as HTMLTextAreaElement;
+    const context = contextInput?.value.trim() || '';
+
+    const goals = [];
+    if ((document.getElementById('goal-clarity') as HTMLInputElement)?.checked) goals.push('clarity');
+    if ((document.getElementById('goal-completeness') as HTMLInputElement)?.checked) goals.push('completeness');
+    if ((document.getElementById('goal-examples') as HTMLInputElement)?.checked) goals.push('examples');
+    if ((document.getElementById('goal-structure') as HTMLInputElement)?.checked) goals.push('structure');
+
+    try {
+      showEnhancementProgress();
+      
+      const enhanced = await api.ai.enhanceRules(selectedRuleSetId, {
+        context,
+        goals
+      });
+
+      // Update the content textarea with enhanced rules
+      const contentInput = document.getElementById('rule-set-content') as HTMLTextAreaElement;
+      if (contentInput) {
+        contentInput.value = enhanced.enhanced_content;
+      }
+
+      hideEnhancementProgress();
+      showToast('Rules enhanced successfully!');
+      
+      // Close modal
+      const modal = document.getElementById('ai-enhance-modal');
+      if (modal) modal.style.display = 'none';
+      
+    } catch (error) {
+      console.error('Failed to enhance rules:', error);
+      hideEnhancementProgress();
+      showToast('Failed to enhance rules', 'error');
+    }
+  }
+
+  function showEnhancementProgress() {
+    const form = document.getElementById('rule-form');
+    if (!form) return;
+
+    const progressHtml = `
+      <div class="enhancement-progress" id="enhancement-progress">
+        <h4>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          AI Enhancement in Progress
+        </h4>
+        <p>Analyzing and improving your rules...</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    `;
+
+    form.insertAdjacentHTML('afterbegin', progressHtml);
+
+    // Animate progress
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 90) progress = 90;
+      
+      const fill = document.querySelector('.progress-fill') as HTMLElement;
+      if (fill) fill.style.width = `${progress}%`;
+      
+      if (progress >= 90) clearInterval(interval);
+    }, 500);
+  }
+
+  function hideEnhancementProgress() {
+    const progress = document.getElementById('enhancement-progress');
+    if (progress) progress.remove();
+  }
+
+  // Utility functions
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  }
+
+  // Event listeners
+  function setupEventListeners() {
+    // New rule set button
+    document.getElementById('new-rule-set-btn')?.addEventListener('click', startNewRuleSet);
+    document.getElementById('empty-new-rule-set-btn')?.addEventListener('click', startNewRuleSet);
+    
+    // Form actions
+    document.getElementById('save-rule-set-btn')?.addEventListener('click', saveRuleSet);
+    document.getElementById('cancel-rule-set-btn')?.addEventListener('click', cancelEdit);
+    document.getElementById('delete-rule-set-btn')?.addEventListener('click', deleteRuleSet);
+    
+    // AI Enhancement
+    document.getElementById('ai-enhance-btn')?.addEventListener('click', () => {
+      const modal = document.getElementById('ai-enhance-modal');
+      if (modal) modal.style.display = 'flex';
+    });
+    
+    document.getElementById('btn-start-enhance')?.addEventListener('click', enhanceRules);
+    document.getElementById('btn-cancel-enhance')?.addEventListener('click', () => {
+      const modal = document.getElementById('ai-enhance-modal');
+      if (modal) modal.style.display = 'none';
+    });
+    
+    // Search
+    document.getElementById('rule-set-search')?.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      const query = target.value.toLowerCase();
+      
+      const cards = document.querySelectorAll('.item-card');
+      cards.forEach(card => {
+        const name = card.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+        const preview = card.querySelector('.item-preview')?.textContent?.toLowerCase() || '';
+        
+        if (name.includes(query) || preview.includes(query)) {
+          (card as HTMLElement).style.display = 'block';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Make functions available globally
+  (window as any).selectRuleSet = selectRuleSet;
+  (window as any).startNewRuleSet = startNewRuleSet;
+</script>

@@ -1,0 +1,416 @@
+---
+export interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = "/" } = Astro.props;
+
+const navLinks = [
+  { href: "/", label: "Prompt Builder", path: "/" },
+  { href: "/projects", label: "Projects", path: "/projects" },
+  { href: "/rules", label: "Rules", path: "/rules" },
+  { href: "/hooks", label: "Hooks", path: "/hooks" },
+  { href: "/agents", label: "Agents", path: "/agents" },
+  { href: "/themes", label: "Themes", path: "/themes" },
+];
+---
+
+<header>
+  <div class="logo-section">
+    <button
+      class="btn-secondary btn-icon menu-toggle"
+      id="menu-toggle"
+      aria-label="Toggle menu"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M3 12h18M3 6h18M3 18h18"></path>
+      </svg>
+    </button>
+    <h1>Semantic Prompt Workstation</h1>
+    <span class="version-badge">v3.0</span>
+    <div
+      id="sync-indicator"
+      class="sync-indicator"
+      title="Synced with cloud"
+    ></div>
+  </div>
+  <nav class="header-nav">
+    {navLinks.map(link => (
+      <a 
+        href={link.href} 
+        class={`nav-link ${currentPath === link.path ? "active" : ""}`}
+      >
+        {link.label}
+      </a>
+    ))}
+  </nav>
+  <div class="header-actions">
+    <div class="project-selector" id="project-selector">
+      <select id="current-project-select">
+        <option value="">No Project Selected</option>
+      </select>
+    </div>
+    <button
+      class="btn-secondary btn-icon"
+      id="import-btn"
+      title="Import"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+    </button>
+    <input
+      type="file"
+      id="file-upload"
+      class="hidden-input"
+      accept=".json"
+    />
+    <button
+      class="btn-secondary btn-icon"
+      id="theme-toggle-btn"
+      title="Toggle Theme"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="5"></circle>
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+      </svg>
+    </button>
+    <button
+      class="btn-secondary btn-icon"
+      id="export-btn"
+      title="Export Project"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<style>
+  header {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: var(--header-height);
+    flex-shrink: 0;
+    z-index: 20;
+  }
+
+  .logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .version-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.15);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Header Navigation */
+  .header-nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem 1rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .nav-link.active {
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+  }
+
+  /* Project Selector */
+  .project-selector {
+    margin-right: 0.5rem;
+  }
+
+  .project-selector select {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    min-width: 180px;
+    cursor: pointer;
+  }
+
+  .project-selector select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+
+  /* Buttons */
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .btn-icon {
+    padding: 0.5rem;
+    width: 36px;
+    height: 36px;
+  }
+
+  @media (max-width: 768px) {
+    .header-nav {
+      display: none;
+    }
+    
+    .project-selector {
+      margin-right: 0;
+    }
+    
+    .project-selector select {
+      min-width: 120px;
+      font-size: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  // Toggle sidebar functionality
+  document.getElementById('menu-toggle')?.addEventListener('click', () => {
+    const sidebar = document.getElementById('sidebar-panel');
+    sidebar?.classList.toggle('mobile-open');
+  });
+
+  // Import functionality
+  document.getElementById('import-btn')?.addEventListener('click', () => {
+    document.getElementById('file-upload')?.click();
+  });
+
+  // File upload handler
+  document.getElementById('file-upload')?.addEventListener('change', (event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      // Import functionality will be implemented in the API client
+      console.log('File selected for import:', file.name);
+    }
+  });
+
+  // Project selector change handler
+  document.getElementById('current-project-select')?.addEventListener('change', (event) => {
+    const target = event.target as HTMLSelectElement;
+    const projectId = target.value;
+    // Project switching functionality will be implemented in the API client
+    console.log('Project selected:', projectId);
+  });
+
+  // Theme toggle functionality
+  document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+    const saved = localStorage.getItem('theme-settings');
+    let currentTheme = 'default';
+    
+    if (saved) {
+      try {
+        const themeData = JSON.parse(saved);
+        currentTheme = themeData.id || 'default';
+      } catch (e) {
+        console.warn('Failed to parse theme data:', e);
+      }
+    }
+    
+    // Cycle through themes: default -> light -> ocean -> forest -> default
+    const themes = ['default', 'light', 'ocean', 'forest'];
+    const currentIndex = themes.indexOf(currentTheme);
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    
+    // Apply the next theme
+    const themeConfigs = {
+      default: {
+        colors: {
+          "--bg-base": "#0a0a0f",
+          "--bg-surface": "#12121a",
+          "--bg-elevated": "#1a1a24",
+          "--bg-hover": "#22222e",
+          "--accent-primary": "#6366f1",
+          "--accent-primary-hover": "#818cf8",
+          "--accent-secondary": "#22d3ee",
+          "--text-primary": "#f4f4f5",
+          "--text-secondary": "#a1a1aa",
+          "--text-muted": "#71717a",
+          "--border-subtle": "#27272a",
+          "--border-default": "#3f3f46",
+        }
+      },
+      light: {
+        colors: {
+          "--bg-base": "#ffffff",
+          "--bg-surface": "#f8fafc",
+          "--bg-elevated": "#f1f5f9",
+          "--bg-hover": "#e2e8f0",
+          "--accent-primary": "#6366f1",
+          "--accent-primary-hover": "#4f46e5",
+          "--accent-secondary": "#0891b2",
+          "--text-primary": "#0f172a",
+          "--text-secondary": "#475569",
+          "--text-muted": "#64748b",
+          "--border-subtle": "#e2e8f0",
+          "--border-default": "#cbd5e1",
+        }
+      },
+      ocean: {
+        colors: {
+          "--bg-base": "#0c1821",
+          "--bg-surface": "#1b2838",
+          "--bg-elevated": "#243447",
+          "--bg-hover": "#2d4057",
+          "--accent-primary": "#3b82f6",
+          "--accent-primary-hover": "#60a5fa",
+          "--accent-secondary": "#06b6d4",
+          "--text-primary": "#f0f9ff",
+          "--text-secondary": "#bae6fd",
+          "--text-muted": "#7dd3fc",
+          "--border-subtle": "#334155",
+          "--border-default": "#475569",
+        }
+      },
+      forest: {
+        colors: {
+          "--bg-base": "#0f1419",
+          "--bg-surface": "#1a2332",
+          "--bg-elevated": "#253344",
+          "--bg-hover": "#304455",
+          "--accent-primary": "#22c55e",
+          "--accent-primary-hover": "#4ade80",
+          "--accent-secondary": "#14b8a6",
+          "--text-primary": "#f0fdf4",
+          "--text-secondary": "#bbf7d0",
+          "--text-muted": "#86efac",
+          "--border-subtle": "#374151",
+          "--border-default": "#4b5563",
+        }
+      }
+    };
+    
+    const themeConfig = themeConfigs[nextTheme];
+    if (themeConfig) {
+      // Apply theme variables to document root
+      Object.entries(themeConfig.colors).forEach(([property, value]) => {
+        document.documentElement.style.setProperty(property, value);
+      });
+      
+      // Save theme
+      const themeData = {
+        id: nextTheme,
+        custom: null,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('theme-settings', JSON.stringify(themeData));
+      
+      // Show toast notification
+      const toast = document.createElement('div');
+      toast.className = 'toast success show';
+      toast.textContent = `Switched to ${nextTheme.charAt(0).toUpperCase() + nextTheme.slice(1)} theme`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 2000);
+    }
+  });
+
+  // Export functionality
+  document.getElementById('export-btn')?.addEventListener('click', () => {
+    // Export functionality will be implemented in the API client
+    console.log('Export button clicked');
+  });
+</script>

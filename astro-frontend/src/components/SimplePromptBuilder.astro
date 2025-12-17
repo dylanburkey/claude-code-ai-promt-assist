@@ -1,0 +1,435 @@
+---
+import Button from './ui/Button.astro';
+import Form from './ui/Form.astro';
+---
+
+<div class="panel-header">
+  <span class="panel-title">Prompt Builder</span>
+  <div class="header-actions">
+    <Button variant="secondary" size="sm" id="clear-form-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18" />
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      </svg>
+      Clear
+    </Button>
+  </div>
+</div>
+
+<div class="builder-form">
+  <Form>
+    <label for="task">Task Description</label>
+    <textarea id="task" rows="4" placeholder="Describe what you want the AI to do..." required></textarea>
+    <div class="form-help">
+      <p>Be specific about the task. Include context, requirements, and expected outcomes.</p>
+    </div>
+  </Form>
+
+  <Form>
+    <label for="context">Additional Context</label>
+    <textarea id="context" rows="3" placeholder="Provide any relevant background information..."></textarea>
+    <div class="form-help">
+      <p>Include project details, constraints, or specific requirements that help the AI understand the situation.</p>
+    </div>
+  </Form>
+
+  <Form>
+    <label for="format">Output Format</label>
+    <input type="text" id="format" placeholder="e.g., JSON, Markdown, Code, etc." />
+    <div class="form-help">
+      <p>Specify how you want the response formatted (optional).</p>
+    </div>
+  </Form>
+
+  <Form>
+    <label for="output-requirements">Output Requirements</label>
+    <textarea id="output-requirements" rows="3" placeholder="Specific requirements for the output..."></textarea>
+    <div class="form-help">
+      <p>Define quality standards, constraints, or specific requirements for the AI's response.</p>
+    </div>
+    <Button variant="ghost" size="xs" id="clear-requirement-btn" style="display: none;" title="Clear Requirements">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </Button>
+  </Form>
+
+  <div class="form-actions">
+    <Button variant="primary" id="generate-prompt-btn" style="flex: 1">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+      Generate Prompt
+    </Button>
+  </div>
+</div>
+
+<style>
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 1.5rem;
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .builder-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+  }
+
+  .form-help {
+    margin-top: 0.5rem;
+  }
+
+  .form-help p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  /* AI Enhancement Indicators */
+  .ai-enhanced {
+    position: relative;
+  }
+
+  .ai-enhanced::after {
+    content: "✨";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  .ai-suggestion {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .ai-suggestion-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--accent-primary);
+  }
+</style>
+
+<script>
+  import { api } from '../scripts/api';
+  import { uiState, selections } from '../scripts/storage';
+
+  let selectedAgent: any = null;
+  let selectedRequirement: any = null;
+  let currentProject: any = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    loadFormState();
+  });
+
+  function setupEventListeners() {
+    // Form actions
+    document.getElementById('generate-prompt-btn')?.addEventListener('click', generatePrompt);
+    document.getElementById('clear-form-btn')?.addEventListener('click', clearForm);
+    document.getElementById('clear-requirement-btn')?.addEventListener('click', clearRequirements);
+
+    // Listen for agent selection
+    document.addEventListener('agent-selected', (event: CustomEvent) => {
+      selectedAgent = event.detail.agent;
+      updateGenerateButton();
+    });
+
+    // Listen for requirement selection
+    document.addEventListener('requirement-selected', (event: CustomEvent) => {
+      selectedRequirement = event.detail.requirement;
+      const textarea = document.getElementById('output-requirements') as HTMLTextAreaElement;
+      const clearBtn = document.getElementById('clear-requirement-btn');
+      
+      if (textarea && selectedRequirement) {
+        textarea.value = selectedRequirement.requirements_content;
+        if (clearBtn) clearBtn.style.display = 'block';
+      }
+    });
+
+    // Listen for project changes
+    document.addEventListener('project-changed', (event: CustomEvent) => {
+      currentProject = event.detail.project;
+    });
+
+    // Auto-save form state
+    ['task', 'context', 'format', 'output-requirements'].forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('input', saveFormState);
+      }
+    });
+  }
+
+  function loadFormState() {
+    try {
+      const saved = localStorage.getItem('prompt-builder-state');
+      if (saved) {
+        const state = JSON.parse(saved);
+        
+        ['task', 'context', 'format', 'output-requirements'].forEach(id => {
+          const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
+          if (element && state[id]) {
+            element.value = state[id];
+          }
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to load form state:', error);
+    }
+  }
+
+  function saveFormState() {
+    try {
+      const state: Record<string, string> = {};
+      
+      ['task', 'context', 'format', 'output-requirements'].forEach(id => {
+        const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
+        if (element) {
+          state[id] = element.value;
+        }
+      });
+      
+      localStorage.setItem('prompt-builder-state', JSON.stringify(state));
+    } catch (error) {
+      console.warn('Failed to save form state:', error);
+    }
+  }
+
+  function updateGenerateButton() {
+    const btn = document.getElementById('generate-prompt-btn');
+    const taskInput = document.getElementById('task') as HTMLTextAreaElement;
+    
+    if (btn && taskInput) {
+      const hasTask = taskInput.value.trim().length > 0;
+      const hasAgent = selectedAgent !== null;
+      
+      btn.disabled = !hasTask || !hasAgent;
+      
+      if (!hasAgent) {
+        btn.title = 'Please select an agent first';
+      } else if (!hasTask) {
+        btn.title = 'Please enter a task description';
+      } else {
+        btn.title = 'Generate semantic prompt';
+      }
+    }
+  }
+
+  async function generatePrompt() {
+    const taskEl = document.getElementById('task') as HTMLTextAreaElement;
+    const contextEl = document.getElementById('context') as HTMLTextAreaElement;
+    const formatEl = document.getElementById('format') as HTMLInputElement;
+    const requirementsEl = document.getElementById('output-requirements') as HTMLTextAreaElement;
+
+    if (!taskEl || !selectedAgent) return;
+
+    const task = taskEl.value.trim();
+    const context = contextEl?.value.trim() || '';
+    const format = formatEl?.value.trim() || '';
+    const outputReqs = requirementsEl?.value.trim() || '';
+
+    if (!task) {
+      showToast('Please enter a task description', 'error');
+      return;
+    }
+
+    try {
+      let prompt: string;
+
+      if (currentProject?.id) {
+        // Use project-based generation
+        const response = await api.prompts.generate(currentProject.id, {
+          agentId: selectedAgent.id,
+          task,
+          context,
+          format,
+          outputRequirements: outputReqs
+        });
+        prompt = response.prompt;
+      } else {
+        // Fallback to client-side generation
+        prompt = generateClientSidePrompt(selectedAgent, task, context, format, outputReqs);
+      }
+
+      // Display the generated prompt
+      const outputDisplay = document.getElementById('output-display');
+      if (outputDisplay) {
+        outputDisplay.textContent = prompt;
+        outputDisplay.classList.remove('output-placeholder');
+      }
+
+      // Dispatch event for other components
+      document.dispatchEvent(new CustomEvent('prompt-generated', {
+        detail: { prompt, agent: selectedAgent, task, context, format, outputReqs }
+      }));
+
+      showToast('Prompt generated successfully!');
+
+      // Switch to output view on mobile
+      if (window.innerWidth < 769) {
+        switchView('output');
+      }
+
+    } catch (error) {
+      console.error('Failed to generate prompt:', error);
+      showToast('Failed to generate prompt', 'error');
+    }
+  }
+
+  function generateClientSidePrompt(agent: any, task: string, context: string, format: string, outputReqs: string): string {
+    let prompt = `${agent.role}\n\n`;
+
+    if (agent.style) {
+      prompt += `<agent_style>\n${agent.style}\n</agent_style>\n\n`;
+    }
+
+    if (context) {
+      prompt += `<context>\n${context}\n</context>\n\n`;
+    }
+
+    prompt += `<task_instruction>\n${task}\n</task_instruction>\n\n`;
+
+    if (format) {
+      prompt += `<output_format>\n${format}\n</output_format>\n\n`;
+    }
+
+    if (outputReqs) {
+      prompt += `<output_requirements>\n${outputReqs}\n</output_requirements>`;
+    }
+
+    return prompt.trim();
+  }
+
+  function clearForm() {
+    ['task', 'context', 'format', 'output-requirements'].forEach(id => {
+      const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
+      if (element) {
+        element.value = '';
+      }
+    });
+
+    // Clear saved state
+    localStorage.removeItem('prompt-builder-state');
+    
+    // Hide clear requirement button
+    const clearBtn = document.getElementById('clear-requirement-btn');
+    if (clearBtn) clearBtn.style.display = 'none';
+
+    showToast('Form cleared');
+  }
+
+  function clearRequirements() {
+    const textarea = document.getElementById('output-requirements') as HTMLTextAreaElement;
+    const clearBtn = document.getElementById('clear-requirement-btn');
+    
+    if (textarea) textarea.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+    
+    selectedRequirement = null;
+    saveFormState();
+  }
+
+  function switchView(viewName: 'builder' | 'output') {
+    if (window.innerWidth >= 769) return;
+    
+    document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-view'));
+    document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
+    
+    const panel = document.getElementById(`view-${viewName}`);
+    if (panel) panel.classList.add('active-view');
+    
+    const tab = document.querySelector(`[data-view="${viewName}"]`);
+    if (tab) tab.classList.add('active');
+  }
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  }
+
+  // Update generate button state when task changes
+  document.getElementById('task')?.addEventListener('input', updateGenerateButton);
+</script>
