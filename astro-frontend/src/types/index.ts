@@ -3,10 +3,19 @@
 export interface Agent {
   id: string;
   name: string;
-  role: string;
+  display_name?: string;
+  prompt_content: string; // Main agent prompt/role description
+  description?: string;
+  agent_config?: string; // JSON string with allowed tools etc
+  icon?: string;
+  category?: string;
+  is_enabled?: boolean | number;
+  project_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  // Legacy field for backwards compatibility
+  role?: string;
   style?: string;
-  created?: Date;
-  updated?: Date;
 }
 
 export interface Theme {
@@ -47,7 +56,7 @@ export interface Project {
   slug?: string;
   description?: string;
   context?: string;
-  status?: 'active' | 'archived' | 'draft';
+  status?: "active" | "archived" | "draft";
   ai_context_summary?: string;
   created_at?: string;
   updated_at?: string;
@@ -57,7 +66,13 @@ export interface RuleSet {
   id: string;
   name: string;
   description?: string;
-  rules_content: string;
+  rule_content: string;
+  ide_id?: string;
+  agent_id?: string;
+  category?: string;
+  priority?: number;
+  tags?: string;
+  is_active?: number;
   ai_enhanced?: boolean;
   usage_count?: number;
   created_at?: string;
@@ -68,9 +83,20 @@ export interface Hook {
   id: string;
   name: string;
   description?: string;
-  category: 'workflow' | 'integration' | 'automation';
-  trigger: 'manual' | 'file_save' | 'project_create' | 'agent_create' | 'prompt_generate' | 'schedule';
-  action: 'generate_prompt' | 'run_command' | 'send_webhook' | 'create_file' | 'update_project';
+  category: "workflow" | "integration" | "automation";
+  trigger:
+    | "manual"
+    | "file_save"
+    | "project_create"
+    | "agent_create"
+    | "prompt_generate"
+    | "schedule";
+  action:
+    | "generate_prompt"
+    | "run_command"
+    | "send_webhook"
+    | "create_file"
+    | "update_project";
   trigger_config?: Record<string, any>;
   action_config?: Record<string, any>;
   enabled: boolean;
@@ -82,14 +108,14 @@ export interface ProjectResource {
   id: string;
   project_id: string;
   resource_id: string;
-  resource_type: 'agent' | 'rule' | 'hook' | 'prompt';
+  resource_type: "agent" | "rule" | "hook" | "prompt";
   assigned_at?: Date;
 }
 
 export interface AvailableResource {
   id: string;
   name: string;
-  type: 'agent' | 'rule' | 'hook';
+  type: "agent" | "rule" | "hook";
   description?: string;
   role?: string;
 }
@@ -108,7 +134,7 @@ export interface GeneratedPrompt {
 }
 
 export interface ExportConfig {
-  format: 'claude-code' | 'json' | 'zip';
+  format: "claude-code" | "json" | "zip";
   filename: string;
   include: {
     agents: boolean;
@@ -136,14 +162,14 @@ export interface UIState {
   selectedRequirementId: string | null;
   currentProjectId: string | null;
   sidebarOpen: boolean;
-  activeView: 'builder' | 'output';
-  syncStatus: 'synced' | 'syncing' | 'error';
+  activeView: "builder" | "output";
+  syncStatus: "synced" | "syncing" | "error";
 }
 
 export interface ToastMessage {
   id?: string;
   message: string;
-  type: 'success' | 'error' | 'info' | 'warning';
+  type: "success" | "error" | "info" | "warning";
   duration?: number;
   action?: {
     label: string;
@@ -217,7 +243,7 @@ export interface FormState {
 export interface ProgressStep {
   id: string;
   label: string;
-  status: 'pending' | 'active' | 'completed' | 'error';
+  status: "pending" | "active" | "completed" | "error";
 }
 
 export interface ProgressState {

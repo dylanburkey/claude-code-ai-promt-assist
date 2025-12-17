@@ -57,12 +57,50 @@ import Form from './ui/Form.astro';
   </Form>
 
   <div class="form-actions">
+    <Button variant="secondary" id="ai-enhance-btn" title="Use AI to enhance your prompt into semantic XML">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z" />
+      </svg>
+      AI Enhance
+    </Button>
     <Button variant="primary" id="generate-prompt-btn" style="flex: 1">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>
       Generate Prompt
     </Button>
+  </div>
+
+  <!-- AI Enhancement Type Selector -->
+  <div id="ai-enhance-options" class="ai-enhance-options" style="display: none;">
+    <div class="enhance-option" data-type="claude_optimize">
+      <span class="enhance-icon">🎯</span>
+      <div class="enhance-info">
+        <span class="enhance-name">Claude Optimized</span>
+        <span class="enhance-desc">Structured XML format optimized for Claude</span>
+      </div>
+    </div>
+    <div class="enhance-option" data-type="technical">
+      <span class="enhance-icon">⚙️</span>
+      <div class="enhance-info">
+        <span class="enhance-name">Technical</span>
+        <span class="enhance-desc">Precise terminology and clear requirements</span>
+      </div>
+    </div>
+    <div class="enhance-option" data-type="concise">
+      <span class="enhance-icon">✂️</span>
+      <div class="enhance-info">
+        <span class="enhance-name">Concise</span>
+        <span class="enhance-desc">Direct and to the point</span>
+      </div>
+    </div>
+    <div class="enhance-option" data-type="general">
+      <span class="enhance-icon">✨</span>
+      <div class="enhance-info">
+        <span class="enhance-name">General</span>
+        <span class="enhance-desc">Improve clarity and effectiveness</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -186,6 +224,66 @@ import Form from './ui/Form.astro';
     font-weight: 500;
     color: var(--accent-primary);
   }
+
+  /* AI Enhancement Options */
+  .ai-enhance-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+  }
+
+  .enhance-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .enhance-option:hover {
+    background: var(--bg-elevated);
+    border-color: var(--accent-primary);
+  }
+
+  .enhance-icon {
+    font-size: 1.25rem;
+  }
+
+  .enhance-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .enhance-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+  }
+
+  .enhance-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .enhancing {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .enhancing::after {
+    content: " Enhancing...";
+    color: var(--accent-primary);
+  }
 </style>
 
 <script>
@@ -207,6 +305,15 @@ import Form from './ui/Form.astro';
     document.getElementById('clear-form-btn')?.addEventListener('click', clearForm);
     document.getElementById('clear-requirement-btn')?.addEventListener('click', clearRequirements);
 
+    // AI Enhancement
+    document.getElementById('ai-enhance-btn')?.addEventListener('click', toggleEnhanceOptions);
+    document.querySelectorAll('.enhance-option').forEach(option => {
+      option.addEventListener('click', () => {
+        const enhanceType = option.getAttribute('data-type') || 'general';
+        enhanceWithAI(enhanceType);
+      });
+    });
+
     // Listen for agent selection
     document.addEventListener('agent-selected', (event: CustomEvent) => {
       selectedAgent = event.detail.agent;
@@ -218,7 +325,7 @@ import Form from './ui/Form.astro';
       selectedRequirement = event.detail.requirement;
       const textarea = document.getElementById('output-requirements') as HTMLTextAreaElement;
       const clearBtn = document.getElementById('clear-requirement-btn');
-      
+
       if (textarea && selectedRequirement) {
         textarea.value = selectedRequirement.requirements_content;
         if (clearBtn) clearBtn.style.display = 'block';
@@ -244,7 +351,7 @@ import Form from './ui/Form.astro';
       const saved = localStorage.getItem('prompt-builder-state');
       if (saved) {
         const state = JSON.parse(saved);
-        
+
         ['task', 'context', 'format', 'output-requirements'].forEach(id => {
           const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
           if (element && state[id]) {
@@ -260,14 +367,14 @@ import Form from './ui/Form.astro';
   function saveFormState() {
     try {
       const state: Record<string, string> = {};
-      
+
       ['task', 'context', 'format', 'output-requirements'].forEach(id => {
         const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
         if (element) {
           state[id] = element.value;
         }
       });
-      
+
       localStorage.setItem('prompt-builder-state', JSON.stringify(state));
     } catch (error) {
       console.warn('Failed to save form state:', error);
@@ -275,21 +382,21 @@ import Form from './ui/Form.astro';
   }
 
   function updateGenerateButton() {
-    const btn = document.getElementById('generate-prompt-btn');
+    const btn = document.getElementById('generate-prompt-btn') as HTMLButtonElement;
     const taskInput = document.getElementById('task') as HTMLTextAreaElement;
-    
+
     if (btn && taskInput) {
       const hasTask = taskInput.value.trim().length > 0;
-      const hasAgent = selectedAgent !== null;
-      
-      btn.disabled = !hasTask || !hasAgent;
-      
-      if (!hasAgent) {
-        btn.title = 'Please select an agent first';
-      } else if (!hasTask) {
+
+      // Allow generation without agent - will use generic prompt format
+      btn.disabled = !hasTask;
+
+      if (!hasTask) {
         btn.title = 'Please enter a task description';
+      } else if (!selectedAgent) {
+        btn.title = 'Generate prompt (select an agent for enhanced output)';
       } else {
-        btn.title = 'Generate semantic prompt';
+        btn.title = 'Generate semantic prompt with agent persona';
       }
     }
   }
@@ -300,7 +407,7 @@ import Form from './ui/Form.astro';
     const formatEl = document.getElementById('format') as HTMLInputElement;
     const requirementsEl = document.getElementById('output-requirements') as HTMLTextAreaElement;
 
-    if (!taskEl || !selectedAgent) return;
+    if (!taskEl) return;
 
     const task = taskEl.value.trim();
     const context = contextEl?.value.trim() || '';
@@ -315,8 +422,8 @@ import Form from './ui/Form.astro';
     try {
       let prompt: string;
 
-      if (currentProject?.id) {
-        // Use project-based generation
+      if (currentProject?.id && selectedAgent) {
+        // Use project-based generation with agent
         const response = await api.prompts.generate(currentProject.id, {
           agentId: selectedAgent.id,
           task,
@@ -326,7 +433,7 @@ import Form from './ui/Form.astro';
         });
         prompt = response.prompt;
       } else {
-        // Fallback to client-side generation
+        // Client-side generation (works with or without agent)
         prompt = generateClientSidePrompt(selectedAgent, task, context, format, outputReqs);
       }
 
@@ -355,11 +462,18 @@ import Form from './ui/Form.astro';
     }
   }
 
-  function generateClientSidePrompt(agent: any, task: string, context: string, format: string, outputReqs: string): string {
-    let prompt = `${agent.role}\n\n`;
+  function generateClientSidePrompt(agent: any | null, task: string, context: string, format: string, outputReqs: string): string {
+    let prompt = '';
 
-    if (agent.style) {
-      prompt += `<agent_style>\n${agent.style}\n</agent_style>\n\n`;
+    // Add agent role/prompt if available
+    if (agent) {
+      const agentRole = agent.prompt_content || agent.role || '';
+      if (agentRole) {
+        prompt += `<agent_role>\n${agentRole}\n</agent_role>\n\n`;
+      }
+      if (agent.style) {
+        prompt += `<agent_style>\n${agent.style}\n</agent_style>\n\n`;
+      }
     }
 
     if (context) {
@@ -389,7 +503,7 @@ import Form from './ui/Form.astro';
 
     // Clear saved state
     localStorage.removeItem('prompt-builder-state');
-    
+
     // Hide clear requirement button
     const clearBtn = document.getElementById('clear-requirement-btn');
     if (clearBtn) clearBtn.style.display = 'none';
@@ -400,23 +514,23 @@ import Form from './ui/Form.astro';
   function clearRequirements() {
     const textarea = document.getElementById('output-requirements') as HTMLTextAreaElement;
     const clearBtn = document.getElementById('clear-requirement-btn');
-    
+
     if (textarea) textarea.value = '';
     if (clearBtn) clearBtn.style.display = 'none';
-    
+
     selectedRequirement = null;
     saveFormState();
   }
 
   function switchView(viewName: 'builder' | 'output') {
     if (window.innerWidth >= 769) return;
-    
+
     document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-view'));
     document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
-    
+
     const panel = document.getElementById(`view-${viewName}`);
     if (panel) panel.classList.add('active-view');
-    
+
     const tab = document.querySelector(`[data-view="${viewName}"]`);
     if (tab) tab.classList.add('active');
   }
@@ -432,4 +546,98 @@ import Form from './ui/Form.astro';
 
   // Update generate button state when task changes
   document.getElementById('task')?.addEventListener('input', updateGenerateButton);
+
+  function toggleEnhanceOptions() {
+    const options = document.getElementById('ai-enhance-options');
+    if (options) {
+      options.style.display = options.style.display === 'none' ? 'flex' : 'none';
+    }
+  }
+
+  async function enhanceWithAI(enhancementType: string) {
+    const taskEl = document.getElementById('task') as HTMLTextAreaElement;
+    const contextEl = document.getElementById('context') as HTMLTextAreaElement;
+    const formatEl = document.getElementById('format') as HTMLInputElement;
+    const requirementsEl = document.getElementById('output-requirements') as HTMLTextAreaElement;
+
+    const task = taskEl?.value.trim() || '';
+
+    if (!task) {
+      showToast('Please enter a task description first', 'error');
+      return;
+    }
+
+    // Hide options and show loading state
+    const options = document.getElementById('ai-enhance-options');
+    const enhanceBtn = document.getElementById('ai-enhance-btn');
+    if (options) options.style.display = 'none';
+    if (enhanceBtn) {
+      enhanceBtn.classList.add('enhancing');
+      enhanceBtn.setAttribute('disabled', 'true');
+    }
+
+    try {
+      // Build the prompt to enhance
+      let fullPrompt = task;
+      if (contextEl?.value.trim()) {
+        fullPrompt += `\n\nContext: ${contextEl.value.trim()}`;
+      }
+      if (formatEl?.value.trim()) {
+        fullPrompt += `\n\nOutput Format: ${formatEl.value.trim()}`;
+      }
+      if (requirementsEl?.value.trim()) {
+        fullPrompt += `\n\nRequirements: ${requirementsEl.value.trim()}`;
+      }
+
+      // Call the AI enhance endpoint
+      const response = await fetch('/api/ai/enhance-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          enhancementType,
+          projectId: currentProject?.id || null
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Enhancement failed');
+      }
+
+      const data = await response.json();
+
+      // Display the enhanced prompt in the output area
+      const outputDisplay = document.getElementById('output-display');
+      if (outputDisplay && data.enhanced) {
+        outputDisplay.textContent = data.enhanced;
+        outputDisplay.classList.remove('output-placeholder');
+
+        // Dispatch event
+        document.dispatchEvent(new CustomEvent('prompt-generated', {
+          detail: {
+            prompt: data.enhanced,
+            original: fullPrompt,
+            enhancementType,
+            isEnhanced: true
+          }
+        }));
+      }
+
+      showToast(`Prompt enhanced with ${enhancementType} style!`);
+
+      // Switch to output view on mobile
+      if (window.innerWidth < 769) {
+        switchView('output');
+      }
+
+    } catch (error) {
+      console.error('AI enhancement failed:', error);
+      showToast('AI enhancement failed. Please try again.', 'error');
+    } finally {
+      if (enhanceBtn) {
+        enhanceBtn.classList.remove('enhancing');
+        enhanceBtn.removeAttribute('disabled');
+      }
+    }
+  }
 </script>

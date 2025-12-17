@@ -50,16 +50,20 @@ import Form from './ui/Form.astro';
 <Modal id="agent-modal" title="Agent Details">
   <input type="hidden" id="agent-id" />
   <Form>
-    <label for="agent-name">Agent Name</label>
-    <input type="text" id="agent-name" placeholder="e.g., Senior Developer" required />
+    <label for="agent-name">Command Name (slug)</label>
+    <input type="text" id="agent-name" placeholder="e.g., senior-developer" required />
   </Form>
   <Form>
-    <label for="agent-role">Role Description</label>
-    <textarea id="agent-role" rows="4" placeholder="Define the agent's role and expertise..." required></textarea>
+    <label for="agent-display-name">Display Name</label>
+    <input type="text" id="agent-display-name" placeholder="e.g., Senior Developer" />
   </Form>
   <Form>
-    <label for="agent-style">Communication Style</label>
-    <textarea id="agent-style" rows="3" placeholder="How should this agent communicate? (tone, format, etc.)"></textarea>
+    <label for="agent-prompt">Agent Prompt / Role Description</label>
+    <textarea id="agent-prompt" rows="4" placeholder="Define the agent's role, expertise, and behavior..." required></textarea>
+  </Form>
+  <Form>
+    <label for="agent-category">Category</label>
+    <input type="text" id="agent-category" placeholder="e.g., development, writing, analysis" />
   </Form>
   <div class="modal-actions">
     <Button variant="secondary" id="btn-delete-agent" style="margin-right: auto; color: #ef4444; border-color: #ef4444;">
@@ -76,7 +80,7 @@ import Form from './ui/Form.astro';
     border-radius: var(--radius-md);
     overflow: hidden;
   }
-  
+
   .collapsible-header {
     display: flex;
     justify-content: space-between;
@@ -87,11 +91,11 @@ import Form from './ui/Form.astro';
     user-select: none;
     transition: var(--transition-fast);
   }
-  
+
   .collapsible-header:hover {
     background: var(--bg-elevated);
   }
-  
+
   .collapsible-title {
     font-family: var(--font-display);
     font-size: 0.75rem;
@@ -103,7 +107,7 @@ import Form from './ui/Form.astro';
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   .collapsible-title .count {
     background: var(--accent-primary);
     color: white;
@@ -111,33 +115,33 @@ import Form from './ui/Form.astro';
     padding: 0.1rem 0.4rem;
     border-radius: 10px;
   }
-  
+
   .collapsible-actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   .chevron {
     transition: transform var(--transition-fast);
     color: var(--text-muted);
   }
-  
+
   .collapsible-section.collapsed .chevron {
     transform: rotate(-90deg);
   }
-  
+
   .collapsible-content {
     max-height: 400px;
     overflow-y: auto;
     transition: max-height 0.3s ease;
   }
-  
+
   .collapsible-section.collapsed .collapsible-content {
     max-height: 0;
     overflow: hidden;
   }
-  
+
   .collapsible-list {
     display: flex;
     flex-direction: column;
@@ -156,24 +160,24 @@ import Form from './ui/Form.astro';
     font-size: 0.85rem;
     margin-bottom: 0.5rem;
   }
-  
+
   .selection-tag.has-selection {
     background: rgba(99, 102, 241, 0.08);
     border-color: rgba(99, 102, 241, 0.3);
   }
-  
+
   .selection-tag-name {
     font-family: var(--font-display);
     font-weight: 600;
   }
-  
+
   .selection-tag-status {
     font-size: 0.65rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
-  
+
   .selection-tag-actions {
     display: flex;
     gap: 0.25rem;
@@ -187,31 +191,31 @@ import Form from './ui/Form.astro';
     cursor: pointer;
     transition: var(--transition-fast);
   }
-  
+
   .item-card:hover {
     background: var(--bg-elevated);
     border-color: var(--border-default);
   }
-  
+
   .item-card.active {
     background: rgba(99, 102, 241, 0.1);
     border-color: var(--accent-primary);
   }
-  
+
   .item-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.25rem;
   }
-  
+
   .item-name {
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 0.85rem;
     color: var(--text-primary);
   }
-  
+
   .item-preview {
     font-size: 0.75rem;
     color: var(--text-muted);
@@ -268,7 +272,10 @@ import Form from './ui/Form.astro';
     container.innerHTML = agents.map(agent => `
       <div class="item-card ${agent.id === selectedAgentId ? 'active' : ''}" onclick="selectAgent('${agent.id}')">
         <div class="item-card-header">
-          <span class="item-name">${escapeHtml(agent.name)}</span>
+          <div class="item-name-group">
+            <span class="item-name">${agent.icon || '🤖'} ${escapeHtml(agent.display_name || agent.name)}</span>
+            ${agent.category ? `<span class="item-category">${escapeHtml(agent.category)}</span>` : ''}
+          </div>
           <button class="btn-ghost btn-xs" onclick="event.stopPropagation(); editAgent('${agent.id}')" title="Edit">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -276,7 +283,7 @@ import Form from './ui/Form.astro';
             </svg>
           </button>
         </div>
-        <span class="item-preview">${escapeHtml(agent.role)}</span>
+        <p class="item-preview">${escapeHtml(agent.prompt_content || agent.role || '')}</p>
       </div>
     `).join('');
   }
@@ -289,25 +296,25 @@ import Form from './ui/Form.astro';
   function selectAgent(id: string) {
     selectedAgentId = id;
     const agent = agents.find(a => a.id === id);
-    
+
     if (agent) {
       const display = document.getElementById('current-agent-display');
       const clearBtn = document.getElementById('clear-agent-btn');
-      
+
       if (display) {
         const nameEl = display.querySelector('.selection-tag-name');
         if (nameEl) nameEl.textContent = agent.name;
         display.classList.add('has-selection');
       }
-      
+
       if (clearBtn) clearBtn.style.display = 'block';
-      
+
       // Dispatch event for other components
-      document.dispatchEvent(new CustomEvent('agent-selected', { 
-        detail: { agent } 
+      document.dispatchEvent(new CustomEvent('agent-selected', {
+        detail: { agent }
       }));
     }
-    
+
     renderAgentList();
   }
 
@@ -315,15 +322,15 @@ import Form from './ui/Form.astro';
     selectedAgentId = null;
     const display = document.getElementById('current-agent-display');
     const clearBtn = document.getElementById('clear-agent-btn');
-    
+
     if (display) {
       const nameEl = display.querySelector('.selection-tag-name');
       if (nameEl) nameEl.textContent = 'No agent selected';
       display.classList.remove('has-selection');
     }
-    
+
     if (clearBtn) clearBtn.style.display = 'none';
-    
+
     renderAgentList();
   }
 
@@ -335,49 +342,62 @@ import Form from './ui/Form.astro';
     const modal = document.getElementById('agent-modal');
     const idInput = document.getElementById('agent-id') as HTMLInputElement;
     const nameInput = document.getElementById('agent-name') as HTMLInputElement;
-    const roleInput = document.getElementById('agent-role') as HTMLTextAreaElement;
-    const styleInput = document.getElementById('agent-style') as HTMLTextAreaElement;
+    const displayNameInput = document.getElementById('agent-display-name') as HTMLInputElement;
+    const promptInput = document.getElementById('agent-prompt') as HTMLTextAreaElement;
+    const categoryInput = document.getElementById('agent-category') as HTMLInputElement;
     const deleteBtn = document.getElementById('btn-delete-agent');
 
     if (idInput) idInput.value = agent.id;
     if (nameInput) nameInput.value = agent.name;
-    if (roleInput) roleInput.value = agent.role;
-    if (styleInput) styleInput.value = agent.style || '';
+    if (displayNameInput) displayNameInput.value = agent.display_name || '';
+    if (promptInput) promptInput.value = agent.prompt_content || agent.role || '';
+    if (categoryInput) categoryInput.value = agent.category || '';
     if (deleteBtn) deleteBtn.style.display = 'block';
 
     // Show modal
-    if (modal) modal.style.display = 'flex';
+    if (modal) modal.classList.add('open');
   }
 
   function openNewAgentModal() {
     const modal = document.getElementById('agent-modal');
-    const form = modal?.querySelector('form');
+    const idInput = document.getElementById('agent-id') as HTMLInputElement;
+    const nameInput = document.getElementById('agent-name') as HTMLInputElement;
+    const displayNameInput = document.getElementById('agent-display-name') as HTMLInputElement;
+    const promptInput = document.getElementById('agent-prompt') as HTMLTextAreaElement;
+    const categoryInput = document.getElementById('agent-category') as HTMLInputElement;
     const deleteBtn = document.getElementById('btn-delete-agent');
-    
-    if (form) form.reset();
+
+    // Clear all fields
+    if (idInput) idInput.value = '';
+    if (nameInput) nameInput.value = '';
+    if (displayNameInput) displayNameInput.value = '';
+    if (promptInput) promptInput.value = '';
+    if (categoryInput) categoryInput.value = '';
     if (deleteBtn) deleteBtn.style.display = 'none';
-    if (modal) modal.style.display = 'flex';
+    if (modal) modal.classList.add('open');
   }
 
   async function saveAgent() {
     const idInput = document.getElementById('agent-id') as HTMLInputElement;
     const nameInput = document.getElementById('agent-name') as HTMLInputElement;
-    const roleInput = document.getElementById('agent-role') as HTMLTextAreaElement;
-    const styleInput = document.getElementById('agent-style') as HTMLTextAreaElement;
+    const displayNameInput = document.getElementById('agent-display-name') as HTMLInputElement;
+    const promptInput = document.getElementById('agent-prompt') as HTMLTextAreaElement;
+    const categoryInput = document.getElementById('agent-category') as HTMLInputElement;
 
-    if (!nameInput || !roleInput) return;
+    if (!nameInput || !promptInput) return;
 
     const name = nameInput.value.trim();
-    const role = roleInput.value.trim();
-    const style = styleInput.value.trim();
+    const display_name = displayNameInput?.value.trim() || '';
+    const prompt_content = promptInput.value.trim();
+    const category = categoryInput?.value.trim() || 'general';
 
-    if (!name || !role) {
-      showToast('Name and role are required', 'error');
+    if (!name || !prompt_content) {
+      showToast('Name and prompt content are required', 'error');
       return;
     }
 
     try {
-      const agentData = { name, role, style };
+      const agentData = { name, display_name, prompt_content, category, is_enabled: true };
       const isUpdate = idInput && idInput.value;
 
       if (isUpdate) {
@@ -410,11 +430,11 @@ import Form from './ui/Form.astro';
     try {
       await api.agents.delete(idInput.value);
       showToast('Agent deleted');
-      
+
       if (selectedAgentId === idInput.value) {
         clearAgentSelection();
       }
-      
+
       await loadAgents();
       closeAgentModal();
     } catch (error) {
@@ -425,7 +445,7 @@ import Form from './ui/Form.astro';
 
   function closeAgentModal() {
     const modal = document.getElementById('agent-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.classList.remove('open');
   }
 
   function setupEventListeners() {

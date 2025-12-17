@@ -93,7 +93,7 @@ import Modal from '../components/ui/Modal.astro';
 
       <div id="rule-form" class="rule-form" style="display: none;">
         <input type="hidden" id="rule-set-id" />
-        
+
         <Form>
           <label for="rule-set-name">Rule Set Name</label>
           <input type="text" id="rule-set-name" placeholder="e.g., Code Review Guidelines" required />
@@ -557,7 +557,7 @@ import Modal from '../components/ui/Modal.astro';
     try {
       ruleSets = await api.rules.list();
       renderRuleSetList();
-      
+
       if (ruleSets.length > 0 && !selectedRuleSetId) {
         selectRuleSet(ruleSets[0].id);
       }
@@ -602,7 +602,7 @@ import Modal from '../components/ui/Modal.astro';
   function renderRuleEditor(ruleSet?: RuleSet) {
     const content = document.getElementById('rule-editor-content');
     const form = document.getElementById('rule-form');
-    
+
     if (!content || !form) return;
 
     if (!ruleSet) {
@@ -623,13 +623,13 @@ import Modal from '../components/ui/Modal.astro';
     if (idInput) idInput.value = ruleSet.id || '';
     if (nameInput) nameInput.value = ruleSet.name || '';
     if (descriptionInput) descriptionInput.value = ruleSet.description || '';
-    if (contentInput) contentInput.value = ruleSet.rules_content || '';
+    if (contentInput) contentInput.value = ruleSet.rule_content || '';
 
     // Show/hide action buttons
     const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
     const duplicateBtn = document.getElementById('duplicate-rule-set-btn');
     const deleteBtn = document.getElementById('delete-rule-set-btn');
-    
+
     if (aiEnhanceBtn && duplicateBtn && deleteBtn) {
       if (ruleSet.id) {
         aiEnhanceBtn.style.display = 'flex';
@@ -665,7 +665,7 @@ import Modal from '../components/ui/Modal.astro';
       <div class="rule-preview">
         <div class="preview-section">
           <div class="preview-label">RULES</div>
-          <div class="preview-value">${escapeHtml(ruleSet.rules_content)}</div>
+          <div class="preview-value">${escapeHtml(ruleSet.rule_content)}</div>
         </div>
       </div>
     `;
@@ -678,27 +678,27 @@ import Modal from '../components/ui/Modal.astro';
   function selectRuleSet(id: string) {
     selectedRuleSetId = id;
     const ruleSet = ruleSets.find(r => r.id === id);
-    
+
     renderRuleSetList();
     renderRuleEditor(ruleSet);
     renderRulePreview(ruleSet);
-    
+
     isEditing = false;
   }
 
   function startNewRuleSet() {
     selectedRuleSetId = null;
     isEditing = true;
-    
+
     const newRuleSet: Partial<RuleSet> = {
       name: '',
       description: '',
-      rules_content: ''
+      rule_content: ''
     };
-    
+
     renderRuleEditor(newRuleSet as RuleSet);
     renderRulePreview();
-    
+
     const nameInput = document.getElementById('rule-set-name') as HTMLInputElement;
     if (nameInput) nameInput.focus();
   }
@@ -713,15 +713,15 @@ import Modal from '../components/ui/Modal.astro';
 
     const name = nameInput.value.trim();
     const description = descriptionInput?.value.trim() || '';
-    const rules_content = contentInput.value.trim();
+    const rule_content = contentInput.value.trim();
 
-    if (!name || !rules_content) {
+    if (!name || !rule_content) {
       showToast('Name and rules content are required', 'error');
       return;
     }
 
     try {
-      const ruleSetData = { name, description, rules_content };
+      const ruleSetData = { name, description, rule_content };
       const isUpdate = idInput && idInput.value;
 
       let savedRuleSet: RuleSet;
@@ -755,9 +755,9 @@ import Modal from '../components/ui/Modal.astro';
     try {
       await api.rules.delete(selectedRuleSetId);
       showToast('Rule set deleted');
-      
+
       await loadRuleSets();
-      
+
       if (ruleSets.length > 0) {
         selectRuleSet(ruleSets[0].id);
       } else {
@@ -773,7 +773,7 @@ import Modal from '../components/ui/Modal.astro';
 
   function cancelEdit() {
     isEditing = false;
-    
+
     if (selectedRuleSetId) {
       const ruleSet = ruleSets.find(r => r.id === selectedRuleSetId);
       renderRuleEditor(ruleSet);
@@ -797,7 +797,7 @@ import Modal from '../components/ui/Modal.astro';
 
     try {
       showEnhancementProgress();
-      
+
       const enhanced = await api.ai.enhanceRules(selectedRuleSetId, {
         context,
         goals
@@ -811,11 +811,11 @@ import Modal from '../components/ui/Modal.astro';
 
       hideEnhancementProgress();
       showToast('Rules enhanced successfully!');
-      
+
       // Close modal
       const modal = document.getElementById('ai-enhance-modal');
       if (modal) modal.style.display = 'none';
-      
+
     } catch (error) {
       console.error('Failed to enhance rules:', error);
       hideEnhancementProgress();
@@ -849,10 +849,10 @@ import Modal from '../components/ui/Modal.astro';
     const interval = setInterval(() => {
       progress += Math.random() * 15;
       if (progress > 90) progress = 90;
-      
+
       const fill = document.querySelector('.progress-fill') as HTMLElement;
       if (fill) fill.style.width = `${progress}%`;
-      
+
       if (progress >= 90) clearInterval(interval);
     }, 500);
   }
@@ -883,34 +883,34 @@ import Modal from '../components/ui/Modal.astro';
     // New rule set button
     document.getElementById('new-rule-set-btn')?.addEventListener('click', startNewRuleSet);
     document.getElementById('empty-new-rule-set-btn')?.addEventListener('click', startNewRuleSet);
-    
+
     // Form actions
     document.getElementById('save-rule-set-btn')?.addEventListener('click', saveRuleSet);
     document.getElementById('cancel-rule-set-btn')?.addEventListener('click', cancelEdit);
     document.getElementById('delete-rule-set-btn')?.addEventListener('click', deleteRuleSet);
-    
+
     // AI Enhancement
     document.getElementById('ai-enhance-btn')?.addEventListener('click', () => {
       const modal = document.getElementById('ai-enhance-modal');
       if (modal) modal.style.display = 'flex';
     });
-    
+
     document.getElementById('btn-start-enhance')?.addEventListener('click', enhanceRules);
     document.getElementById('btn-cancel-enhance')?.addEventListener('click', () => {
       const modal = document.getElementById('ai-enhance-modal');
       if (modal) modal.style.display = 'none';
     });
-    
+
     // Search
     document.getElementById('rule-set-search')?.addEventListener('input', (e) => {
       const target = e.target as HTMLInputElement;
       const query = target.value.toLowerCase();
-      
+
       const cards = document.querySelectorAll('.item-card');
       cards.forEach(card => {
         const name = card.querySelector('.item-name')?.textContent?.toLowerCase() || '';
         const preview = card.querySelector('.item-preview')?.textContent?.toLowerCase() || '';
-        
+
         if (name.includes(query) || preview.includes(query)) {
           (card as HTMLElement).style.display = 'block';
         } else {

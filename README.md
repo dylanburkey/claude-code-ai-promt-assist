@@ -2,6 +2,76 @@
 
 **Semantic Prompt Workstation** is a Progressive Web App (PWA) for generating semantic, well-structured prompts for AI models. It combines agent personas with tasks, context, and formatting requirements to produce contextually-rich prompts.
 
+## Interface Overview
+
+### Prompt Builder (Home)
+
+![Prompt Builder](docs/images/home-page.png)
+
+The **Prompt Builder** is the main interface for creating AI prompts. It provides an interactive form where you can:
+- Select an agent persona to define the AI's role and expertise
+- Specify the task you want the AI to accomplish
+- Add context and constraints to guide the response
+- Define output format requirements
+- Generate semantic, well-structured prompts ready for use with Claude or other AI models
+
+### Projects
+
+![Projects](docs/images/projects-page.png)
+
+The **Projects** page allows you to organize your work into logical groupings. Each project can contain:
+- Multiple prompts tailored to specific use cases
+- Assigned agents with their personas and expertise
+- Custom rules for IDE configuration
+- Hooks for automation workflows
+- Export functionality to generate complete Claude Code project structures
+
+Projects help teams standardize AI workflows and maintain consistent configurations across development environments.
+
+### Agents
+
+![Agents](docs/images/agents-page.png)
+
+The **Agents** page is where you create and manage AI personas. Each agent defines:
+- **Name**: A descriptive identifier (e.g., "Senior Python Developer")
+- **Role**: The persona description defining expertise, behavior, and domain knowledge
+- **Output Style**: Preferences for how responses should be formatted
+
+Agents can be assigned to projects and used across multiple prompts to maintain consistent AI behavior.
+
+### Rules
+
+![Rules](docs/images/rules-page.png)
+
+The **Rules** page enables you to create IDE-specific configuration files. Supported formats include:
+- **Claude Code** (`.claude/rules.md`) - Rules for Claude Code CLI
+- **Cursor** (`.cursorrules`) - Configuration for Cursor IDE
+- **Windsurf** (`.windsurfrules`) - Rules for Windsurf editor
+- **VS Code** (`.vscode/settings.json`) - VS Code workspace settings
+- **Zed** (`.zed/settings.json`) - Zed editor configuration
+
+Rules help enforce coding standards, define project conventions, and guide AI behavior within your development environment.
+
+### Hooks
+
+![Hooks](docs/images/hooks-page.png)
+
+The **Hooks** page lets you define automation triggers for Claude Code workflows. Hooks execute shell commands in response to lifecycle events:
+- **PreToolUse**: Run before a tool executes
+- **PostToolUse**: Run after a tool completes
+- **Notification**: Triggered on specific events
+- **Stop**: Control when Claude should pause
+
+Each hook can be configured with:
+- Event type and timing
+- Shell commands to execute
+- Matchers for filtering (tool names, file patterns)
+- Timeout settings
+
+Hooks enable automated testing, linting, formatting, and custom validation workflows.
+
+---
+
 ## Core Features
 
 - **Agent Management**: Create and manage AI agent personas with custom roles and output styles

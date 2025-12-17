@@ -943,39 +943,48 @@
             // ERROR HANDLER
             // ============================================
             const ErrorHandler = {
-                showError(message, type = 'error') {
+                showError(message, type = "error") {
                     showToast(message, type);
                 },
 
-                handleApiError(error, context = '') {
+                handleApiError(error, context = "") {
                     const message = this.getApiErrorMessage(error);
                     console.error(`[${context}]`, error);
-                    this.showError(message, 'error');
+                    this.showError(message, "error");
                     return { success: false, error: message };
                 },
 
                 getApiErrorMessage(error) {
-                    if (error.message === 'Failed to fetch') {
-                        return 'Network error. Please check your connection.';
+                    if (error.message === "Failed to fetch") {
+                        return "Network error. Please check your connection.";
                     }
                     if (error.status === 400) {
-                        return error.message || 'Invalid request. Please check your input.';
+                        return (
+                            error.message ||
+                            "Invalid request. Please check your input."
+                        );
                     }
                     if (error.status === 404) {
-                        return 'The requested resource was not found.';
+                        return "The requested resource was not found.";
                     }
                     if (error.status === 500) {
-                        return 'Server error. Please try again later.';
+                        return "Server error. Please try again later.";
                     }
-                    return error.message || 'An unexpected error occurred.';
+                    return error.message || "An unexpected error occurred.";
                 },
 
                 validateForm(formData, rules) {
                     const errors = [];
                     for (const [field, r] of Object.entries(rules)) {
                         const v = formData[field];
-                        if (r.required && (!v || (typeof v === 'string' && v.trim() === ''))) {
-                            errors.push({ field, message: `${r.label || field} is required` });
+                        if (
+                            r.required &&
+                            (!v || (typeof v === "string" && v.trim() === ""))
+                        ) {
+                            errors.push({
+                                field,
+                                message: `${r.label || field} is required`,
+                            });
                         }
                     }
                     return errors;
@@ -984,33 +993,54 @@
                 showFieldError(fieldId, message) {
                     const field = document.getElementById(fieldId);
                     if (field) {
-                        field.style.borderColor = 'var(--accent-error)';
-                        const existingError = field.parentNode.querySelector('.field-error');
+                        field.style.borderColor = "var(--accent-error)";
+                        const existingError =
+                            field.parentNode.querySelector(".field-error");
                         if (existingError) existingError.remove();
-                        const errorEl = document.createElement('span');
-                        errorEl.className = 'field-error';
+                        const errorEl = document.createElement("span");
+                        errorEl.className = "field-error";
                         errorEl.textContent = message;
-                        errorEl.style.cssText = 'color: var(--accent-error); font-size: 0.75rem; margin-top: 0.25rem; display: block;';
+                        errorEl.style.cssText =
+                            "color: var(--accent-error); font-size: 0.75rem; margin-top: 0.25rem; display: block;";
                         field.parentNode.appendChild(errorEl);
                     }
                 },
 
                 clearFieldErrors() {
-                    document.querySelectorAll('.field-error').forEach(el => el.remove());
-                    document.querySelectorAll('input, textarea, select').forEach(el => {
-                        el.style.borderColor = '';
-                    });
+                    document
+                        .querySelectorAll(".field-error")
+                        .forEach((el) => el.remove());
+                    document
+                        .querySelectorAll("input, textarea, select")
+                        .forEach((el) => {
+                            el.style.borderColor = "";
+                        });
                 },
 
                 setupGlobalHandler() {
-                    window.onerror = (message, source, lineno, colno, error) => {
-                        console.error('[GlobalError]', { message, source, lineno, colno, error });
+                    window.onerror = (
+                        message,
+                        source,
+                        lineno,
+                        colno,
+                        error,
+                    ) => {
+                        console.error("[GlobalError]", {
+                            message,
+                            source,
+                            lineno,
+                            colno,
+                            error,
+                        });
                         return false;
                     };
                     window.onunhandledrejection = (event) => {
-                        console.error('[UnhandledPromiseRejection]', event.reason);
+                        console.error(
+                            "[UnhandledPromiseRejection]",
+                            event.reason,
+                        );
                     };
-                }
+                },
             };
             ErrorHandler.setupGlobalHandler();
 
@@ -1032,23 +1062,32 @@
                     );
 
                     let data;
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
+                    const contentType = response.headers.get("content-type");
+                    if (
+                        contentType &&
+                        contentType.includes("application/json")
+                    ) {
                         data = await response.json();
                     } else {
                         data = await response.text();
                     }
 
                     if (!response.ok) {
-                        const error = new Error(data.error || data || "API request failed");
+                        const error = new Error(
+                            data.error || data || "API request failed",
+                        );
                         error.status = response.status;
                         error.data = data;
                         throw error;
                     }
                     return data;
                 } catch (error) {
-                    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-                        error.message = 'Network error. Please check your connection.';
+                    if (
+                        error.name === "TypeError" &&
+                        error.message === "Failed to fetch"
+                    ) {
+                        error.message =
+                            "Network error. Please check your connection.";
                     }
                     throw error;
                 }
@@ -1097,15 +1136,22 @@
                 try {
                     const response = await api("/projects");
                     console.log("API response:", response);
-                    
+
                     // Handle the response structure from the API
-                    if (response && response.projects && Array.isArray(response.projects)) {
+                    if (
+                        response &&
+                        response.projects &&
+                        Array.isArray(response.projects)
+                    ) {
                         projects = response.projects;
                     } else {
-                        console.error("Invalid API response structure:", response);
+                        console.error(
+                            "Invalid API response structure:",
+                            response,
+                        );
                         projects = [];
                     }
-                    
+
                     renderProjects();
                 } catch (error) {
                     console.error("Failed to load projects:", error);
@@ -1152,9 +1198,20 @@
                 // Render cards
                 const cards = filtered
                     .map((project) => {
-                        const tags = project.tags
-                            ? JSON.parse(project.tags)
-                            : [];
+                        // tags may already be an array from API or a JSON string
+                        let tags = [];
+                        if (Array.isArray(project.tags)) {
+                            tags = project.tags;
+                        } else if (
+                            typeof project.tags === "string" &&
+                            project.tags
+                        ) {
+                            try {
+                                tags = JSON.parse(project.tags);
+                            } catch (e) {
+                                tags = [];
+                            }
+                        }
                         return `
                         <div class="project-card" onclick="navigateToProject('${project.slug}')">
                             <div class="project-cover">
@@ -1308,7 +1365,10 @@
                             project.category || "";
                         document.getElementById("project-tags").value =
                             project.tags
-                                ? JSON.parse(project.tags).join(", ")
+                                ? (Array.isArray(project.tags)
+                                      ? project.tags
+                                      : JSON.parse(project.tags)
+                                  ).join(", ")
                                 : "";
                         document.getElementById("project-ai-context").value =
                             project.ai_context_summary || "";

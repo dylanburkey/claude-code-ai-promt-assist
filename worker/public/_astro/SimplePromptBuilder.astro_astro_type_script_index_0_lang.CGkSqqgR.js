@@ -1,0 +1,29 @@
+import{a as v}from"./api.CmHKHOM5.js";let m=null,p=null,f=null;document.addEventListener("DOMContentLoaded",()=>{I(),B()});function I(){document.getElementById("generate-prompt-btn")?.addEventListener("click",q),document.getElementById("clear-form-btn")?.addEventListener("click",w),document.getElementById("clear-requirement-btn")?.addEventListener("click",b),document.getElementById("ai-enhance-btn")?.addEventListener("click",L),document.querySelectorAll(".enhance-option").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-type")||"general";x(t)})}),document.addEventListener("agent-selected",e=>{m=e.detail.agent,g()}),document.addEventListener("requirement-selected",e=>{p=e.detail.requirement;const t=document.getElementById("output-requirements"),n=document.getElementById("clear-requirement-btn");t&&p&&(t.value=p.requirements_content,n&&(n.style.display="block"))}),document.addEventListener("project-changed",e=>{f=e.detail.project}),["task","context","format","output-requirements"].forEach(e=>{const t=document.getElementById(e);t&&t.addEventListener("input",E)})}function B(){try{const e=localStorage.getItem("prompt-builder-state");if(e){const t=JSON.parse(e);["task","context","format","output-requirements"].forEach(n=>{const o=document.getElementById(n);o&&t[n]&&(o.value=t[n])})}}catch(e){console.warn("Failed to load form state:",e)}}function E(){try{const e={};["task","context","format","output-requirements"].forEach(t=>{const n=document.getElementById(t);n&&(e[t]=n.value)}),localStorage.setItem("prompt-builder-state",JSON.stringify(e))}catch(e){console.warn("Failed to save form state:",e)}}function g(){const e=document.getElementById("generate-prompt-btn"),t=document.getElementById("task");if(e&&t){const n=t.value.trim().length>0;e.disabled=!n,n?m?e.title="Generate semantic prompt with agent persona":e.title="Generate prompt (select an agent for enhanced output)":e.title="Please enter a task description"}}async function q(){const e=document.getElementById("task"),t=document.getElementById("context"),n=document.getElementById("format"),o=document.getElementById("output-requirements");if(!e)return;const s=e.value.trim(),r=t?.value.trim()||"",c=n?.value.trim()||"",i=o?.value.trim()||"";if(!s){l("Please enter a task description","error");return}try{let a;f?.id&&m?a=(await v.prompts.generate(f.id,{agentId:m.id,task:s,context:r,format:c,outputRequirements:i})).prompt:a=k(m,s,r,c,i);const u=document.getElementById("output-display");u&&(u.textContent=a,u.classList.remove("output-placeholder")),document.dispatchEvent(new CustomEvent("prompt-generated",{detail:{prompt:a,agent:m,task:s,context:r,format:c,outputReqs:i}})),l("Prompt generated successfully!"),window.innerWidth<769&&h("output")}catch(a){console.error("Failed to generate prompt:",a),l("Failed to generate prompt","error")}}function k(e,t,n,o,s){let r="";if(e){const c=e.prompt_content||e.role||"";c&&(r+=`<agent_role>
+${c}
+</agent_role>
+
+`),e.style&&(r+=`<agent_style>
+${e.style}
+</agent_style>
+
+`)}return n&&(r+=`<context>
+${n}
+</context>
+
+`),r+=`<task_instruction>
+${t}
+</task_instruction>
+
+`,o&&(r+=`<output_format>
+${o}
+</output_format>
+
+`),s&&(r+=`<output_requirements>
+${s}
+</output_requirements>`),r.trim()}function w(){["task","context","format","output-requirements"].forEach(t=>{const n=document.getElementById(t);n&&(n.value="")}),localStorage.removeItem("prompt-builder-state");const e=document.getElementById("clear-requirement-btn");e&&(e.style.display="none"),l("Form cleared")}function b(){const e=document.getElementById("output-requirements"),t=document.getElementById("clear-requirement-btn");e&&(e.value=""),t&&(t.style.display="none"),p=null,E()}function h(e){if(window.innerWidth>=769)return;document.querySelectorAll(".panel").forEach(o=>o.classList.remove("active-view")),document.querySelectorAll(".mobile-tab").forEach(o=>o.classList.remove("active"));const t=document.getElementById(`view-${e}`);t&&t.classList.add("active-view");const n=document.querySelector(`[data-view="${e}"]`);n&&n.classList.add("active")}function l(e,t="success"){const n=document.getElementById("toast");n&&(n.textContent=e,n.className=`toast ${t} show`,setTimeout(()=>n.classList.remove("show"),3e3))}document.getElementById("task")?.addEventListener("input",g);function L(){const e=document.getElementById("ai-enhance-options");e&&(e.style.display=e.style.display==="none"?"flex":"none")}async function x(e){const t=document.getElementById("task"),n=document.getElementById("context"),o=document.getElementById("format"),s=document.getElementById("output-requirements"),r=t?.value.trim()||"";if(!r){l("Please enter a task description first","error");return}const c=document.getElementById("ai-enhance-options"),i=document.getElementById("ai-enhance-btn");c&&(c.style.display="none"),i&&(i.classList.add("enhancing"),i.setAttribute("disabled","true"));try{let a=r;n?.value.trim()&&(a+=`
+
+Context: ${n.value.trim()}`),o?.value.trim()&&(a+=`
+
+Output Format: ${o.value.trim()}`),s?.value.trim()&&(a+=`
+
+Requirements: ${s.value.trim()}`);const u=await fetch("/api/ai/enhance-prompt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:a,enhancementType:e,projectId:f?.id||null})});if(!u.ok)throw new Error("Enhancement failed");const d=await u.json(),y=document.getElementById("output-display");y&&d.enhanced&&(y.textContent=d.enhanced,y.classList.remove("output-placeholder"),document.dispatchEvent(new CustomEvent("prompt-generated",{detail:{prompt:d.enhanced,original:a,enhancementType:e,isEnhanced:!0}}))),l(`Prompt enhanced with ${e} style!`),window.innerWidth<769&&h("output")}catch(a){console.error("AI enhancement failed:",a),l("AI enhancement failed. Please try again.","error")}finally{i&&(i.classList.remove("enhancing"),i.removeAttribute("disabled"))}}
