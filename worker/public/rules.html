@@ -1,0 +1,2797 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Rules - Semantic Prompt Workstation</title>
+
+        <link rel="manifest" href="manifest.json" />
+        <meta name="theme-color" content="#0a0a0f" />
+        <link rel="icon" type="image/svg+xml" href="icon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            :root {
+                --bg-base: #0a0a0f;
+                --bg-surface: #12121a;
+                --bg-elevated: #1a1a24;
+                --bg-hover: #22222e;
+                --accent-primary: #6366f1;
+                --accent-primary-hover: #818cf8;
+                --accent-secondary: #22d3ee;
+                --accent-success: #34d399;
+                --accent-warning: #fbbf24;
+                --accent-error: #ef4444;
+                --text-primary: #f4f4f5;
+                --text-secondary: #a1a1aa;
+                --text-muted: #71717a;
+                --border-subtle: #27272a;
+                --border-default: #3f3f46;
+                --font-display: "Space Grotesk", system-ui, sans-serif;
+                --font-body: "IBM Plex Sans", system-ui, sans-serif;
+                --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+                --header-height: 60px;
+                --radius-sm: 6px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --transition-fast: 150ms ease;
+                --transition-normal: 200ms ease;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: var(--bg-base);
+                color: var(--text-primary);
+                font-family: var(--font-body);
+                font-size: 14px;
+                line-height: 1.5;
+                min-height: 100vh;
+            }
+
+            /* Header */
+            header {
+                background: var(--bg-surface);
+                border-bottom: 1px solid var(--border-subtle);
+                padding: 0 1.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: var(--header-height);
+                position: sticky;
+                top: 0;
+                z-index: 20;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            h1 {
+                font-family: var(--font-display);
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                letter-spacing: -0.02em;
+            }
+
+            .version-badge {
+                font-size: 0.65rem;
+                font-weight: 600;
+                color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.15);
+                padding: 0.2rem 0.5rem;
+                border-radius: var(--radius-sm);
+            }
+
+            /* Navigation */
+            nav {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem 1rem;
+                color: var(--text-muted);
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.875rem;
+                border-radius: var(--radius-md);
+                transition: var(--transition-fast);
+            }
+
+            .nav-link:hover {
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .nav-link.active {
+                color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.1);
+            }
+
+            .header-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            /* Main Layout */
+            .main-layout {
+                display: grid;
+                grid-template-columns: 320px 1fr 1fr;
+                height: calc(100vh - var(--header-height));
+                overflow: hidden;
+            }
+
+            @media (max-width: 1200px) {
+                .main-layout {
+                    grid-template-columns: 280px 1fr;
+                }
+                .preview-panel {
+                    display: none;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .main-layout {
+                    grid-template-columns: 1fr;
+                }
+                .sidebar {
+                    display: none;
+                }
+            }
+
+            /* Sidebar */
+            .sidebar {
+                background: var(--bg-base);
+                border-right: 1px solid var(--border-subtle);
+                overflow-y: auto;
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .sidebar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .sidebar-title {
+                font-family: var(--font-display);
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--text-muted);
+            }
+
+            /* Rule Set Cards */
+            .rule-set-card {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                padding: 0.875rem;
+                cursor: pointer;
+                transition: var(--transition-fast);
+            }
+
+            .rule-set-card:hover {
+                border-color: var(--border-default);
+                background: var(--bg-elevated);
+            }
+
+            .rule-set-card.active {
+                border-color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.08);
+            }
+
+            .rule-set-name {
+                font-weight: 600;
+                font-size: 0.9rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .rule-set-meta {
+                display: flex;
+                gap: 0.75rem;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+            }
+
+            .rule-set-type {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                font-size: 0.65rem;
+                padding: 0.15rem 0.4rem;
+                background: var(--bg-elevated);
+                border-radius: var(--radius-sm);
+                color: var(--text-secondary);
+            }
+
+            .rule-set-type.claude-md {
+                background: rgba(99, 102, 241, 0.15);
+                color: var(--accent-primary);
+            }
+
+            .rule-set-type.claude-rules {
+                background: rgba(34, 211, 238, 0.15);
+                color: var(--accent-secondary);
+            }
+
+            /* Editor Panel */
+            .editor-panel {
+                background: var(--bg-base);
+                border-right: 1px solid var(--border-subtle);
+                overflow-y: auto;
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+
+            .panel-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .panel-title {
+                font-family: var(--font-display);
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+            /* Form Elements */
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            label {
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: var(--text-secondary);
+            }
+
+            input,
+            textarea,
+            select {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                color: var(--text-primary);
+                padding: 0.75rem 1rem;
+                border-radius: var(--radius-md);
+                width: 100%;
+                font-family: var(--font-body);
+                font-size: 0.875rem;
+                transition: var(--transition-fast);
+            }
+
+            input::placeholder,
+            textarea::placeholder {
+                color: var(--text-muted);
+            }
+
+            input:focus,
+            textarea:focus,
+            select:focus {
+                outline: none;
+                border-color: var(--accent-primary);
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            }
+
+            textarea {
+                resize: vertical;
+                min-height: 100px;
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                line-height: 1.6;
+            }
+
+            textarea.large {
+                min-height: 200px;
+            }
+
+            /* Buttons */
+            button {
+                cursor: pointer;
+                border: none;
+                border-radius: var(--radius-md);
+                padding: 0.625rem 1rem;
+                font-family: var(--font-body);
+                font-size: 0.8rem;
+                font-weight: 500;
+                transition: var(--transition-fast);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .btn-primary {
+                background: var(--accent-primary);
+                color: white;
+            }
+
+            .btn-primary:hover:not(:disabled) {
+                background: var(--accent-primary-hover);
+            }
+
+            .btn-secondary {
+                background: transparent;
+                color: var(--text-secondary);
+                border: 1px solid var(--border-default);
+            }
+
+            .btn-secondary:hover:not(:disabled) {
+                border-color: var(--text-muted);
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .btn-ghost {
+                background: transparent;
+                color: var(--text-muted);
+                padding: 0.5rem;
+            }
+
+            .btn-ghost:hover {
+                color: var(--text-primary);
+                background: var(--bg-hover);
+            }
+
+            .btn-sm {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+            }
+
+            .btn-icon {
+                padding: 0.5rem;
+                width: 36px;
+                height: 36px;
+            }
+
+            /* Rules List */
+            .rules-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .rule-item {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                overflow: hidden;
+            }
+
+            .rule-item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 1rem;
+                background: var(--bg-elevated);
+                cursor: pointer;
+            }
+
+            .rule-item-header:hover {
+                background: var(--bg-hover);
+            }
+
+            .rule-item-title {
+                font-weight: 500;
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .rule-item-actions {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .rule-item-content {
+                padding: 1rem;
+                border-top: 1px solid var(--border-subtle);
+                display: none;
+            }
+
+            .rule-item.expanded .rule-item-content {
+                display: block;
+            }
+
+            .rule-item .chevron {
+                transition: transform var(--transition-fast);
+            }
+
+            .rule-item.expanded .chevron {
+                transform: rotate(180deg);
+            }
+
+            /* Template Arguments */
+            .template-args {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px solid var(--border-subtle);
+            }
+
+            .template-args-title {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                margin-bottom: 0.5rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .arg-item {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+                align-items: center;
+            }
+
+            .arg-item input {
+                flex: 1;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .arg-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                padding: 0.2rem 0.5rem;
+                background: rgba(99, 102, 241, 0.15);
+                color: var(--accent-primary);
+                border-radius: var(--radius-sm);
+                font-size: 0.7rem;
+                font-family: var(--font-mono);
+            }
+
+            /* Preview Panel */
+            .preview-panel {
+                background: var(--bg-surface);
+                overflow-y: auto;
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .preview-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .preview-title {
+                font-family: var(--font-display);
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+
+            .preview-content {
+                background: var(--bg-base);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                line-height: 1.7;
+                white-space: pre-wrap;
+                color: var(--accent-success);
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            .preview-placeholder {
+                color: var(--text-muted);
+                text-align: center;
+                padding: 2rem;
+            }
+
+            /* Category Tabs */
+            .category-tabs {
+                display: flex;
+                gap: 0.25rem;
+                padding: 0.25rem;
+                background: var(--bg-surface);
+                border-radius: var(--radius-md);
+                margin-bottom: 1rem;
+            }
+
+            .category-tab {
+                flex: 1;
+                padding: 0.5rem;
+                text-align: center;
+                font-size: 0.75rem;
+                font-weight: 500;
+                color: var(--text-muted);
+                background: transparent;
+                border: none;
+                border-radius: var(--radius-sm);
+                cursor: pointer;
+                transition: var(--transition-fast);
+            }
+
+            .category-tab:hover {
+                color: var(--text-primary);
+            }
+
+            .category-tab.active {
+                background: var(--accent-primary);
+                color: white;
+            }
+
+            /* Toast */
+            .toast {
+                position: fixed;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%) translateY(100px);
+                background: var(--bg-elevated);
+                border: 1px solid var(--border-default);
+                padding: 0.75rem 1.25rem;
+                border-radius: var(--radius-md);
+                font-size: 0.85rem;
+                z-index: 200;
+                opacity: 0;
+                transition: all 0.3s ease;
+            }
+
+            .toast.show {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+
+            .toast.success {
+                border-color: var(--accent-success);
+                color: var(--accent-success);
+            }
+
+            .toast.error {
+                border-color: var(--accent-error);
+                color: var(--accent-error);
+            }
+
+            /* Modal */
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(4px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 100;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity var(--transition-normal);
+                padding: 1rem;
+            }
+
+            .modal-overlay.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .modal {
+                background: var(--bg-surface);
+                padding: 1.75rem;
+                border-radius: var(--radius-lg);
+                width: 100%;
+                max-width: 500px;
+                border: 1px solid var(--border-default);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+
+            .modal h2 {
+                font-family: var(--font-display);
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+            .modal-actions {
+                display: flex;
+                gap: 0.75rem;
+                justify-content: flex-end;
+                margin-top: 0.5rem;
+            }
+
+            /* Empty State */
+            .empty-state {
+                text-align: center;
+                padding: 2rem;
+                color: var(--text-muted);
+            }
+
+            .empty-state-icon {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                opacity: 0.5;
+            }
+
+            /* Loading */
+            .loading-spinner {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                border: 2px solid var(--border-default);
+                border-top-color: var(--accent-primary);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* Scrollbar */
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--border-default);
+                border-radius: 3px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--text-muted);
+            }
+
+            /* Multi-Project Selector */
+            .multi-project-selector {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .project-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 0.5rem;
+            }
+
+            .project-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.375rem;
+                padding: 0.25rem 0.5rem;
+                background: rgba(99, 102, 241, 0.15);
+                color: var(--accent-primary);
+                border-radius: var(--radius-sm);
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
+
+            .project-tag .remove-tag {
+                cursor: pointer;
+                opacity: 0.7;
+                transition: opacity var(--transition-fast);
+            }
+
+            .project-tag .remove-tag:hover {
+                opacity: 1;
+            }
+
+            /* AI Tools Section */
+            .ai-tools-section {
+                background: var(--bg-base);
+                border: 1px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+            }
+
+            .ai-tools-section h4 {
+                color: var(--text-primary);
+            }
+
+            /* Project Checkboxes in Modal */
+            .project-checkbox-list {
+                max-height: 300px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .project-checkbox-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.625rem 0.75rem;
+                background: var(--bg-elevated);
+                border-radius: var(--radius-sm);
+                cursor: pointer;
+                transition: var(--transition-fast);
+            }
+
+            .project-checkbox-item:hover {
+                background: var(--bg-hover);
+            }
+
+            .project-checkbox-item input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+
+            .project-checkbox-item label {
+                cursor: pointer;
+                flex: 1;
+                font-size: 0.85rem;
+                color: var(--text-primary);
+            }
+
+            .project-checkbox-item.selected {
+                background: rgba(99, 102, 241, 0.15);
+                border: 1px solid var(--accent-primary);
+            }
+
+            /* AI Suggestions Results */
+            .ai-suggestions-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 0.75rem;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .ai-suggestion-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.75rem;
+                background: var(--bg-elevated);
+                border-radius: var(--radius-sm);
+                border: 1px solid var(--border-subtle);
+            }
+
+            .ai-suggestion-item input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                margin-top: 0.125rem;
+            }
+
+            .ai-suggestion-content {
+                flex: 1;
+            }
+
+            .ai-suggestion-title {
+                font-weight: 500;
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .ai-suggestion-text {
+                font-size: 0.75rem;
+                color: var(--text-secondary);
+                line-height: 1.5;
+            }
+
+            /* File Type Selector */
+            .file-type-selector {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .file-type-option {
+                flex: 1;
+                padding: 1rem;
+                background: var(--bg-surface);
+                border: 2px solid var(--border-subtle);
+                border-radius: var(--radius-md);
+                cursor: pointer;
+                transition: var(--transition-fast);
+                text-align: center;
+            }
+
+            .file-type-option:hover {
+                border-color: var(--border-default);
+            }
+
+            .file-type-option.selected {
+                border-color: var(--accent-primary);
+                background: rgba(99, 102, 241, 0.08);
+            }
+
+            .file-type-option input {
+                display: none;
+            }
+
+            .file-type-name {
+                font-family: var(--font-mono);
+                font-weight: 600;
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .file-type-desc {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+            }
+
+            /* Priority Badge */
+            .priority-badge {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.4rem;
+                border-radius: var(--radius-sm);
+                font-weight: 600;
+            }
+
+            .priority-high {
+                background: rgba(239, 68, 68, 0.15);
+                color: var(--accent-error);
+            }
+
+            .priority-medium {
+                background: rgba(251, 191, 36, 0.15);
+                color: var(--accent-warning);
+            }
+
+            .priority-low {
+                background: rgba(113, 113, 122, 0.15);
+                color: var(--text-muted);
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo-section">
+                <h1>Semantic Prompt Workstation</h1>
+                <span class="version-badge">v3.0</span>
+            </div>
+            <nav>
+                <a href="/" class="nav-link">Prompt Builder</a>
+                <a href="/projects" class="nav-link">Projects</a>
+                <a href="/rules" class="nav-link active">Rules</a>
+                <a href="/hooks" class="nav-link">Hooks</a>
+                <a href="/agents" class="nav-link">Agents</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="openNewRuleSetModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    New Rule Set
+                </button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Sidebar: Rule Sets List -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">Rule Sets</span>
+                    <span id="rule-sets-count" style="font-size: 0.75rem; color: var(--text-muted);">0</span>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0.5rem;">
+                    <input type="text" id="search-rule-sets" placeholder="Search rule sets..." oninput="filterRuleSets(this.value)" />
+                </div>
+
+                <div id="rule-sets-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                        </div>
+                        <p>No rule sets yet</p>
+                        <button class="btn-primary btn-sm" style="margin-top: 1rem;" onclick="openNewRuleSetModal()">
+                            Create Your First Rule Set
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Editor Panel -->
+            <section class="editor-panel" id="editor-panel">
+                <div class="panel-header">
+                    <span class="panel-title" id="editor-title">Rule Set Editor</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-secondary btn-sm" id="btn-save-rules" onclick="saveRuleSet()" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Save
+                        </button>
+                        <button class="btn-secondary btn-sm" id="btn-delete-ruleset" onclick="deleteRuleSet()" style="display: none; color: var(--accent-error); border-color: var(--accent-error);">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+
+                <div id="no-selection-state" class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </div>
+                    <p>Select a rule set to edit or create a new one</p>
+                </div>
+
+                <div id="editor-content" style="display: none;">
+                    <div class="input-group">
+                        <label for="ruleset-name">Rule Set Name</label>
+                        <input type="text" id="ruleset-name" placeholder="e.g., My Project Rules" />
+                    </div>
+
+                    <div class="input-group">
+                        <label for="ruleset-description">Description</label>
+                        <input type="text" id="ruleset-description" placeholder="Brief description of this rule set" />
+                    </div>
+
+                    <div class="input-group">
+                        <label>Output File Type</label>
+                        <div class="file-type-selector">
+                            <label class="file-type-option selected" id="type-claude-md">
+                                <input type="radio" name="file-type" value="CLAUDE.md" checked onchange="updateFileType('CLAUDE.md')" />
+                                <div class="file-type-name">CLAUDE.md</div>
+                                <div class="file-type-desc">Project-level rules for Claude Code</div>
+                            </label>
+                            <label class="file-type-option" id="type-claude-rules">
+                                <input type="radio" name="file-type" value=".claude/rules" onchange="updateFileType('.claude/rules')" />
+                                <div class="file-type-name">.claude/rules</div>
+                                <div class="file-type-desc">Directory-based rules</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Link to Projects</label>
+                        <div class="multi-project-selector">
+                            <button class="btn-secondary" type="button" onclick="openProjectLinkModal()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 5v14M5 12h14"/>
+                                </svg>
+                                Select Projects (<span id="linked-projects-count">0</span>)
+                            </button>
+                            <div id="linked-projects-tags" class="project-tags"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                        <span class="sidebar-title">Rules</span>
+                        <button class="btn-primary btn-sm" onclick="addRule()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Add Rule
+                        </button>
+                    </div>
+
+                    <div id="rules-list" class="rules-list">
+                        <!-- Rules will be rendered here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preview Panel -->
+            <section class="preview-panel">
+                <div class="preview-header">
+                    <span class="preview-title">Generated Output</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-secondary btn-sm" onclick="copyPreview()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                        <button class="btn-primary btn-sm" onclick="downloadFile()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+
+                <div class="category-tabs">
+                    <button class="category-tab active" data-tab="preview" onclick="switchPreviewTab('preview')">Preview</button>
+                    <button class="category-tab" data-tab="templates" onclick="switchPreviewTab('templates')">Templates</button>
+                    <button class="category-tab" data-tab="ai-tools" onclick="switchPreviewTab('ai-tools')">AI Tools</button>
+                </div>
+
+                <div id="preview-content" class="preview-content">
+                    <div class="preview-placeholder">
+                        Select or create a rule set to see the generated output
+                    </div>
+                </div>
+
+                <div id="templates-content" style="display: none;">
+                    <div class="sidebar-title" style="margin-bottom: 1rem;">Bootstrap Templates</div>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">
+                        Click a template to apply comprehensive pre-built rules to your current rule set.
+                    </p>
+                    <div id="templates-list">
+                        <!-- Templates will be rendered here -->
+                    </div>
+                </div>
+
+                <div id="ai-tools-content" style="display: none;">
+                    <div class="sidebar-title" style="margin-bottom: 1rem;">AI-Powered Tools</div>
+
+                    <!-- AI Rule Suggestions -->
+                    <div class="ai-tools-section">
+                        <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Generate AI Suggestions</h4>
+                        <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.75rem;">
+                            Enter a rule set name to generate AI-powered rule suggestions.
+                        </p>
+                        <div class="input-group" style="margin-bottom: 0.5rem;">
+                            <input type="text" id="ai-suggestion-name" placeholder="e.g., Web Developer, API Security, Testing" />
+                        </div>
+                        <button class="btn-secondary" onclick="generateAiSuggestions()" id="ai-suggest-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4M12 8h.01"/>
+                            </svg>
+                            Generate Rules
+                        </button>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="ai-tools-section" style="margin-top: 1.5rem;">
+                        <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Export Options</h4>
+                        <div class="input-group">
+                            <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="include-project-context" style="width: auto;">
+                                <span style="font-size: 0.8rem;">Include Project Context</span>
+                            </label>
+                        </div>
+                        <div class="input-group" id="export-project-select-group" style="display: none;">
+                            <label style="font-size: 0.75rem;">Select Project for Context</label>
+                            <select id="export-project-select">
+                                <option value="">Select a project...</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="exportEnhancedClaudeMd()" style="margin-top: 0.75rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Export Enhanced CLAUDE.md
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- New Rule Set Modal -->
+        <div id="new-ruleset-modal" class="modal-overlay">
+            <div class="modal">
+                <h2>Create New Rule Set</h2>
+                <div class="input-group">
+                    <label for="new-ruleset-name">Name</label>
+                    <input type="text" id="new-ruleset-name" placeholder="e.g., Frontend Development Rules" />
+                </div>
+                <div class="input-group">
+                    <label for="new-ruleset-type">File Type</label>
+                    <select id="new-ruleset-type">
+                        <option value="CLAUDE.md">CLAUDE.md</option>
+                        <option value=".claude/rules">.claude/rules</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Start From</label>
+                    <select id="new-ruleset-template">
+                        <option value="">Blank</option>
+                        <option value="web-dev">Web Development</option>
+                        <option value="api-dev">API Development</option>
+                        <option value="git-workflow">Git Workflow</option>
+                        <option value="testing">Testing Standards</option>
+                        <option value="security">Security Best Practices</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeNewRuleSetModal()">Cancel</button>
+                    <button class="btn-primary" onclick="createNewRuleSet()">Create</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Rule Modal -->
+        <div id="add-rule-modal" class="modal-overlay">
+            <div class="modal">
+                <h2>Add New Rule</h2>
+                <div class="input-group">
+                    <label for="new-rule-title">Rule Title</label>
+                    <input type="text" id="new-rule-title" placeholder="e.g., Code Style Guidelines" />
+                </div>
+                <div class="input-group">
+                    <label for="new-rule-priority">Priority</label>
+                    <select id="new-rule-priority">
+                        <option value="high">High - Always apply</option>
+                        <option value="medium" selected>Medium - Apply when relevant</option>
+                        <option value="low">Low - Nice to have</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="new-rule-content">Rule Content</label>
+                    <textarea id="new-rule-content" class="large" placeholder="Write your rule in natural language...
+
+Example: Always use TypeScript for new files. Prefer functional components over class components in React."></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Template Arguments (Optional)</label>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                        Use {ARGUMENT_NAME} syntax in your rule content to create placeholders
+                    </p>
+                    <div id="detected-args" style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                        <!-- Detected arguments will show here -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeAddRuleModal()">Cancel</button>
+                    <button class="btn-primary" onclick="confirmAddRule()">Add Rule</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Link Modal -->
+        <div id="project-link-modal" class="modal-overlay">
+            <div class="modal">
+                <h2>Link Projects</h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                    Select projects to associate with this rule set. Rules can be exported with project context.
+                </p>
+                <div id="project-checkbox-list" class="project-checkbox-list">
+                    <!-- Projects will be rendered here -->
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeProjectLinkModal()">Cancel</button>
+                    <button class="btn-primary" onclick="confirmProjectLinks()">Save Links</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <script>
+            /**
+             * Rules Page - Semantic Prompt Workstation
+             * Manages project rules and generates Claude Code semantic rules files
+             */
+
+            const API_BASE = '/api';
+
+            // State
+            let ruleSets = [];
+            let currentRuleSet = null;
+            let currentRules = [];
+            let projects = [];
+            let selectedFileType = 'CLAUDE.md';
+            let hasUnsavedChanges = false;
+            let linkedProjectIds = []; // For multi-project linking
+
+            // ============================================
+            // ERROR HANDLER
+            // ============================================
+            const ErrorHandler = {
+                showError(message, type = 'error') {
+                    showToast(message, type);
+                },
+
+                handleApiError(error, context = '') {
+                    const message = this.getApiErrorMessage(error);
+                    console.error(`[${context}]`, error);
+                    this.showError(message, 'error');
+                    return { success: false, error: message };
+                },
+
+                getApiErrorMessage(error) {
+                    if (error.message === 'Failed to fetch') {
+                        return 'Network error. Please check your connection.';
+                    }
+                    if (error.status === 400) {
+                        return error.message || 'Invalid request. Please check your input.';
+                    }
+                    if (error.status === 404) {
+                        return 'The requested resource was not found.';
+                    }
+                    if (error.status === 500) {
+                        return 'Server error. Please try again later.';
+                    }
+                    return error.message || 'An unexpected error occurred.';
+                },
+
+                validateForm(formData, rules) {
+                    const errors = [];
+                    for (const [field, r] of Object.entries(rules)) {
+                        const v = formData[field];
+                        if (r.required && (!v || (typeof v === 'string' && v.trim() === ''))) {
+                            errors.push({ field, message: `${r.label || field} is required` });
+                        }
+                        if (r.minLength && v && v.length < r.minLength) {
+                            errors.push({ field, message: `${r.label || field} must be at least ${r.minLength} characters` });
+                        }
+                    }
+                    return errors;
+                },
+
+                showFieldError(fieldId, message) {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.style.borderColor = 'var(--accent-error)';
+                        const existingError = field.parentNode.querySelector('.field-error');
+                        if (existingError) existingError.remove();
+                        const errorEl = document.createElement('span');
+                        errorEl.className = 'field-error';
+                        errorEl.textContent = message;
+                        errorEl.style.cssText = 'color: var(--accent-error); font-size: 0.75rem; margin-top: 0.25rem; display: block;';
+                        field.parentNode.appendChild(errorEl);
+                    }
+                },
+
+                clearFieldErrors() {
+                    document.querySelectorAll('.field-error').forEach(el => el.remove());
+                    document.querySelectorAll('input, textarea, select').forEach(el => {
+                        el.style.borderColor = '';
+                    });
+                },
+
+                setupGlobalHandler() {
+                    window.onerror = (message, source, lineno, colno, error) => {
+                        console.error('[GlobalError]', { message, source, lineno, colno, error });
+                        return false;
+                    };
+                    window.onunhandledrejection = (event) => {
+                        console.error('[UnhandledPromiseRejection]', event.reason);
+                    };
+                }
+            };
+            ErrorHandler.setupGlobalHandler();
+
+            // ============================================
+            // STARTER TEMPLATES
+            // ============================================
+            const STARTER_TEMPLATES = {
+                'web-dev': {
+                    name: 'Web Development',
+                    rules: [
+                        {
+                            title: 'TypeScript Usage',
+                            content: 'Always use TypeScript for new files. Use strict type checking and avoid `any` type unless absolutely necessary.',
+                            priority: 'high',
+                            arguments: []
+                        },
+                        {
+                            title: 'Component Structure',
+                            content: 'Prefer functional components with hooks over class components. Keep components small and focused on a single responsibility.',
+                            priority: 'medium',
+                            arguments: []
+                        },
+                        {
+                            title: 'Styling Approach',
+                            content: 'Use CSS modules or styled-components for component styling. Avoid inline styles except for dynamic values.',
+                            priority: 'medium',
+                            arguments: []
+                        }
+                    ]
+                },
+                'api-dev': {
+                    name: 'API Development',
+                    rules: [
+                        {
+                            title: 'REST Conventions',
+                            content: 'Follow REST naming conventions. Use plural nouns for resources (e.g., /users, /posts). Use appropriate HTTP methods (GET, POST, PUT, DELETE).',
+                            priority: 'high',
+                            arguments: []
+                        },
+                        {
+                            title: 'Error Handling',
+                            content: 'Always return consistent error responses with appropriate HTTP status codes. Include error message and error code in response body.',
+                            priority: 'high',
+                            arguments: []
+                        },
+                        {
+                            title: 'Input Validation',
+                            content: 'Validate all input data before processing. Use schema validation libraries where possible. Never trust client input.',
+                            priority: 'high',
+                            arguments: []
+                        }
+                    ]
+                },
+                'git-workflow': {
+                    name: 'Git Workflow',
+                    rules: [
+                        {
+                            title: 'Branch Naming',
+                            content: 'Use descriptive branch names following the pattern: {BRANCH_TYPE}/{TICKET_ID}-short-description. Types: feature, bugfix, hotfix, release.',
+                            priority: 'high',
+                            arguments: ['BRANCH_TYPE', 'TICKET_ID']
+                        },
+                        {
+                            title: 'Commit Messages',
+                            content: 'Write clear commit messages following conventional commits format: {TYPE}({SCOPE}): {DESCRIPTION}. Types: feat, fix, docs, style, refactor, test, chore.',
+                            priority: 'high',
+                            arguments: ['TYPE', 'SCOPE', 'DESCRIPTION']
+                        },
+                        {
+                            title: 'Pull Request Process',
+                            content: 'Create pull requests with clear descriptions. Link related issues. Request review from at least one team member before merging.',
+                            priority: 'medium',
+                            arguments: []
+                        }
+                    ]
+                },
+                'testing': {
+                    name: 'Testing Standards',
+                    rules: [
+                        {
+                            title: 'Test Coverage',
+                            content: 'Maintain minimum {COVERAGE_PERCENT}% test coverage for new code. Write unit tests for all business logic functions.',
+                            priority: 'high',
+                            arguments: ['COVERAGE_PERCENT']
+                        },
+                        {
+                            title: 'Test Naming',
+                            content: 'Use descriptive test names that explain what is being tested. Follow pattern: should_expectedBehavior_when_condition.',
+                            priority: 'medium',
+                            arguments: []
+                        },
+                        {
+                            title: 'Test Organization',
+                            content: 'Organize tests to mirror source file structure. Keep test files close to the code they test. Use describe blocks to group related tests.',
+                            priority: 'medium',
+                            arguments: []
+                        }
+                    ]
+                },
+                'security': {
+                    name: 'Security Best Practices',
+                    rules: [
+                        {
+                            title: 'Input Sanitization',
+                            content: 'Sanitize all user input before processing or storing. Use parameterized queries to prevent SQL injection. Escape output to prevent XSS.',
+                            priority: 'high',
+                            arguments: []
+                        },
+                        {
+                            title: 'Authentication',
+                            content: 'Use secure authentication methods. Store passwords using strong hashing algorithms (bcrypt, argon2). Implement rate limiting on auth endpoints.',
+                            priority: 'high',
+                            arguments: []
+                        },
+                        {
+                            title: 'Sensitive Data',
+                            content: 'Never log sensitive data (passwords, tokens, PII). Use environment variables for secrets. Encrypt sensitive data at rest and in transit.',
+                            priority: 'high',
+                            arguments: []
+                        }
+                    ]
+                }
+            };
+
+            // ============================================
+            // API CLIENT
+            // ============================================
+
+            /**
+             * Makes an API request with error handling
+             * @param {string} endpoint - API endpoint
+             * @param {object} options - Fetch options
+             * @returns {Promise<any>} Response data
+             */
+            async function api(endpoint, options = {}) {
+                const config = {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                };
+                if (options.body && typeof options.body === 'object') {
+                    config.body = JSON.stringify(options.body);
+                }
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint}`, config);
+
+                    let data;
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        data = await response.text();
+                    }
+
+                    if (!response.ok) {
+                        const error = new Error(data.error || data || 'API request failed');
+                        error.status = response.status;
+                        error.data = data;
+                        throw error;
+                    }
+                    return data;
+                } catch (error) {
+                    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+                        error.message = 'Network error. Please check your connection.';
+                    }
+                    console.error('API Error:', error);
+                    throw error;
+                }
+            }
+
+            // ============================================
+            // UI HELPERS
+            // ============================================
+
+            /**
+             * Shows a toast notification
+             * @param {string} message - Message to display
+             * @param {string} type - 'success' or 'error'
+             */
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = `toast ${type} show`;
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            /**
+             * Escapes HTML to prevent XSS
+             * @param {string} text - Text to escape
+             * @returns {string} Escaped text
+             */
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            /**
+             * Detects template arguments in text
+             * @param {string} text - Text to scan
+             * @returns {string[]} Array of argument names
+             */
+            function detectArguments(text) {
+                const regex = /\{([A-Z_][A-Z0-9_]*)\}/g;
+                const args = new Set();
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    args.add(match[1]);
+                }
+                return Array.from(args);
+            }
+
+            // ============================================
+            // RULE SETS MANAGEMENT
+            // ============================================
+
+            /**
+             * Loads all rule sets from the API
+             */
+            async function loadRuleSets() {
+                try {
+                    ruleSets = await api('/rule-sets');
+                    renderRuleSetsList();
+                } catch (error) {
+                    console.error('Failed to load rule sets:', error);
+                    // Initialize with empty array if API fails
+                    ruleSets = [];
+                    renderRuleSetsList();
+                }
+            }
+
+            /**
+             * Loads projects for the project selector
+             */
+            async function loadProjects() {
+                try {
+                    const response = await api('/projects');
+                    // Handle both old array format and new object format
+                    projects = Array.isArray(response) ? response : response.projects || [];
+                    renderProjectSelector();
+                } catch (error) {
+                    console.error('Failed to load projects:', error);
+                    projects = [];
+                }
+            }
+
+            /**
+             * Renders the linked projects tags
+             */
+            function renderProjectSelector() {
+                renderLinkedProjectTags();
+                renderAiToolsProjectSelector();
+            }
+
+            /**
+             * Renders linked project tags in the editor
+             */
+            function renderLinkedProjectTags() {
+                const container = document.getElementById('linked-projects-tags');
+                const countEl = document.getElementById('linked-projects-count');
+
+                if (!container) return;
+
+                countEl.textContent = linkedProjectIds.length;
+
+                if (linkedProjectIds.length === 0) {
+                    container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">No projects linked</span>';
+                    return;
+                }
+
+                container.innerHTML = linkedProjectIds.map(id => {
+                    const project = projects.find(p => p.id == id);
+                    return project ? `
+                        <span class="project-tag">
+                            ${escapeHtml(project.name)}
+                            <span class="remove-tag" onclick="removeProjectLink(${id})">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </span>
+                        </span>
+                    ` : '';
+                }).join('');
+            }
+
+            /**
+             * Removes a project link
+             * @param {number} projectId - Project ID to remove
+             */
+            function removeProjectLink(projectId) {
+                linkedProjectIds = linkedProjectIds.filter(id => id != projectId);
+                hasUnsavedChanges = true;
+                renderLinkedProjectTags();
+            }
+
+            /**
+             * Opens the project link modal
+             */
+            function openProjectLinkModal() {
+                const container = document.getElementById('project-checkbox-list');
+
+                if (projects.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 1.5rem;">
+                            <p>No projects available</p>
+                            <a href="/projects" class="btn-primary btn-sm" style="margin-top: 0.75rem; text-decoration: none;">
+                                Create a Project
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = projects.map(p => `
+                        <div class="project-checkbox-item ${linkedProjectIds.includes(p.id) ? 'selected' : ''}"
+                             onclick="toggleProjectCheckbox(${p.id})">
+                            <input type="checkbox" id="project-check-${p.id}"
+                                   ${linkedProjectIds.includes(p.id) ? 'checked' : ''}
+                                   onchange="toggleProjectCheckbox(${p.id})">
+                            <label for="project-check-${p.id}">${escapeHtml(p.name)}</label>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('project-link-modal').classList.add('open');
+            }
+
+            /**
+             * Closes the project link modal
+             */
+            function closeProjectLinkModal() {
+                document.getElementById('project-link-modal').classList.remove('open');
+            }
+
+            /**
+             * Toggles project checkbox selection
+             * @param {number} projectId - Project ID
+             */
+            function toggleProjectCheckbox(projectId) {
+                const checkbox = document.getElementById(`project-check-${projectId}`);
+                const item = checkbox.closest('.project-checkbox-item');
+
+                if (linkedProjectIds.includes(projectId)) {
+                    linkedProjectIds = linkedProjectIds.filter(id => id != projectId);
+                    item.classList.remove('selected');
+                    checkbox.checked = false;
+                } else {
+                    linkedProjectIds.push(projectId);
+                    item.classList.add('selected');
+                    checkbox.checked = true;
+                }
+            }
+
+            /**
+             * Confirms project links and saves them
+             */
+            async function confirmProjectLinks() {
+                hasUnsavedChanges = true;
+                renderLinkedProjectTags();
+                closeProjectLinkModal();
+
+                // If we have a saved rule set, sync to the API
+                if (currentRuleSet?.id) {
+                    try {
+                        // First, get existing links
+                        const existingLinks = await api(`/rule-sets/${currentRuleSet.id}/projects`);
+                        const existingIds = existingLinks.map(l => l.id);
+
+                        // Find new links to add
+                        const newProjectIds = linkedProjectIds.filter(id => !existingIds.includes(id));
+
+                        // Find links to remove
+                        const removedProjectIds = existingIds.filter(id => !linkedProjectIds.includes(id));
+
+                        // Add new links (batch)
+                        if (newProjectIds.length > 0) {
+                            await api(`/rule-sets/${currentRuleSet.id}/projects`, {
+                                method: 'POST',
+                                body: { project_ids: newProjectIds }
+                            });
+                        }
+
+                        // Remove unlinked projects
+                        for (const projectId of removedProjectIds) {
+                            await api(`/rule-sets/${currentRuleSet.id}/projects/${projectId}`, {
+                                method: 'DELETE'
+                            });
+                        }
+
+                        showToast('Project links updated');
+                    } catch (error) {
+                        ErrorHandler.handleApiError(error, 'confirmProjectLinks');
+                    }
+                }
+            }
+
+            /**
+             * Loads linked projects for a rule set
+             * @param {string} ruleSetId - Rule set ID
+             */
+            async function loadLinkedProjects(ruleSetId) {
+                try {
+                    const links = await api(`/rule-sets/${ruleSetId}/projects`);
+                    linkedProjectIds = links.map(l => l.project_id);
+                    renderLinkedProjectTags();
+                } catch (error) {
+                    console.error('Failed to load linked projects:', error);
+                    linkedProjectIds = [];
+                }
+            }
+
+            // ============================================
+            // AI TOOLS
+            // ============================================
+
+            /**
+             * Renders the project selector in AI tools panel
+             */
+            function renderAiToolsProjectSelector() {
+                const select = document.getElementById('export-project-select');
+                if (!select) return;
+
+                // Populate with linked projects or all projects
+                const projectsToShow = linkedProjectIds.length > 0
+                    ? projects.filter(p => linkedProjectIds.includes(p.id))
+                    : projects;
+
+                select.innerHTML = '<option value="">Select a project...</option>' +
+                    projectsToShow.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+            }
+
+            /**
+             * Generates AI-powered rule suggestions
+             */
+            async function generateAiSuggestions() {
+                const nameInput = document.getElementById('ai-suggestion-name');
+                const ruleName = nameInput.value.trim();
+
+                if (!ruleName) {
+                    showToast('Please enter a rule set name for suggestions', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                const btn = document.getElementById('ai-suggest-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+                btn.disabled = true;
+
+                try {
+                    const response = await api('/ai/suggest-rules', {
+                        method: 'POST',
+                        body: {
+                            ruleName: ruleName,
+                            ruleSetType: selectedFileType,
+                            existingRules: currentRules
+                        }
+                    });
+
+                    if (response.suggestedRules && response.suggestedRules.length > 0) {
+                        renderAiSuggestions(response.suggestedRules);
+                        showToast(`Generated ${response.suggestedRules.length} rule suggestions`);
+                    } else {
+                        showToast('No suggestions generated. Try a different name.', 'error');
+                    }
+                } catch (error) {
+                    ErrorHandler.handleApiError(error, 'generateAiSuggestions');
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+
+            /**
+             * Renders AI suggestions in the panel
+             * @param {Array} suggestions - AI-generated suggestions
+             */
+            function renderAiSuggestions(suggestions) {
+                const container = document.getElementById('ai-tools-content');
+                const existingList = container.querySelector('.ai-suggestions-list');
+                if (existingList) existingList.remove();
+
+                const listHtml = `
+                    <div class="ai-suggestions-list">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <span class="sidebar-title">Suggested Rules</span>
+                            <button class="btn-primary btn-sm" onclick="addSelectedSuggestions()">Add Selected</button>
+                        </div>
+                        ${suggestions.map((s, i) => `
+                            <div class="ai-suggestion-item">
+                                <input type="checkbox" id="suggestion-${i}" checked>
+                                <div class="ai-suggestion-content">
+                                    <div class="ai-suggestion-title">${escapeHtml(s.title)}</div>
+                                    <div class="ai-suggestion-text">${escapeHtml(s.content)}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.insertAdjacentHTML('beforeend', listHtml);
+
+                // Store suggestions for later use
+                window._aiSuggestions = suggestions;
+            }
+
+            /**
+             * Adds selected AI suggestions to current rules
+             */
+            function addSelectedSuggestions() {
+                if (!window._aiSuggestions) return;
+
+                const suggestions = window._aiSuggestions;
+                let addedCount = 0;
+
+                suggestions.forEach((s, i) => {
+                    const checkbox = document.getElementById(`suggestion-${i}`);
+                    if (checkbox && checkbox.checked) {
+                        currentRules.push({
+                            title: s.title,
+                            content: s.content,
+                            priority: s.priority || 'medium',
+                            arguments: s.arguments || [],
+                            expanded: false
+                        });
+                        addedCount++;
+                    }
+                });
+
+                if (addedCount > 0) {
+                    hasUnsavedChanges = true;
+                    renderRules();
+                    generatePreview();
+                    showToast(`Added ${addedCount} rules from suggestions`);
+
+                    // Remove the suggestions list
+                    const listEl = document.querySelector('.ai-suggestions-list');
+                    if (listEl) listEl.remove();
+                    window._aiSuggestions = null;
+
+                    // Switch to preview tab
+                    switchPreviewTab('preview');
+                } else {
+                    showToast('No suggestions selected', 'error');
+                }
+            }
+
+            /**
+             * Exports enhanced CLAUDE.md with optional project context
+             */
+            async function exportEnhancedClaudeMd() {
+                const includeContext = document.getElementById('include-project-context').checked;
+                const projectId = document.getElementById('export-project-select').value;
+
+                if (includeContext && !projectId) {
+                    showToast('Please select a project for context', 'error');
+                    return;
+                }
+
+                const name = document.getElementById('ruleset-name')?.value || 'Untitled Rule Set';
+                const description = document.getElementById('ruleset-description')?.value || '';
+
+                try {
+                    const response = await api('/export/claude-md-enhanced', {
+                        method: 'POST',
+                        body: {
+                            name,
+                            description,
+                            rules: currentRules,
+                            include_project_context: includeContext,
+                            project_id: projectId || null
+                        }
+                    });
+
+                    // Download the generated content
+                    const blob = new Blob([response.content], { type: 'text/markdown' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'CLAUDE.md';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showToast('Enhanced CLAUDE.md downloaded');
+                } catch (error) {
+                    ErrorHandler.handleApiError(error, 'exportEnhancedClaudeMd');
+                }
+            }
+
+            /**
+             * Renders the rule sets list in the sidebar
+             */
+            function renderRuleSetsList() {
+                const container = document.getElementById('rule-sets-list');
+                const countEl = document.getElementById('rule-sets-count');
+
+                countEl.textContent = ruleSets.length;
+
+                if (ruleSets.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                            </div>
+                            <p>No rule sets yet</p>
+                            <button class="btn-primary btn-sm" style="margin-top: 1rem;" onclick="openNewRuleSetModal()">
+                                Create Your First Rule Set
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = ruleSets.map(rs => `
+                    <div class="rule-set-card ${currentRuleSet?.id === rs.id ? 'active' : ''}"
+                         onclick="selectRuleSet('${rs.id}')">
+                        <div class="rule-set-name">${escapeHtml(rs.name)}</div>
+                        <div class="rule-set-meta">
+                            <span class="rule-set-type ${rs.file_type === 'CLAUDE.md' ? 'claude-md' : 'claude-rules'}">
+                                ${rs.file_type}
+                            </span>
+                            <span>${rs.rules_count || 0} rules</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            /**
+             * Filters rule sets by search query
+             * @param {string} query - Search query
+             */
+            function filterRuleSets(query) {
+                const cards = document.querySelectorAll('.rule-set-card');
+                const lowerQuery = query.toLowerCase();
+
+                cards.forEach(card => {
+                    const name = card.querySelector('.rule-set-name').textContent.toLowerCase();
+                    card.style.display = name.includes(lowerQuery) ? 'block' : 'none';
+                });
+            }
+
+            /**
+             * Selects a rule set for editing
+             * @param {string} id - Rule set ID
+             */
+            async function selectRuleSet(id) {
+                if (hasUnsavedChanges) {
+                    if (!confirm('You have unsaved changes. Discard them?')) {
+                        return;
+                    }
+                }
+
+                try {
+                    currentRuleSet = await api(`/rule-sets/${id}`);
+                    currentRules = currentRuleSet.rules || [];
+
+                    // Update UI
+                    document.getElementById('no-selection-state').style.display = 'none';
+                    document.getElementById('editor-content').style.display = 'flex';
+                    document.getElementById('editor-content').style.flexDirection = 'column';
+                    document.getElementById('editor-content').style.gap = '1.25rem';
+                    document.getElementById('btn-delete-ruleset').style.display = 'block';
+                    document.getElementById('btn-save-rules').disabled = false;
+
+                    // Populate form
+                    document.getElementById('ruleset-name').value = currentRuleSet.name;
+                    document.getElementById('ruleset-description').value = currentRuleSet.description || '';
+                    updateFileType(currentRuleSet.file_type || 'CLAUDE.md');
+
+                    // Load linked projects
+                    await loadLinkedProjects(id);
+
+                    renderRules();
+                    renderRuleSetsList();
+                    generatePreview();
+                    hasUnsavedChanges = false;
+                } catch (error) {
+                    ErrorHandler.handleApiError(error, 'selectRuleSet');
+                }
+            }
+
+            // ============================================
+            // RULES MANAGEMENT
+            // ============================================
+
+            /**
+             * Renders the rules list
+             */
+            function renderRules() {
+                const container = document.getElementById('rules-list');
+
+                if (currentRules.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 1.5rem;">
+                            <p style="margin-bottom: 0.5rem;">No rules yet</p>
+                            <p style="font-size: 0.75rem;">Add rules to define how Claude should behave in your project</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = currentRules.map((rule, index) => {
+                    const args = rule.arguments || detectArguments(rule.content);
+                    return `
+                        <div class="rule-item ${rule.expanded ? 'expanded' : ''}" data-index="${index}">
+                            <div class="rule-item-header" onclick="toggleRule(${index})">
+                                <div class="rule-item-title">
+                                    <span class="priority-badge priority-${rule.priority}">${rule.priority}</span>
+                                    ${escapeHtml(rule.title)}
+                                </div>
+                                <div class="rule-item-actions">
+                                    <button class="btn-ghost" onclick="event.stopPropagation(); editRule(${index})" title="Edit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="btn-ghost" onclick="event.stopPropagation(); deleteRule(${index})" title="Delete" style="color: var(--accent-error);">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="rule-item-content">
+                                <pre style="white-space: pre-wrap; font-family: var(--font-body); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(rule.content)}</pre>
+                                ${args.length > 0 ? `
+                                    <div class="template-args">
+                                        <div class="template-args-title">Template Arguments</div>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                            ${args.map(arg => `<span class="arg-badge">{${arg}}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            /**
+             * Toggles rule expansion
+             * @param {number} index - Rule index
+             */
+            function toggleRule(index) {
+                currentRules[index].expanded = !currentRules[index].expanded;
+                renderRules();
+            }
+
+            /**
+             * Opens the add rule modal
+             */
+            function addRule() {
+                document.getElementById('new-rule-title').value = '';
+                document.getElementById('new-rule-content').value = '';
+                document.getElementById('new-rule-priority').value = 'medium';
+                document.getElementById('detected-args').innerHTML = '';
+                document.getElementById('add-rule-modal').classList.add('open');
+
+                // Add listener for argument detection
+                document.getElementById('new-rule-content').addEventListener('input', detectArgsInModal);
+            }
+
+            /**
+             * Detects arguments in modal content
+             */
+            function detectArgsInModal() {
+                const content = document.getElementById('new-rule-content').value;
+                const args = detectArguments(content);
+                const container = document.getElementById('detected-args');
+
+                if (args.length > 0) {
+                    container.innerHTML = args.map(arg => `<span class="arg-badge">{${arg}}</span>`).join('');
+                } else {
+                    container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">No arguments detected</span>';
+                }
+            }
+
+            /**
+             * Closes the add rule modal
+             */
+            function closeAddRuleModal() {
+                document.getElementById('add-rule-modal').classList.remove('open');
+                document.getElementById('new-rule-content').removeEventListener('input', detectArgsInModal);
+            }
+
+            /**
+             * Confirms adding a new rule
+             */
+            function confirmAddRule() {
+                const title = document.getElementById('new-rule-title').value.trim();
+                const content = document.getElementById('new-rule-content').value.trim();
+                const priority = document.getElementById('new-rule-priority').value;
+
+                if (!title || !content) {
+                    showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                const args = detectArguments(content);
+
+                currentRules.push({
+                    title,
+                    content,
+                    priority,
+                    arguments: args,
+                    expanded: false
+                });
+
+                hasUnsavedChanges = true;
+                renderRules();
+                generatePreview();
+                closeAddRuleModal();
+                showToast('Rule added');
+            }
+
+            /**
+             * Edits an existing rule
+             * @param {number} index - Rule index
+             */
+            function editRule(index) {
+                const rule = currentRules[index];
+                document.getElementById('new-rule-title').value = rule.title;
+                document.getElementById('new-rule-content').value = rule.content;
+                document.getElementById('new-rule-priority').value = rule.priority;
+                detectArgsInModal();
+
+                // Store the index for updating
+                document.getElementById('add-rule-modal').dataset.editIndex = index;
+                document.getElementById('add-rule-modal').querySelector('h2').textContent = 'Edit Rule';
+                document.getElementById('add-rule-modal').classList.add('open');
+
+                // Override confirm function temporarily
+                const confirmBtn = document.getElementById('add-rule-modal').querySelector('.btn-primary');
+                confirmBtn.onclick = () => confirmEditRule(index);
+            }
+
+            /**
+             * Confirms editing a rule
+             * @param {number} index - Rule index
+             */
+            function confirmEditRule(index) {
+                const title = document.getElementById('new-rule-title').value.trim();
+                const content = document.getElementById('new-rule-content').value.trim();
+                const priority = document.getElementById('new-rule-priority').value;
+
+                if (!title || !content) {
+                    showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                const args = detectArguments(content);
+
+                currentRules[index] = {
+                    ...currentRules[index],
+                    title,
+                    content,
+                    priority,
+                    arguments: args
+                };
+
+                hasUnsavedChanges = true;
+                renderRules();
+                generatePreview();
+                closeAddRuleModal();
+
+                // Reset modal
+                document.getElementById('add-rule-modal').querySelector('h2').textContent = 'Add New Rule';
+                const confirmBtn = document.getElementById('add-rule-modal').querySelector('.btn-primary');
+                confirmBtn.onclick = confirmAddRule;
+
+                showToast('Rule updated');
+            }
+
+            /**
+             * Deletes a rule
+             * @param {number} index - Rule index
+             */
+            function deleteRule(index) {
+                if (!confirm('Delete this rule?')) return;
+
+                currentRules.splice(index, 1);
+                hasUnsavedChanges = true;
+                renderRules();
+                generatePreview();
+                showToast('Rule deleted');
+            }
+
+            // ============================================
+            // FILE TYPE & PREVIEW
+            // ============================================
+
+            /**
+             * Updates the selected file type
+             * @param {string} type - File type
+             */
+            function updateFileType(type) {
+                selectedFileType = type;
+
+                // Update UI
+                document.querySelectorAll('.file-type-option').forEach(opt => {
+                    opt.classList.toggle('selected', opt.querySelector('input').value === type);
+                });
+
+                hasUnsavedChanges = true;
+                generatePreview();
+            }
+
+            /**
+             * Generates the preview output
+             */
+            function generatePreview() {
+                const container = document.getElementById('preview-content');
+
+                if (!currentRuleSet && currentRules.length === 0) {
+                    container.innerHTML = '<div class="preview-placeholder">Select or create a rule set to see the generated output</div>';
+                    return;
+                }
+
+                const name = document.getElementById('ruleset-name')?.value || 'Untitled Rule Set';
+                const description = document.getElementById('ruleset-description')?.value || '';
+
+                let output = '';
+
+                if (selectedFileType === 'CLAUDE.md') {
+                    output = generateClaudeMd(name, description, currentRules);
+                } else {
+                    output = generateClaudeRules(name, description, currentRules);
+                }
+
+                container.textContent = output;
+            }
+
+            /**
+             * Generates CLAUDE.md format
+             * @param {string} name - Rule set name
+             * @param {string} description - Rule set description
+             * @param {Array} rules - Rules array
+             * @returns {string} Generated content
+             */
+            function generateClaudeMd(name, description, rules) {
+                let output = `# ${name}\n\n`;
+
+                if (description) {
+                    output += `${description}\n\n`;
+                }
+
+                // Group rules by priority
+                const highPriority = rules.filter(r => r.priority === 'high');
+                const mediumPriority = rules.filter(r => r.priority === 'medium');
+                const lowPriority = rules.filter(r => r.priority === 'low');
+
+                if (highPriority.length > 0) {
+                    output += `## Critical Rules\n\n`;
+                    output += `These rules must always be followed:\n\n`;
+                    highPriority.forEach(rule => {
+                        output += `### ${rule.title}\n\n`;
+                        output += `${rule.content}\n\n`;
+                    });
+                }
+
+                if (mediumPriority.length > 0) {
+                    output += `## Guidelines\n\n`;
+                    output += `Apply these guidelines when relevant:\n\n`;
+                    mediumPriority.forEach(rule => {
+                        output += `### ${rule.title}\n\n`;
+                        output += `${rule.content}\n\n`;
+                    });
+                }
+
+                if (lowPriority.length > 0) {
+                    output += `## Preferences\n\n`;
+                    output += `Nice to have when possible:\n\n`;
+                    lowPriority.forEach(rule => {
+                        output += `### ${rule.title}\n\n`;
+                        output += `${rule.content}\n\n`;
+                    });
+                }
+
+                // Add template arguments section if any
+                const allArgs = new Set();
+                rules.forEach(rule => {
+                    (rule.arguments || []).forEach(arg => allArgs.add(arg));
+                });
+
+                if (allArgs.size > 0) {
+                    output += `---\n\n`;
+                    output += `## Template Variables\n\n`;
+                    output += `This file uses the following template variables that should be replaced:\n\n`;
+                    Array.from(allArgs).forEach(arg => {
+                        output += `- \`{${arg}}\` - Replace with appropriate value\n`;
+                    });
+                    output += `\n`;
+                }
+
+                return output.trim();
+            }
+
+            /**
+             * Generates .claude/rules format
+             * @param {string} name - Rule set name
+             * @param {string} description - Rule set description
+             * @param {Array} rules - Rules array
+             * @returns {string} Generated content
+             */
+            function generateClaudeRules(name, description, rules) {
+                let output = `# ${name}\n`;
+
+                if (description) {
+                    output += `# ${description}\n`;
+                }
+                output += `\n`;
+
+                rules.forEach(rule => {
+                    output += `# [${rule.priority.toUpperCase()}] ${rule.title}\n`;
+                    // Format content as comments or directives
+                    const lines = rule.content.split('\n');
+                    lines.forEach(line => {
+                        if (line.trim()) {
+                            output += `${line}\n`;
+                        }
+                    });
+                    output += `\n`;
+                });
+
+                return output.trim();
+            }
+
+            /**
+             * Switches preview tab
+             * @param {string} tab - Tab name
+             */
+            function switchPreviewTab(tab) {
+                document.querySelectorAll('.category-tab').forEach(t => {
+                    t.classList.toggle('active', t.dataset.tab === tab);
+                });
+
+                document.getElementById('preview-content').style.display = tab === 'preview' ? 'block' : 'none';
+                document.getElementById('templates-content').style.display = tab === 'templates' ? 'block' : 'none';
+                document.getElementById('ai-tools-content').style.display = tab === 'ai-tools' ? 'block' : 'none';
+
+                if (tab === 'templates') {
+                    renderTemplates();
+                }
+
+                if (tab === 'ai-tools') {
+                    renderAiToolsProjectSelector();
+                }
+            }
+
+            // Cache for bootstrap templates
+            let bootstrapTemplatesCache = null;
+
+            /**
+             * Loads bootstrap templates from API
+             */
+            async function loadBootstrapTemplates() {
+                if (bootstrapTemplatesCache) return bootstrapTemplatesCache;
+
+                try {
+                    const response = await api('/ai/bootstrap-templates');
+                    bootstrapTemplatesCache = response;
+                    return response;
+                } catch (error) {
+                    console.error('Failed to load bootstrap templates:', error);
+                    return null;
+                }
+            }
+
+            /**
+             * Renders starter templates (local templates + API bootstrap templates)
+             */
+            async function renderTemplates() {
+                const container = document.getElementById('templates-list');
+
+                // Show loading state
+                container.innerHTML = '<div class="loading-spinner" style="margin: 2rem auto;"></div>';
+
+                // Local starter templates
+                let html = '<div class="sidebar-title" style="margin-bottom: 0.75rem; font-size: 0.7rem;">Quick Start Templates</div>';
+                html += '<p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.75rem;">Pre-built templates for common scenarios.</p>';
+                html += Object.entries(STARTER_TEMPLATES).map(([key, template]) => `
+                    <div class="rule-set-card" onclick="applyTemplate('${key}')" style="margin-bottom: 0.75rem;">
+                        <div class="rule-set-name">${template.name}</div>
+                        <div class="rule-set-meta">
+                            <span>${template.rules.length} rules</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Load AI-powered bootstrap templates
+                const bootstrapData = await loadBootstrapTemplates();
+
+                if (bootstrapData && bootstrapData.categories) {
+                    html += `
+                        <div class="sidebar-title" style="margin: 1.5rem 0 0.5rem; font-size: 0.7rem;">
+                            AI-Powered Bootstrap (${bootstrapData.totalTemplates} roles)
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.75rem;">
+                            Comprehensive rule sets generated by AI for specific developer roles. Click to generate 10-15 tailored rules.
+                        </p>
+                    `;
+
+                    // Custom role input
+                    html += `
+                        <div class="input-group" style="margin-bottom: 1rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="custom-role-input" placeholder="Or enter a custom role..." style="flex: 1;">
+                                <button class="btn-primary btn-sm" onclick="generateCustomBootstrap()">Generate</button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Render categories with collapsible sections
+                    for (const category of bootstrapData.categories) {
+                        html += `
+                            <div class="template-category" style="margin-bottom: 1rem;">
+                                <div class="template-category-header" onclick="toggleTemplateCategory('${category.id}')"
+                                     style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.5rem; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 500; font-size: 0.85rem;">${category.name}</span>
+                                    <span style="color: var(--text-muted); font-size: 0.75rem;">${category.roles.length} roles</span>
+                                </div>
+                                <div id="category-${category.id}" class="template-category-content" style="display: none; padding-left: 0.5rem;">
+                                    ${category.roles.map(role => `
+                                        <div class="rule-set-card" onclick="applyBootstrapTemplate('${role.id}')" style="margin-bottom: 0.5rem; padding: 0.625rem;">
+                                            <div class="rule-set-name" style="font-size: 0.8rem;">${role.name}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    html += `
+                        <div class="sidebar-title" style="margin: 1.5rem 0 0.5rem; font-size: 0.7rem;">
+                            AI-Powered Bootstrap
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.75rem;">
+                            Enter any role to generate comprehensive rules using AI.
+                        </p>
+                        <div class="input-group" style="margin-bottom: 1rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="custom-role-input" placeholder="e.g., React Developer, DevOps Engineer..." style="flex: 1;">
+                                <button class="btn-primary btn-sm" onclick="generateCustomBootstrap()">Generate</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+            }
+
+            /**
+             * Toggles template category visibility
+             */
+            function toggleTemplateCategory(categoryId) {
+                const content = document.getElementById(`category-${categoryId}`);
+                if (content) {
+                    content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                }
+            }
+
+            /**
+             * Generates bootstrap template for a custom role
+             */
+            async function generateCustomBootstrap() {
+                const input = document.getElementById('custom-role-input');
+                const customRole = input.value.trim();
+
+                if (!customRole) {
+                    showToast('Please enter a role name', 'error');
+                    input.focus();
+                    return;
+                }
+
+                await applyBootstrapTemplate(null, customRole);
+            }
+
+            /**
+             * Applies an AI-powered bootstrap template
+             * @param {string} templateKey - Bootstrap template key (null for custom)
+             * @param {string} customRole - Custom role name (optional)
+             */
+            async function applyBootstrapTemplate(templateKey, customRole = null) {
+                const roleName = customRole || templateKey;
+
+                if (currentRules.length > 0) {
+                    if (!confirm(`This will replace your current rules with AI-generated rules for "${roleName}". Continue?`)) {
+                        return;
+                    }
+                }
+
+                // Show loading state in the UI
+                const loadingToast = showToast(`Generating comprehensive rules for "${roleName}"... This may take a moment.`, 'success');
+
+                // Disable buttons during generation
+                const templatesContent = document.getElementById('templates-content');
+                if (templatesContent) {
+                    templatesContent.querySelectorAll('button, .rule-set-card').forEach(el => {
+                        el.style.pointerEvents = 'none';
+                        el.style.opacity = '0.5';
+                    });
+                }
+
+                try {
+                    const requestBody = templateKey
+                        ? { templateType: templateKey }
+                        : { customRole: customRole };
+
+                    const response = await api('/ai/bootstrap-rules', {
+                        method: 'POST',
+                        body: requestBody
+                    });
+
+                    if (response.template && response.template.rules && response.template.rules.length > 0) {
+                        currentRules = response.template.rules.map(r => ({ ...r, expanded: false }));
+                        hasUnsavedChanges = true;
+
+                        // Update rule set name if we don't have one
+                        const nameInput = document.getElementById('ruleset-name');
+                        if (nameInput && !nameInput.value.trim()) {
+                            nameInput.value = response.template.name + ' Rules';
+                        }
+
+                        // Update description
+                        const descInput = document.getElementById('ruleset-description');
+                        if (descInput && !descInput.value.trim()) {
+                            descInput.value = response.template.description;
+                        }
+
+                        renderRules();
+                        generatePreview();
+                        switchPreviewTab('preview');
+
+                        const aiNote = response.template.isAIGenerated ? ' (AI-generated)' : '';
+                        showToast(`Applied "${response.template.name}" with ${response.template.rules.length} rules${aiNote}`);
+                    } else {
+                        showToast('Failed to generate rules. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    ErrorHandler.handleApiError(error, 'applyBootstrapTemplate');
+                } finally {
+                    // Re-enable buttons
+                    if (templatesContent) {
+                        templatesContent.querySelectorAll('button, .rule-set-card').forEach(el => {
+                            el.style.pointerEvents = '';
+                            el.style.opacity = '';
+                        });
+                    }
+                }
+            }
+
+            /**
+             * Applies a starter template to current rule set
+             * @param {string} templateKey - Template key
+             */
+            function applyTemplate(templateKey) {
+                const template = STARTER_TEMPLATES[templateKey];
+                if (!template) return;
+
+                if (currentRules.length > 0) {
+                    if (!confirm('This will replace your current rules. Continue?')) {
+                        return;
+                    }
+                }
+
+                currentRules = template.rules.map(r => ({ ...r, expanded: false }));
+                hasUnsavedChanges = true;
+                renderRules();
+                generatePreview();
+                switchPreviewTab('preview');
+                showToast(`Applied "${template.name}" template`);
+            }
+
+            // ============================================
+            // SAVE & EXPORT
+            // ============================================
+
+            /**
+             * Saves the current rule set
+             */
+            async function saveRuleSet() {
+                const name = document.getElementById('ruleset-name').value.trim();
+                const description = document.getElementById('ruleset-description').value.trim();
+                const projectId = document.getElementById('ruleset-project').value || null;
+
+                if (!name) {
+                    showToast('Please enter a name', 'error');
+                    return;
+                }
+
+                const payload = {
+                    name,
+                    description,
+                    file_type: selectedFileType,
+                    project_id: projectId,
+                    rules: currentRules,
+                    rules_count: currentRules.length
+                };
+
+                try {
+                    if (currentRuleSet?.id) {
+                        await api(`/rule-sets/${currentRuleSet.id}`, {
+                            method: 'PUT',
+                            body: payload
+                        });
+                    } else {
+                        const created = await api('/rule-sets', {
+                            method: 'POST',
+                            body: payload
+                        });
+                        currentRuleSet = created;
+                    }
+
+                    hasUnsavedChanges = false;
+                    await loadRuleSets();
+                    showToast('Rule set saved');
+                } catch (error) {
+                    showToast(error.message || 'Failed to save', 'error');
+                }
+            }
+
+            /**
+             * Deletes the current rule set
+             */
+            async function deleteRuleSet() {
+                if (!currentRuleSet?.id) return;
+                if (!confirm('Delete this rule set? This action cannot be undone.')) return;
+
+                try {
+                    await api(`/rule-sets/${currentRuleSet.id}`, { method: 'DELETE' });
+                    currentRuleSet = null;
+                    currentRules = [];
+                    document.getElementById('no-selection-state').style.display = 'block';
+                    document.getElementById('editor-content').style.display = 'none';
+                    document.getElementById('btn-delete-ruleset').style.display = 'none';
+                    generatePreview();
+                    await loadRuleSets();
+                    showToast('Rule set deleted');
+                } catch (error) {
+                    showToast(error.message || 'Failed to delete', 'error');
+                }
+            }
+
+            /**
+             * Copies preview content to clipboard
+             */
+            async function copyPreview() {
+                const content = document.getElementById('preview-content').textContent;
+                try {
+                    await navigator.clipboard.writeText(content);
+                    showToast('Copied to clipboard');
+                } catch (error) {
+                    showToast('Failed to copy', 'error');
+                }
+            }
+
+            /**
+             * Downloads the generated file
+             */
+            function downloadFile() {
+                const content = document.getElementById('preview-content').textContent;
+                const filename = selectedFileType === 'CLAUDE.md' ? 'CLAUDE.md' : 'rules.md';
+
+                const blob = new Blob([content], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showToast(`Downloaded ${filename}`);
+            }
+
+            // ============================================
+            // MODALS
+            // ============================================
+
+            /**
+             * Opens the new rule set modal
+             */
+            function openNewRuleSetModal() {
+                document.getElementById('new-ruleset-name').value = '';
+                document.getElementById('new-ruleset-type').value = 'CLAUDE.md';
+                document.getElementById('new-ruleset-template').value = '';
+                document.getElementById('new-ruleset-modal').classList.add('open');
+            }
+
+            /**
+             * Closes the new rule set modal
+             */
+            function closeNewRuleSetModal() {
+                document.getElementById('new-ruleset-modal').classList.remove('open');
+            }
+
+            /**
+             * Creates a new rule set
+             */
+            async function createNewRuleSet() {
+                const name = document.getElementById('new-ruleset-name').value.trim();
+                const fileType = document.getElementById('new-ruleset-type').value;
+                const templateKey = document.getElementById('new-ruleset-template').value;
+
+                if (!name) {
+                    showToast('Please enter a name', 'error');
+                    return;
+                }
+
+                // Get template rules if selected
+                let rules = [];
+                if (templateKey && STARTER_TEMPLATES[templateKey]) {
+                    rules = STARTER_TEMPLATES[templateKey].rules.map(r => ({ ...r, expanded: false }));
+                }
+
+                try {
+                    const created = await api('/rule-sets', {
+                        method: 'POST',
+                        body: {
+                            name,
+                            file_type: fileType,
+                            rules,
+                            rules_count: rules.length
+                        }
+                    });
+
+                    closeNewRuleSetModal();
+                    await loadRuleSets();
+                    selectRuleSet(created.id);
+                    showToast('Rule set created');
+                } catch (error) {
+                    showToast(error.message || 'Failed to create rule set', 'error');
+                }
+            }
+
+            // ============================================
+            // INITIALIZATION
+            // ============================================
+
+            /**
+             * Handles input changes to track unsaved changes
+             */
+            function setupChangeTracking() {
+                const inputs = ['ruleset-name', 'ruleset-description'];
+                inputs.forEach(id => {
+                    document.getElementById(id)?.addEventListener('input', () => {
+                        hasUnsavedChanges = true;
+                        generatePreview();
+                    });
+                });
+
+                // Setup "Include Project Context" checkbox toggle
+                const contextCheckbox = document.getElementById('include-project-context');
+                const projectSelectGroup = document.getElementById('export-project-select-group');
+                if (contextCheckbox && projectSelectGroup) {
+                    contextCheckbox.addEventListener('change', () => {
+                        projectSelectGroup.style.display = contextCheckbox.checked ? 'block' : 'none';
+                    });
+                }
+            }
+
+            /**
+             * Warns user about unsaved changes before leaving
+             */
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            /**
+             * Initialize the page
+             */
+            window.addEventListener('DOMContentLoaded', async () => {
+                setupChangeTracking();
+                await Promise.all([
+                    loadRuleSets(),
+                    loadProjects()
+                ]);
+                renderTemplates();
+            });
+        </script>
+    </body>
+</html>

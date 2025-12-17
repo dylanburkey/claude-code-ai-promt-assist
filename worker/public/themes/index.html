@@ -1,0 +1,245 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-sckkx6r4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Theme Management - Semantic Prompt Workstation</title><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0a0a0f"><link rel="icon" type="image/svg+xml" href="/icon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="PromptEngine"><link rel="apple-touch-icon" href="/icon.svg"><link rel="stylesheet" href="/_astro/agents.BORQSHzQ.css">
+<link rel="stylesheet" href="/_astro/themes.CcvUsjV2.css"></head> <body data-astro-cid-sckkx6r4>  <div id="install-prompt" style="display: none;" data-astro-cid-v7lhvfaw>
+Install Semantic Prompt Workstation
+</div> <header data-astro-cid-pux6a34n> <div class="logo-section" data-astro-cid-pux6a34n> <button class="btn-secondary btn-icon menu-toggle" id="menu-toggle" aria-label="Toggle menu" data-astro-cid-pux6a34n> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-pux6a34n> <path d="M3 12h18M3 6h18M3 18h18" data-astro-cid-pux6a34n></path> </svg> </button> <h1 data-astro-cid-pux6a34n>Semantic Prompt Workstation</h1> <span class="version-badge" data-astro-cid-pux6a34n>v3.0</span> <div id="sync-indicator" class="sync-indicator" title="Synced with cloud" data-astro-cid-pux6a34n></div> </div> <nav class="header-nav" data-astro-cid-pux6a34n> <a href="/" class="nav-link " data-astro-cid-pux6a34n> Prompt Builder </a><a href="/projects" class="nav-link " data-astro-cid-pux6a34n> Projects </a><a href="/rules" class="nav-link " data-astro-cid-pux6a34n> Rules </a><a href="/hooks" class="nav-link " data-astro-cid-pux6a34n> Hooks </a><a href="/agents" class="nav-link " data-astro-cid-pux6a34n> Agents </a><a href="/themes" class="nav-link active" data-astro-cid-pux6a34n> Themes </a> </nav> <div class="header-actions" data-astro-cid-pux6a34n> <div class="project-selector" id="project-selector" data-astro-cid-pux6a34n> <select id="current-project-select" data-astro-cid-pux6a34n> <option value="" data-astro-cid-pux6a34n>No Project Selected</option> </select> </div> <button class="btn-secondary btn-icon" id="import-btn" title="Import" data-astro-cid-pux6a34n> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-pux6a34n> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-astro-cid-pux6a34n></path> <polyline points="17 8 12 3 7 8" data-astro-cid-pux6a34n></polyline> <line x1="12" y1="3" x2="12" y2="15" data-astro-cid-pux6a34n></line> </svg> </button> <input type="file" id="file-upload" class="hidden-input" accept=".json" data-astro-cid-pux6a34n> <button class="btn-secondary btn-icon" id="theme-toggle-btn" title="Toggle Theme" data-astro-cid-pux6a34n> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-pux6a34n> <circle cx="12" cy="12" r="5" data-astro-cid-pux6a34n></circle> <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" data-astro-cid-pux6a34n></path> </svg> </button> <button class="btn-secondary btn-icon" id="export-btn" title="Export Project" data-astro-cid-pux6a34n> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-pux6a34n> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-astro-cid-pux6a34n></path> <polyline points="7 10 12 15 17 10" data-astro-cid-pux6a34n></polyline> <line x1="12" y1="15" x2="12" y2="3" data-astro-cid-pux6a34n></line> </svg> </button> </div> </header>  <script type="module">document.getElementById("menu-toggle")?.addEventListener("click",()=>{document.getElementById("sidebar-panel")?.classList.toggle("mobile-open")});document.getElementById("import-btn")?.addEventListener("click",()=>{document.getElementById("file-upload")?.click()});document.getElementById("file-upload")?.addEventListener("change",t=>{const e=t.target.files?.[0];e&&console.log("File selected for import:",e.name)});document.getElementById("current-project-select")?.addEventListener("change",t=>{const e=t.target.value;console.log("Project selected:",e)});document.getElementById("theme-toggle-btn")?.addEventListener("click",()=>{const t=localStorage.getItem("theme-settings");let c="default";if(t)try{c=JSON.parse(t).id||"default"}catch(r){console.warn("Failed to parse theme data:",r)}const e=["default","light","ocean","forest"],d=e.indexOf(c),o=e[(d+1)%e.length],n={default:{colors:{"--bg-base":"#0a0a0f","--bg-surface":"#12121a","--bg-elevated":"#1a1a24","--bg-hover":"#22222e","--accent-primary":"#6366f1","--accent-primary-hover":"#818cf8","--accent-secondary":"#22d3ee","--text-primary":"#f4f4f5","--text-secondary":"#a1a1aa","--text-muted":"#71717a","--border-subtle":"#27272a","--border-default":"#3f3f46"}},light:{colors:{"--bg-base":"#ffffff","--bg-surface":"#f8fafc","--bg-elevated":"#f1f5f9","--bg-hover":"#e2e8f0","--accent-primary":"#6366f1","--accent-primary-hover":"#4f46e5","--accent-secondary":"#0891b2","--text-primary":"#0f172a","--text-secondary":"#475569","--text-muted":"#64748b","--border-subtle":"#e2e8f0","--border-default":"#cbd5e1"}},ocean:{colors:{"--bg-base":"#0c1821","--bg-surface":"#1b2838","--bg-elevated":"#243447","--bg-hover":"#2d4057","--accent-primary":"#3b82f6","--accent-primary-hover":"#60a5fa","--accent-secondary":"#06b6d4","--text-primary":"#f0f9ff","--text-secondary":"#bae6fd","--text-muted":"#7dd3fc","--border-subtle":"#334155","--border-default":"#475569"}},forest:{colors:{"--bg-base":"#0f1419","--bg-surface":"#1a2332","--bg-elevated":"#253344","--bg-hover":"#304455","--accent-primary":"#22c55e","--accent-primary-hover":"#4ade80","--accent-secondary":"#14b8a6","--text-primary":"#f0fdf4","--text-secondary":"#bbf7d0","--text-muted":"#86efac","--border-subtle":"#374151","--border-default":"#4b5563"}}}[o];if(n){Object.entries(n.colors).forEach(([s,l])=>{document.documentElement.style.setProperty(s,l)});const r={id:o,custom:null,timestamp:Date.now()};localStorage.setItem("theme-settings",JSON.stringify(r));const a=document.createElement("div");a.className="toast success show",a.textContent=`Switched to ${o.charAt(0).toUpperCase()+o.slice(1)} theme`,document.body.appendChild(a),setTimeout(()=>{a.classList.remove("show"),setTimeout(()=>document.body.removeChild(a),300)},2e3)}});document.getElementById("export-btn")?.addEventListener("click",()=>{console.log("Export button clicked")});</script> <div class="workspace" data-astro-cid-v7lhvfaw> <!-- SIDEBAR --> <aside class="panel" id="sidebar-panel" data-astro-cid-v7lhvfaw> <div class="panel-header" data-astro-cid-v7lhvfaw> <span class="panel-title" data-astro-cid-v7lhvfaw>Theme Options</span> </div> <div class="theme-info" data-astro-cid-v7lhvfaw> <h4 data-astro-cid-v7lhvfaw>Customize Your Experience</h4> <p data-astro-cid-v7lhvfaw>Personalize the appearance of your workspace with custom themes, colors, and typography.</p> <div class="theme-features" data-astro-cid-v7lhvfaw> <div class="feature-item" data-astro-cid-v7lhvfaw> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-v7lhvfaw> <circle cx="12" cy="12" r="3" data-astro-cid-v7lhvfaw></circle> <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5L17 8l-1.5-1.5M8 17l-1.5 1.5M1 12l6-6m6 6l6 6" data-astro-cid-v7lhvfaw></path> </svg> <span data-astro-cid-v7lhvfaw>Live Preview</span> </div> <div class="feature-item" data-astro-cid-v7lhvfaw> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-v7lhvfaw> <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" data-astro-cid-v7lhvfaw></path> <polyline points="17 21 17 13 7 13 7 21" data-astro-cid-v7lhvfaw></polyline> <polyline points="7 3 7 8 15 8" data-astro-cid-v7lhvfaw></polyline> </svg> <span data-astro-cid-v7lhvfaw>Auto-Save</span> </div> <div class="feature-item" data-astro-cid-v7lhvfaw> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-v7lhvfaw> <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" data-astro-cid-v7lhvfaw></path> </svg> <span data-astro-cid-v7lhvfaw>Presets</span> </div> </div> </div> <div class="current-theme-display" data-astro-cid-v7lhvfaw> <h5 data-astro-cid-v7lhvfaw>Current Theme</h5> <div class="current-theme-preview" id="current-theme-preview" data-astro-cid-v7lhvfaw> <div class="theme-preview-colors" data-astro-cid-v7lhvfaw> <div class="theme-preview-color" style="background: var(--bg-base)" data-astro-cid-v7lhvfaw></div> <div class="theme-preview-color" style="background: var(--accent-primary)" data-astro-cid-v7lhvfaw></div> <div class="theme-preview-color" style="background: var(--accent-secondary)" data-astro-cid-v7lhvfaw></div> </div> <span id="current-theme-name" data-astro-cid-v7lhvfaw>Dark Professional</span> </div> </div> <button class="btn-secondary close-sidebar-btn menu-toggle" id="close-sidebar" data-astro-cid-v7lhvfaw>
+Close Menu
+</button> </aside> <!-- THEME MANAGER --> <section class="panel active-view" id="view-theme-manager" data-astro-cid-v7lhvfaw> <div class="panel-header" data-astro-cid-v7lhvfaw> <span class="panel-title" data-astro-cid-v7lhvfaw>Theme Customization</span> <div class="header-actions" data-astro-cid-v7lhvfaw> <button class="btn-ghost btn-xs" id="export-theme-btn" title="Export Theme" data-astro-cid-v7lhvfaw> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-v7lhvfaw> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-astro-cid-v7lhvfaw></path> <polyline points="7 10 12 15 17 10" data-astro-cid-v7lhvfaw></polyline> <line x1="12" y1="15" x2="12" y2="3" data-astro-cid-v7lhvfaw></line> </svg> </button> <button class="btn-ghost btn-xs" id="import-theme-btn" title="Import Theme" data-astro-cid-v7lhvfaw> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-v7lhvfaw> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-astro-cid-v7lhvfaw></path> <polyline points="17 8 12 3 7 8" data-astro-cid-v7lhvfaw></polyline> <line x1="12" y1="3" x2="12" y2="15" data-astro-cid-v7lhvfaw></line> </svg> </button> </div> </div> <div class="theme-manager" data-astro-cid-clpq3vp5> <div class="theme-manager-header" data-astro-cid-clpq3vp5> <h3 class="theme-manager-title" data-astro-cid-clpq3vp5>Theme Customization</h3> <button class="btn-ghost btn-xs" id="reset-theme-btn" title="Reset to Default" data-astro-cid-clpq3vp5> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-clpq3vp5> <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" data-astro-cid-clpq3vp5></path> <path d="M21 3v5h-5" data-astro-cid-clpq3vp5></path> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" data-astro-cid-clpq3vp5></path> <path d="M3 21v-5h5" data-astro-cid-clpq3vp5></path> </svg> </button> </div> <!-- Theme Presets --> <div class="theme-section" data-astro-cid-clpq3vp5> <label class="theme-section-label" data-astro-cid-clpq3vp5>Theme Presets</label> <div class="theme-presets" data-astro-cid-clpq3vp5> <button class="theme-preset-btn" data-theme-id="default" title="Dark Professional" data-astro-cid-clpq3vp5> <div class="theme-preview" data-astro-cid-clpq3vp5> <div class="theme-preview-colors" data-astro-cid-clpq3vp5> <div class="theme-preview-color" style="background: #0a0a0f" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #6366f1" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #22d3ee" data-astro-cid-clpq3vp5></div> </div> <span class="theme-preset-name" data-astro-cid-clpq3vp5>Dark Professional</span> </div> </button><button class="theme-preset-btn" data-theme-id="light" title="Light Professional" data-astro-cid-clpq3vp5> <div class="theme-preview" data-astro-cid-clpq3vp5> <div class="theme-preview-colors" data-astro-cid-clpq3vp5> <div class="theme-preview-color" style="background: #ffffff" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #6366f1" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #0891b2" data-astro-cid-clpq3vp5></div> </div> <span class="theme-preset-name" data-astro-cid-clpq3vp5>Light Professional</span> </div> </button><button class="theme-preset-btn" data-theme-id="ocean" title="Ocean Blue" data-astro-cid-clpq3vp5> <div class="theme-preview" data-astro-cid-clpq3vp5> <div class="theme-preview-colors" data-astro-cid-clpq3vp5> <div class="theme-preview-color" style="background: #0c1821" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #3b82f6" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #06b6d4" data-astro-cid-clpq3vp5></div> </div> <span class="theme-preset-name" data-astro-cid-clpq3vp5>Ocean Blue</span> </div> </button><button class="theme-preset-btn" data-theme-id="forest" title="Forest Green" data-astro-cid-clpq3vp5> <div class="theme-preview" data-astro-cid-clpq3vp5> <div class="theme-preview-colors" data-astro-cid-clpq3vp5> <div class="theme-preview-color" style="background: #0f1419" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #22c55e" data-astro-cid-clpq3vp5></div> <div class="theme-preview-color" style="background: #14b8a6" data-astro-cid-clpq3vp5></div> </div> <span class="theme-preset-name" data-astro-cid-clpq3vp5>Forest Green</span> </div> </button> </div> </div> <!-- Custom Colors --> <div class="theme-section" data-astro-cid-clpq3vp5> <label class="theme-section-label" data-astro-cid-clpq3vp5>Custom Colors</label> <div class="color-controls" data-astro-cid-clpq3vp5> <div class="color-control" data-astro-cid-clpq3vp5> <label for="primary-color" data-astro-cid-clpq3vp5>Primary Accent</label> <input type="color" id="primary-color" value="#6366f1" data-astro-cid-clpq3vp5> </div> <div class="color-control" data-astro-cid-clpq3vp5> <label for="secondary-color" data-astro-cid-clpq3vp5>Secondary Accent</label> <input type="color" id="secondary-color" value="#22d3ee" data-astro-cid-clpq3vp5> </div> <div class="color-control" data-astro-cid-clpq3vp5> <label for="background-color" data-astro-cid-clpq3vp5>Background</label> <input type="color" id="background-color" value="#0a0a0f" data-astro-cid-clpq3vp5> </div> <div class="color-control" data-astro-cid-clpq3vp5> <label for="surface-color" data-astro-cid-clpq3vp5>Surface</label> <input type="color" id="surface-color" value="#12121a" data-astro-cid-clpq3vp5> </div> </div> </div> <!-- Font Selection --> <div class="theme-section" data-astro-cid-clpq3vp5> <label class="theme-section-label" data-astro-cid-clpq3vp5>Typography</label> <div class="font-controls" data-astro-cid-clpq3vp5> <div class="font-control" data-astro-cid-clpq3vp5> <label for="display-font" data-astro-cid-clpq3vp5>Display Font</label> <select id="display-font" data-astro-cid-clpq3vp5> <option value="Space Grotesk" data-astro-cid-clpq3vp5>Space Grotesk</option> <option value="Inter" data-astro-cid-clpq3vp5>Inter</option> <option value="Poppins" data-astro-cid-clpq3vp5>Poppins</option> <option value="Roboto" data-astro-cid-clpq3vp5>Roboto</option> </select> </div> <div class="font-control" data-astro-cid-clpq3vp5> <label for="body-font" data-astro-cid-clpq3vp5>Body Font</label> <select id="body-font" data-astro-cid-clpq3vp5> <option value="IBM Plex Sans" data-astro-cid-clpq3vp5>IBM Plex Sans</option> <option value="Inter" data-astro-cid-clpq3vp5>Inter</option> <option value="System UI" data-astro-cid-clpq3vp5>System UI</option> <option value="Roboto" data-astro-cid-clpq3vp5>Roboto</option> </select> </div> <div class="font-control" data-astro-cid-clpq3vp5> <label for="mono-font" data-astro-cid-clpq3vp5>Monospace Font</label> <select id="mono-font" data-astro-cid-clpq3vp5> <option value="IBM Plex Mono" data-astro-cid-clpq3vp5>IBM Plex Mono</option> <option value="JetBrains Mono" data-astro-cid-clpq3vp5>JetBrains Mono</option> <option value="Fira Code" data-astro-cid-clpq3vp5>Fira Code</option> <option value="SF Mono" data-astro-cid-clpq3vp5>SF Mono</option> </select> </div> </div> </div> <!-- Live Preview --> <div class="theme-section" data-astro-cid-clpq3vp5> <label class="theme-section-label" data-astro-cid-clpq3vp5>Live Preview</label> <div class="theme-preview-panel" id="theme-preview" data-astro-cid-clpq3vp5> <div class="preview-header" data-astro-cid-clpq3vp5> <h4 data-astro-cid-clpq3vp5>Sample Interface</h4> <button class="btn-primary btn-sm" data-astro-cid-clpq3vp5>Primary Button</button> </div> <div class="preview-content" data-astro-cid-clpq3vp5> <p class="preview-text-primary" data-astro-cid-clpq3vp5>Primary text content</p> <p class="preview-text-secondary" data-astro-cid-clpq3vp5>Secondary text content</p> <p class="preview-text-muted" data-astro-cid-clpq3vp5>Muted text content</p> <div class="preview-card" data-astro-cid-clpq3vp5> <h5 data-astro-cid-clpq3vp5>Sample Card</h5> <p data-astro-cid-clpq3vp5>This is how cards will look with your theme.</p> </div> </div> </div> </div> <!-- Actions --> <div class="theme-actions" data-astro-cid-clpq3vp5> <button class="btn-primary" id="apply-theme-btn" data-astro-cid-clpq3vp5> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-clpq3vp5> <polyline points="20 6 9 17 4 12" data-astro-cid-clpq3vp5></polyline> </svg>
+Apply Theme
+</button> <button class="btn-secondary" id="save-theme-btn" data-astro-cid-clpq3vp5> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-clpq3vp5> <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" data-astro-cid-clpq3vp5></path> <polyline points="17 21 17 13 7 13 7 21" data-astro-cid-clpq3vp5></polyline> <polyline points="7 3 7 8 15 8" data-astro-cid-clpq3vp5></polyline> </svg>
+Save Theme
+</button> </div> </div>  <script>(function(){const themes = [{"id":"default","name":"Dark Professional","colors":{"--bg-base":"#0a0a0f","--bg-surface":"#12121a","--bg-elevated":"#1a1a24","--bg-hover":"#22222e","--accent-primary":"#6366f1","--accent-primary-hover":"#818cf8","--accent-secondary":"#22d3ee","--accent-success":"#34d399","--accent-warning":"#fbbf24","--accent-error":"#ef4444","--text-primary":"#f4f4f5","--text-secondary":"#a1a1aa","--text-muted":"#71717a","--border-subtle":"#27272a","--border-default":"#3f3f46"},"fonts":{"--font-display":"\"Space Grotesk\", system-ui, sans-serif","--font-body":"\"IBM Plex Sans\", system-ui, sans-serif","--font-mono":"\"IBM Plex Mono\", \"SF Mono\", monospace"}},{"id":"light","name":"Light Professional","colors":{"--bg-base":"#ffffff","--bg-surface":"#f8fafc","--bg-elevated":"#f1f5f9","--bg-hover":"#e2e8f0","--accent-primary":"#6366f1","--accent-primary-hover":"#4f46e5","--accent-secondary":"#0891b2","--accent-success":"#059669","--accent-warning":"#d97706","--accent-error":"#dc2626","--text-primary":"#0f172a","--text-secondary":"#475569","--text-muted":"#64748b","--border-subtle":"#e2e8f0","--border-default":"#cbd5e1"},"fonts":{"--font-display":"\"Space Grotesk\", system-ui, sans-serif","--font-body":"\"IBM Plex Sans\", system-ui, sans-serif","--font-mono":"\"IBM Plex Mono\", \"SF Mono\", monospace"}},{"id":"ocean","name":"Ocean Blue","colors":{"--bg-base":"#0c1821","--bg-surface":"#1b2838","--bg-elevated":"#243447","--bg-hover":"#2d4057","--accent-primary":"#3b82f6","--accent-primary-hover":"#60a5fa","--accent-secondary":"#06b6d4","--accent-success":"#10b981","--accent-warning":"#f59e0b","--accent-error":"#ef4444","--text-primary":"#f0f9ff","--text-secondary":"#bae6fd","--text-muted":"#7dd3fc","--border-subtle":"#334155","--border-default":"#475569"},"fonts":{"--font-display":"\"Space Grotesk\", system-ui, sans-serif","--font-body":"\"IBM Plex Sans\", system-ui, sans-serif","--font-mono":"\"IBM Plex Mono\", \"SF Mono\", monospace"}},{"id":"forest","name":"Forest Green","colors":{"--bg-base":"#0f1419","--bg-surface":"#1a2332","--bg-elevated":"#253344","--bg-hover":"#304455","--accent-primary":"#22c55e","--accent-primary-hover":"#4ade80","--accent-secondary":"#14b8a6","--accent-success":"#10b981","--accent-warning":"#f59e0b","--accent-error":"#ef4444","--text-primary":"#f0fdf4","--text-secondary":"#bbf7d0","--text-muted":"#86efac","--border-subtle":"#374151","--border-default":"#4b5563"},"fonts":{"--font-display":"\"Space Grotesk\", system-ui, sans-serif","--font-body":"\"IBM Plex Sans\", system-ui, sans-serif","--font-mono":"\"IBM Plex Mono\", \"SF Mono\", monospace"}}];
+const initialTheme = "default";
+
+  class ThemeManager {
+    constructor() {
+      this.themes = themes;
+      this.currentTheme = initialTheme;
+      this.customTheme = null;
+      this.init();
+    }
+
+    init() {
+      this.loadSavedTheme();
+      this.bindEvents();
+      this.updatePreview();
+    }
+
+    loadSavedTheme() {
+      const saved = localStorage.getItem('theme-settings');
+      if (saved) {
+        try {
+          const themeData = JSON.parse(saved);
+          this.currentTheme = themeData.id || 'default';
+          this.customTheme = themeData.custom || null;
+          this.applyTheme(themeData);
+        } catch (e) {
+          console.warn('Failed to load saved theme:', e);
+        }
+      }
+    }
+
+    bindEvents() {
+      // Theme preset buttons
+      document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const themeId = e.currentTarget.dataset.themeId;
+          this.selectPreset(themeId);
+        });
+      });
+
+      // Color inputs
+      document.querySelectorAll('.color-control input[type="color"]').forEach(input => {
+        input.addEventListener('input', () => this.updateCustomTheme());
+      });
+
+      // Font selects
+      document.querySelectorAll('.font-control select').forEach(select => {
+        select.addEventListener('change', () => this.updateCustomTheme());
+      });
+
+      // Action buttons
+      document.getElementById('apply-theme-btn')?.addEventListener('click', () => {
+        this.applyCurrentTheme();
+      });
+
+      document.getElementById('save-theme-btn')?.addEventListener('click', () => {
+        this.saveTheme();
+      });
+
+      document.getElementById('reset-theme-btn')?.addEventListener('click', () => {
+        this.resetTheme();
+      });
+    }
+
+    selectPreset(themeId) {
+      this.currentTheme = themeId;
+      this.customTheme = null;
+      
+      // Update UI
+      document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themeId === themeId);
+      });
+
+      const theme = this.themes.find(t => t.id === themeId);
+      if (theme) {
+        this.updateControlsFromTheme(theme);
+        this.updatePreview();
+      }
+    }
+
+    updateControlsFromTheme(theme) {
+      // Update color inputs
+      document.getElementById('primary-color').value = theme.colors['--accent-primary'];
+      document.getElementById('secondary-color').value = theme.colors['--accent-secondary'];
+      document.getElementById('background-color').value = theme.colors['--bg-base'];
+      document.getElementById('surface-color').value = theme.colors['--bg-surface'];
+
+      // Update font selects
+      const displayFont = theme.fonts['--font-display'].split(',')[0].replace(/"/g, '');
+      const bodyFont = theme.fonts['--font-body'].split(',')[0].replace(/"/g, '');
+      const monoFont = theme.fonts['--font-mono'].split(',')[0].replace(/"/g, '');
+
+      document.getElementById('display-font').value = displayFont;
+      document.getElementById('body-font').value = bodyFont;
+      document.getElementById('mono-font').value = monoFont;
+    }
+
+    updateCustomTheme() {
+      this.customTheme = {
+        colors: {
+          '--accent-primary': document.getElementById('primary-color').value,
+          '--accent-secondary': document.getElementById('secondary-color').value,
+          '--bg-base': document.getElementById('background-color').value,
+          '--bg-surface': document.getElementById('surface-color').value,
+        },
+        fonts: {
+          '--font-display': `"${document.getElementById('display-font').value}", system-ui, sans-serif`,
+          '--font-body': `"${document.getElementById('body-font').value}", system-ui, sans-serif`,
+          '--font-mono': `"${document.getElementById('mono-font').value}", "SF Mono", monospace`,
+        }
+      };
+
+      // Clear preset selection
+      document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      this.updatePreview();
+    }
+
+    updatePreview() {
+      const preview = document.getElementById('theme-preview');
+      if (!preview) return;
+
+      let themeVars = {};
+
+      if (this.customTheme) {
+        themeVars = { ...this.customTheme.colors, ...this.customTheme.fonts };
+      } else {
+        const theme = this.themes.find(t => t.id === this.currentTheme);
+        if (theme) {
+          themeVars = { ...theme.colors, ...theme.fonts };
+        }
+      }
+
+      // Apply theme variables to preview
+      Object.entries(themeVars).forEach(([property, value]) => {
+        preview.style.setProperty(property, value);
+      });
+    }
+
+    applyCurrentTheme() {
+      let themeVars = {};
+
+      if (this.customTheme) {
+        themeVars = { ...this.customTheme.colors, ...this.customTheme.fonts };
+      } else {
+        const theme = this.themes.find(t => t.id === this.currentTheme);
+        if (theme) {
+          themeVars = { ...theme.colors, ...theme.fonts };
+        }
+      }
+
+      // Apply to document root
+      Object.entries(themeVars).forEach(([property, value]) => {
+        document.documentElement.style.setProperty(property, value);
+      });
+
+      // Show success message
+      this.showToast('Theme applied successfully!', 'success');
+    }
+
+    saveTheme() {
+      const themeData = {
+        id: this.currentTheme,
+        custom: this.customTheme,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('theme-settings', JSON.stringify(themeData));
+      this.showToast('Theme saved!', 'success');
+    }
+
+    resetTheme() {
+      this.currentTheme = 'default';
+      this.customTheme = null;
+      localStorage.removeItem('theme-settings');
+      
+      const defaultTheme = this.themes.find(t => t.id === 'default');
+      if (defaultTheme) {
+        this.updateControlsFromTheme(defaultTheme);
+        this.selectPreset('default');
+        this.applyCurrentTheme();
+      }
+
+      this.showToast('Theme reset to default', 'success');
+    }
+
+    applyTheme(themeData) {
+      let themeVars = {};
+
+      if (themeData.custom) {
+        themeVars = { ...themeData.custom.colors, ...themeData.custom.fonts };
+      } else {
+        const theme = this.themes.find(t => t.id === themeData.id);
+        if (theme) {
+          themeVars = { ...theme.colors, ...theme.fonts };
+        }
+      }
+
+      // Apply to document root
+      Object.entries(themeVars).forEach(([property, value]) => {
+        document.documentElement.style.setProperty(property, value);
+      });
+    }
+
+    showToast(message, type = 'success') {
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      // Show toast
+      setTimeout(() => toast.classList.add('show'), 100);
+      
+      // Hide and remove toast
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+  }
+
+  // Initialize theme manager when DOM is loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      new ThemeManager();
+    });
+  } else {
+    new ThemeManager();
+  }
+})();</script> </section> <!-- PREVIEW PANEL --> <section class="panel" id="view-preview" data-astro-cid-v7lhvfaw> <div class="panel-header" data-astro-cid-v7lhvfaw> <span class="panel-title" data-astro-cid-v7lhvfaw>Application Preview</span> <div class="header-actions" data-astro-cid-v7lhvfaw> <button class="btn-secondary btn-sm" id="refresh-preview-btn" data-astro-cid-v7lhvfaw> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-astro-cid-v7lhvfaw> <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" data-astro-cid-v7lhvfaw></path> <path d="M21 3v5h-5" data-astro-cid-v7lhvfaw></path> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" data-astro-cid-v7lhvfaw></path> <path d="M3 21v-5h5" data-astro-cid-v7lhvfaw></path> </svg>
+Refresh
+</button> </div> </div> <div class="preview-container" data-astro-cid-v7lhvfaw> <div class="preview-mockup" data-astro-cid-v7lhvfaw> <!-- Mock Header --> <div class="mock-header" data-astro-cid-v7lhvfaw> <div class="mock-logo" data-astro-cid-v7lhvfaw> <h3 data-astro-cid-v7lhvfaw>Prompt Workstation</h3> <span class="mock-version" data-astro-cid-v7lhvfaw>v3.0</span> </div> <div class="mock-nav" data-astro-cid-v7lhvfaw> <a href="#" class="mock-nav-link active" data-astro-cid-v7lhvfaw>Builder</a> <a href="#" class="mock-nav-link" data-astro-cid-v7lhvfaw>Projects</a> <a href="#" class="mock-nav-link" data-astro-cid-v7lhvfaw>Themes</a> </div> </div> <!-- Mock Content --> <div class="mock-content" data-astro-cid-v7lhvfaw> <div class="mock-sidebar" data-astro-cid-v7lhvfaw> <div class="mock-section" data-astro-cid-v7lhvfaw> <h5 data-astro-cid-v7lhvfaw>Agents</h5> <div class="mock-item" data-astro-cid-v7lhvfaw> <span class="mock-item-name" data-astro-cid-v7lhvfaw>Senior Developer</span> <span class="mock-item-desc" data-astro-cid-v7lhvfaw>Technical expert</span> </div> <div class="mock-item" data-astro-cid-v7lhvfaw> <span class="mock-item-name" data-astro-cid-v7lhvfaw>Product Manager</span> <span class="mock-item-desc" data-astro-cid-v7lhvfaw>Strategy focused</span> </div> </div> </div> <div class="mock-main" data-astro-cid-v7lhvfaw> <div class="mock-form" data-astro-cid-v7lhvfaw> <label data-astro-cid-v7lhvfaw>Task Description</label> <div class="mock-textarea" data-astro-cid-v7lhvfaw>Write a comprehensive API documentation...</div> <label data-astro-cid-v7lhvfaw>Context & Constraints</label> <div class="mock-textarea" data-astro-cid-v7lhvfaw>RESTful API with authentication...</div> <div class="mock-buttons" data-astro-cid-v7lhvfaw> <button class="mock-btn-primary" data-astro-cid-v7lhvfaw>Generate Prompt</button> <button class="mock-btn-secondary" data-astro-cid-v7lhvfaw>Save Draft</button> </div> </div> </div> <div class="mock-output" data-astro-cid-v7lhvfaw> <h5 data-astro-cid-v7lhvfaw>Generated Output</h5> <div class="mock-code" data-astro-cid-v7lhvfaw> <span class="mock-code-comment" data-astro-cid-v7lhvfaw># API Documentation</span><br data-astro-cid-v7lhvfaw> <span class="mock-code-keyword" data-astro-cid-v7lhvfaw>## Overview</span><br data-astro-cid-v7lhvfaw> <span class="mock-code-text" data-astro-cid-v7lhvfaw>This API provides...</span> </div> </div> </div> </div> </div> </section> </div> <div class="mobile-tabs" data-astro-cid-v7lhvfaw> <div class="mobile-tab active" id="tab-theme" data-astro-cid-v7lhvfaw>Theme</div> <div class="mobile-tab" id="tab-preview" data-astro-cid-v7lhvfaw>Preview</div> </div>  <input type="file" id="theme-file-input" accept=".json" style="display: none;" data-astro-cid-v7lhvfaw>  <!-- PWA Status Component --> <div id="pwa-status" class="pwa-status" data-astro-cid-fssvkp6s> <div id="online-indicator" class="status-indicator online" data-astro-cid-fssvkp6s> <span class="status-dot" data-astro-cid-fssvkp6s></span> <span class="status-text" data-astro-cid-fssvkp6s>Online</span> </div> <div id="update-notification" class="update-notification hidden" data-astro-cid-fssvkp6s> <span class="update-text" data-astro-cid-fssvkp6s>Update available</span> <button id="update-button" class="update-button" data-astro-cid-fssvkp6s>Update</button> <button id="dismiss-button" class="dismiss-button" data-astro-cid-fssvkp6s>×</button> </div> <div id="cache-info" class="cache-info hidden" data-astro-cid-fssvkp6s> <div class="cache-details" data-astro-cid-fssvkp6s> <span id="cache-size" class="cache-size" data-astro-cid-fssvkp6s>Cache: 0 KB</span> <span id="cache-entries" class="cache-entries" data-astro-cid-fssvkp6s>0 items</span> </div> <button id="clear-cache-button" class="clear-cache-button" data-astro-cid-fssvkp6s>Clear Cache</button> </div> </div>  <script type="module">var O=Object.defineProperty;var S=(i,e,t)=>e in i?O(i,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):i[e]=t;var o=(i,e,t)=>S(i,typeof e!="symbol"?e+"":e,t);const a=class a{constructor(){o(this,"listeners",new Map);o(this,"isOnline",navigator.onLine);o(this,"registration",null);this.setupOnlineOfflineListeners(),this.registerServiceWorker()}static getInstance(){return a.instance||(a.instance=new a),a.instance}on(e,t){this.listeners.has(e)||this.listeners.set(e,[]),this.listeners.get(e).push(t)}emit(e,t){(this.listeners.get(e)||[]).forEach(l=>l({type:e,data:t}))}async registerServiceWorker(){if("serviceWorker"in navigator)try{this.registration=await navigator.serviceWorker.register("/sw.js"),this.registration.addEventListener("updatefound",()=>{const e=this.registration.installing;e&&e.addEventListener("statechange",()=>{e.state==="installed"&&navigator.serviceWorker.controller&&this.emit("update-available")})}),navigator.serviceWorker.addEventListener("message",e=>{e.data&&e.data.type==="SKIP_WAITING"&&this.emit("update-ready")})}catch(e){console.error("Service worker registration failed:",e)}}setupOnlineOfflineListeners(){window.addEventListener("online",()=>{this.isOnline=!0,this.emit("online")}),window.addEventListener("offline",()=>{this.isOnline=!1,this.emit("offline")})}getOnlineStatus(){return this.isOnline}async checkForUpdates(){this.registration&&await this.registration.update()}async activateUpdate(){this.registration&&this.registration.waiting&&(this.registration.waiting.postMessage({type:"SKIP_WAITING"}),await new Promise(e=>{const t=()=>{navigator.serviceWorker.removeEventListener("controllerchange",t),e()};navigator.serviceWorker.addEventListener("controllerchange",t)}))}async invalidateCache(){await this.clearCaches(),this.registration&&await this.registration.update(),window.location.reload()}async showInstallPrompt(){return new Promise(e=>{window.addEventListener("beforeinstallprompt",t=>{t.preventDefault(),t.prompt(),t.userChoice.then(s=>{e(s.outcome==="accepted")})})})}async getCacheInfo(){if("caches"in window){const e=await caches.keys();let t=0,s=0;for(const l of e){const g=await caches.open(l),m=await g.keys();s+=m.length;for(const C of m){const w=await g.match(C);if(w){const B=await w.blob();t+=B.size}}}return{size:t,entries:s}}return{size:0,entries:0}}async clearCaches(){if("caches"in window){const e=await caches.keys();await Promise.all(e.map(t=>caches.delete(t)))}}};o(a,"instance");let f=a;const n=f.getInstance(),d=document.getElementById("online-indicator"),c=document.getElementById("update-notification"),p=document.getElementById("update-button"),v=document.getElementById("dismiss-button"),r=document.getElementById("cache-info"),y=document.getElementById("cache-size"),E=document.getElementById("cache-entries"),I=document.getElementById("clear-cache-button");function h(i){d&&(d.className=`status-indicator ${i?"online":"offline"}`,d.querySelector(".status-text").textContent=i?"Online":"Offline")}function b(){c&&c.classList.remove("hidden")}function k(){c&&c.classList.add("hidden")}async function u(){try{const i=await n.getCacheInfo();if(y&&E){const e=Math.round(i.size/1024);y.textContent=`Cache: ${e} KB`,E.textContent=`${i.entries} items`,i.entries>0&&r&&r.classList.remove("hidden")}}catch(i){console.error("Failed to get cache info:",i)}}async function W(){try{await n.clearCaches(),await u(),r&&r.classList.add("hidden")}catch(i){console.error("Failed to clear cache:",i)}}function L(){h(n.getOnlineStatus()),n.on("online",()=>h(!0)),n.on("offline",()=>h(!1)),n.on("update-available",b),n.on("update-ready",()=>{window.location.reload()}),p&&p.addEventListener("click",async()=>{await n.activateUpdate(),k()}),v&&v.addEventListener("click",k),I&&I.addEventListener("click",W),u(),setInterval(u,3e4)}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",L):L();</script> <!-- Install Prompt --> <div id="install-prompt" class="install-prompt hidden" data-astro-cid-sckkx6r4> <span data-astro-cid-sckkx6r4>Install Semantic Prompt Workstation</span> <button id="install-button" class="install-button" data-astro-cid-sckkx6r4>Install</button> <button id="dismiss-install" class="dismiss-button" data-astro-cid-sckkx6r4>×</button> </div> <script type="module">let r=null;"serviceWorker"in navigator&&window.addEventListener("load",async()=>{try{const e=await navigator.serviceWorker.register("/sw.js");console.log("SW registered: ",e)}catch(e){console.log("SW registration failed: ",e)}});window.addEventListener("beforeinstallprompt",e=>{e.preventDefault(),r=e;const t=document.getElementById("install-prompt");t&&t.classList.remove("hidden")});document.addEventListener("DOMContentLoaded",()=>{const e=document.getElementById("install-button"),t=document.getElementById("dismiss-install"),a=document.getElementById("install-prompt");e&&e.addEventListener("click",async()=>{if(r){r.prompt();const{outcome:c}=await r.userChoice;r=null,a&&a.classList.add("hidden")}}),t&&t.addEventListener("click",()=>{a&&a.classList.add("hidden")})});function o(){const e=localStorage.getItem("theme-settings");if(e)try{const t=JSON.parse(e),a={default:{"--bg-base":"#0a0a0f","--bg-surface":"#12121a","--bg-elevated":"#1a1a24","--bg-hover":"#22222e","--accent-primary":"#6366f1","--accent-primary-hover":"#818cf8","--accent-secondary":"#22d3ee","--accent-success":"#34d399","--accent-warning":"#fbbf24","--accent-error":"#ef4444","--text-primary":"#f4f4f5","--text-secondary":"#a1a1aa","--text-muted":"#71717a","--border-subtle":"#27272a","--border-default":"#3f3f46"},light:{"--bg-base":"#ffffff","--bg-surface":"#f8fafc","--bg-elevated":"#f1f5f9","--bg-hover":"#e2e8f0","--accent-primary":"#6366f1","--accent-primary-hover":"#4f46e5","--accent-secondary":"#0891b2","--accent-success":"#059669","--accent-warning":"#d97706","--accent-error":"#dc2626","--text-primary":"#0f172a","--text-secondary":"#475569","--text-muted":"#64748b","--border-subtle":"#e2e8f0","--border-default":"#cbd5e1"},ocean:{"--bg-base":"#0c1821","--bg-surface":"#1b2838","--bg-elevated":"#243447","--bg-hover":"#2d4057","--accent-primary":"#3b82f6","--accent-primary-hover":"#60a5fa","--accent-secondary":"#06b6d4","--accent-success":"#10b981","--accent-warning":"#f59e0b","--accent-error":"#ef4444","--text-primary":"#f0f9ff","--text-secondary":"#bae6fd","--text-muted":"#7dd3fc","--border-subtle":"#334155","--border-default":"#475569"},forest:{"--bg-base":"#0f1419","--bg-surface":"#1a2332","--bg-elevated":"#253344","--bg-hover":"#304455","--accent-primary":"#22c55e","--accent-primary-hover":"#4ade80","--accent-secondary":"#14b8a6","--accent-success":"#10b981","--accent-warning":"#f59e0b","--accent-error":"#ef4444","--text-primary":"#f0fdf4","--text-secondary":"#bbf7d0","--text-muted":"#86efac","--border-subtle":"#374151","--border-default":"#4b5563"}};let c={};if(t.custom)c={...t.custom.colors,...t.custom.fonts};else{const n=a[t.id];n&&(c=n)}Object.entries(c).forEach(([n,s])=>{document.documentElement.style.setProperty(n,s)})}catch(t){console.warn("Failed to load saved theme:",t)}}o();document.readyState==="loading"&&document.addEventListener("DOMContentLoaded",o);</script> </body> </html>    <script type="module">document.getElementById("tab-theme")?.addEventListener("click",()=>{document.getElementById("view-theme-manager")?.classList.add("active-view"),document.getElementById("view-preview")?.classList.remove("active-view"),document.getElementById("tab-theme")?.classList.add("active"),document.getElementById("tab-preview")?.classList.remove("active")});document.getElementById("tab-preview")?.addEventListener("click",()=>{document.getElementById("view-preview")?.classList.add("active-view"),document.getElementById("view-theme-manager")?.classList.remove("active-view"),document.getElementById("tab-preview")?.classList.add("active"),document.getElementById("tab-theme")?.classList.remove("active")});document.getElementById("close-sidebar")?.addEventListener("click",()=>{document.getElementById("sidebar-panel")?.classList.toggle("mobile-open")});document.getElementById("export-theme-btn")?.addEventListener("click",()=>{const e=localStorage.getItem("theme-settings");if(e){const t=new Blob([e],{type:"application/json"}),n=URL.createObjectURL(t),a=document.createElement("a");a.href=n,a.download="theme-settings.json",a.click(),URL.revokeObjectURL(n)}});document.getElementById("import-theme-btn")?.addEventListener("click",()=>{document.getElementById("theme-file-input")?.click()});document.getElementById("theme-file-input")?.addEventListener("change",e=>{const t=e.target.files[0];if(t){const n=new FileReader;n.onload=a=>{try{const i=JSON.parse(a.target.result);localStorage.setItem("theme-settings",JSON.stringify(i)),location.reload()}catch(i){console.error("Failed to import theme:",i)}},n.readAsText(t)}});document.getElementById("refresh-preview-btn")?.addEventListener("click",()=>{const e=document.querySelector(".preview-mockup");e&&(e.style.display="none",setTimeout(()=>{e.style.display="block"},100))});function c(){const e=localStorage.getItem("theme-settings");if(e)try{const t=JSON.parse(e),n=document.getElementById("current-theme-name");n&&(n.textContent=t.custom?"Custom Theme":t.id==="light"?"Light Professional":t.id==="ocean"?"Ocean Blue":t.id==="forest"?"Forest Green":"Dark Professional")}catch(t){console.warn("Failed to parse theme data:",t)}}c();window.addEventListener("storage",e=>{e.key==="theme-settings"&&c()});</script>

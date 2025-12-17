@@ -1,18 +1,1 @@
-const CACHE_NAME = "prompt-engine-v1";
-const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.svg"];
-
-// Install Event: Cache files
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)),
-  );
-});
-
-// Fetch Event: Serve from cache, fall back to network
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches
-      .match(event.request)
-      .then((response) => response || fetch(event.request)),
-  );
-});
+if(!self.define){let s,e={};const r=(r,i)=>(r=new URL(r+".js",i).href,e[r]||new Promise(e=>{if("document"in self){const s=document.createElement("script");s.src=r,s.onload=e,document.head.appendChild(s)}else s=r,importScripts(r),e()}).then(()=>{let s=e[r];if(!s)throw new Error(`Module ${r} didn’t register its module`);return s}));self.define=(i,n)=>{const o=s||("document"in self?document.currentScript.src:"")||location.href;if(e[o])return;let l={};const t=s=>r(s,o),a={module:{uri:o},exports:l,require:t};e[o]=Promise.all(i.map(s=>a[s]||t(s))).then(s=>(n(...s),l))}}define(["./workbox-354287e6"],function(s){"use strict";self.skipWaiting(),s.clientsClaim(),s.precacheAndRoute([{url:"registerSW.js",revision:"1872c500de691dce40960bb85481de07"},{url:"icon.svg",revision:"44bbb6a106067fe91fa262c65244eeb0"},{url:"favicon.svg",revision:"8c13f40658976ea1dfb8ba37a8be0e8d"},{url:"_astro/themes.CcvUsjV2.css",revision:null},{url:"_astro/rules.astro_astro_type_script_index_0_lang.DamRyshz.js",revision:null},{url:"_astro/rules.CyKAmpKl.css",revision:null},{url:"_astro/projects.astro_astro_type_script_index_0_lang.DlBJ7YO4.js",revision:null},{url:"_astro/projects.DyVgqiK-.css",revision:null},{url:"_astro/index.astro_astro_type_script_index_0_lang.BJkDprhr.js",revision:null},{url:"_astro/index.Gc661UUl.css",revision:null},{url:"_astro/hooks.astro_astro_type_script_index_0_lang.DpZbevFy.js",revision:null},{url:"_astro/hooks.Dl8wW0iZ.css",revision:null},{url:"_astro/astro.25WpP7EA.js",revision:null},{url:"_astro/api.Dv2Hb9xf.js",revision:null},{url:"_astro/agents.astro_astro_type_script_index_0_lang.B6XKkPzJ.js",revision:null},{url:"_astro/agents.Du0ZNYVj.css",revision:null},{url:"_astro/agents.BORQSHzQ.css",revision:null},{url:"_astro/SimplePromptBuilder.astro_astro_type_script_index_0_lang.CDyEYUVW.js",revision:null},{url:"_astro/SimpleExportPanel.astro_astro_type_script_index_0_lang.D4LBHq5Q.js",revision:null},{url:"_astro/SimpleAgentManager.astro_astro_type_script_index_0_lang.Cl87BCuK.js",revision:null},{url:"_astro/Navigation.OoZ7i2YM.js",revision:null},{url:"_astro/Modal.Btgj5bzm.js",revision:null},{url:"_astro/astro/server.DiNYdjbW.js",revision:null},{url:"favicon.svg",revision:"8c13f40658976ea1dfb8ba37a8be0e8d"},{url:"icon.svg",revision:"44bbb6a106067fe91fa262c65244eeb0"},{url:"manifest.webmanifest",revision:"de4c2345cb95f799273b7a27197c0a5f"}],{}),s.cleanupOutdatedCaches(),s.registerRoute(new s.NavigationRoute(s.createHandlerBoundToURL("/"))),s.registerRoute(/^https:\/\/.*\.workers\.dev\/api\/.*/,new s.NetworkFirst({cacheName:"api-cache",networkTimeoutSeconds:10,plugins:[new s.ExpirationPlugin({maxEntries:100,maxAgeSeconds:86400})]}),"GET"),s.registerRoute(/\.(?:png|jpg|jpeg|svg|gif|webp)$/,new s.CacheFirst({cacheName:"images-cache",plugins:[new s.ExpirationPlugin({maxEntries:50,maxAgeSeconds:2592e3})]}),"GET")});

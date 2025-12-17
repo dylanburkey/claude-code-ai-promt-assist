@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Listens for changes to source files and automatically updates documentation in README.md and /docs folder",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file has been modified. Please analyze the changes and update the documentation accordingly:\n\n1. Update the README.md file to reflect any new features, API changes, or important modifications\n2. If a /docs directory doesn't exist, create it\n3. Create or update relevant documentation files in the /docs folder, organizing them into appropriate subdirectories such as:\n   - /docs/api/ for API documentation\n   - /docs/setup/ for installation and setup guides\n   - /docs/development/ for development guidelines\n   - /docs/deployment/ for deployment instructions\n   - /docs/database/ for database schema and migration documentation\n\nFocus on keeping the documentation current, accurate, and well-organized. Include code examples where appropriate and ensure the documentation matches the current state of the codebase."
+  },
+  "workspaceFolderName": "claude-prompt-helper",
+  "shortName": "docs-sync-hook"
+}

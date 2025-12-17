@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Loading Test</title>
+</head>
+<body>
+    <h1>Project Loading Test</h1>
+    <div id="status">Testing...</div>
+    <div id="projects"></div>
+
+    <script>
+        async function testProjectLoading() {
+            const statusDiv = document.getElementById('status');
+            const projectsDiv = document.getElementById('projects');
+            
+            try {
+                statusDiv.textContent = 'Loading projects...';
+                
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'API request failed');
+                }
+                
+                // Handle both old array format and new object format
+                const projects = Array.isArray(data) ? data : data.projects || [];
+                
+                statusDiv.textContent = `✅ Success! Found ${projects.length} projects`;
+                statusDiv.style.color = 'green';
+                
+                if (projects.length > 0) {
+                    projectsDiv.innerHTML = '<h3>Projects:</h3>' + 
+                        projects.map(p => `<div>• ${p.name} (ID: ${p.id})</div>`).join('');
+                } else {
+                    projectsDiv.innerHTML = '<div>No projects found</div>';
+                }
+                
+            } catch (error) {
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+                statusDiv.style.color = 'red';
+                console.error('Project loading test failed:', error);
+            }
+        }
+        
+        // Run test when page loads
+        window.addEventListener('DOMContentLoaded', testProjectLoading);
+    </script>
+</body>
+</html>
